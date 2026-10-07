@@ -40,10 +40,11 @@ async function showSystemNotification(n: Pick<AppNotification, 'title' | 'body' 
   if (!pushSupported() || Notification.permission !== 'granted') return;
   const options: NotificationOptions = {
     body: n.body,
-    icon: '/icons/icon-192.png',
-    badge: '/icons/badge-72.png',
+    icon: `${import.meta.env.BASE_URL}icons/icon-192.png`,
+    badge: `${import.meta.env.BASE_URL}icons/badge-72.png`,
     tag: n.id,
-    data: { url: n.href ?? '/app/notificacoes' },
+    // Rotas internas começam com '/'; o SW precisa do caminho completo (inclui a subpasta, se houver).
+    data: { url: `${import.meta.env.BASE_URL}${(n.href ?? '/app/notificacoes').replace(/^\//, '')}` },
   };
   try {
     const reg = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : undefined;

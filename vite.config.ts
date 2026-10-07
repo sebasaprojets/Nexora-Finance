@@ -5,7 +5,11 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
 
+// BASE_PATH permite publicar em subpasta (ex.: GitHub Pages em /Nexora-Finance/).
+const base = process.env.BASE_PATH ?? '/';
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     tailwindcss(),
@@ -27,21 +31,21 @@ export default defineConfig({
         short_name: 'Nexora',
         description: 'Inteligência financeira em um só lugar.',
         lang: 'pt-BR',
-        start_url: '/app',
-        scope: '/',
+        start_url: './app',
+        scope: './',
         display: 'standalone',
         orientation: 'any',
         background_color: '#07080c',
         theme_color: '#07080c',
         categories: ['finance', 'productivity'],
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
         shortcuts: [
-          { name: 'Nova despesa', url: '/app/transacoes?nova=expense', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
-          { name: 'Nova receita', url: '/app/transacoes?nova=income', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
+          { name: 'Nova despesa', url: './app/transacoes?nova=expense', icons: [{ src: 'icons/icon-192.png', sizes: '192x192' }] },
+          { name: 'Nova receita', url: './app/transacoes?nova=income', icons: [{ src: 'icons/icon-192.png', sizes: '192x192' }] },
         ],
       },
     }),

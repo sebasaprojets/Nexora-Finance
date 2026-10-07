@@ -4,6 +4,10 @@
 
 Plataforma financeira SaaS (web + PWA) para controlar, organizar, analisar e melhorar a vida financeira: dashboard, transações, contas, cartões e faturas, orçamentos, metas, dívidas, investimentos, assinaturas, análises (DRE, lucros e perdas, fluxo de caixa, heatmap, comparação de períodos), relatórios em PDF/Excel/CSV, calendário, notificações, assistente **Nexora AI** e score de saúde financeira.
 
+## Acesse online
+
+**https://sebasaprojets.github.io/Nexora-Finance/** — publicado automaticamente pelo GitHub Actions (`.github/workflows/deploy.yml`) a cada push.
+
 ## Começando
 
 ```bash

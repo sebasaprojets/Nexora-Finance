@@ -39,7 +39,7 @@ export default function Legal({ doc }: { doc: 'privacy' | 'terms' }) {
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between">
           <Link to="/" aria-label="Nexora — início"><Logo /></Link>
-          <button onClick={() => (history.length > 1 ? history.back() : location.assign('/'))} className="inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg">
+          <button onClick={() => (history.length > 1 ? history.back() : location.assign(import.meta.env.BASE_URL))} className="inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg">
             <ArrowLeft className="size-4" /> Voltar
           </button>
         </div>

@@ -11,7 +11,10 @@ precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
 // SPA: navegações caem no index.html (offline básico).
-registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html')));
+// Caminhos relativos ao escopo do SW: funciona na raiz ou em subpasta (GitHub Pages).
+const scoped = (path: string) => new URL(path, self.registration.scope).href;
+
+registerRoute(new NavigationRoute(createHandlerBoundToURL(scoped('index.html'))));
 
 registerRoute(
   ({ request }) => request.destination === 'image' || request.destination === 'font',
@@ -34,17 +37,17 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title ?? 'Nexora Finance', {
       body: payload.body ?? '',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/badge-72.png',
+      icon: scoped('icons/icon-192.png'),
+      badge: scoped('icons/badge-72.png'),
       tag: payload.tag,
-      data: { url: payload.url ?? '/app/notificacoes' },
+      data: { url: payload.url ?? scoped('app/notificacoes') },
     }),
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = (event.notification.data?.url as string) ?? '/app';
+  const url = (event.notification.data?.url as string) ?? scoped('app');
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       for (const c of clients) {

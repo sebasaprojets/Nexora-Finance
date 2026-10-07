@@ -88,7 +88,7 @@ export function App() {
   return (
     <MotionConfig reducedMotion={reduced ? 'always' : 'never'}>
       <ErrorBoundary>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
           <Suspense fallback={<FullScreenLoader />}>
             <Routes>
               <Route path="/" element={<Landing />} />
