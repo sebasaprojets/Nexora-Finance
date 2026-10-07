@@ -18,7 +18,8 @@ import {
 import { financialScore } from './score';
 import { monthEvents } from './calendar';
 import { addDays, addMonths, daysInMonth, diffDays, endOfMonth, formatDate, monthKey, startOfMonth, startOfWeek, today } from './dates';
-import { formatMoney, formatPercent, pctChange } from './format';
+import { formatMoney, formatPercent, parseMoneyInput, pctChange } from './format';
+import { suggestCategory } from './categorize';
 
 /**
  * Nexora AI — assistente financeiro.
@@ -29,8 +30,20 @@ import { formatMoney, formatPercent, pctChange } from './format';
  * endpoint do backend (a chave da API fica no servidor, nunca no frontend).
  */
 
+/** Lançamento interpretado de uma frase ("gastei 35 no mercado"), aguardando confirmação. */
+export interface QuickEntryDraft {
+  type: 'income' | 'expense';
+  amount: number;
+  description: string;
+  categoryId?: string;
+  accountId?: string;
+  cardId?: string;
+  date: string;
+}
+
 export interface AssistantAnswer {
   text: string;
+  draft?: QuickEntryDraft;
   facts?: { label: string; value: string }[];
   links?: { label: string; href: string }[];
   followUps?: string[];
@@ -65,6 +78,55 @@ export function parsePeriod(q: string, ref = today()): { period: Period; label: 
   return { period: { from: startOfMonth(ref), to: ref }, label: 'neste mês' };
 }
 
+const FILLER = new Set(['no', 'na', 'nos', 'nas', 'em', 'de', 'do', 'da', 'com', 'pelo', 'pela', 'por', 'pra', 'para', 'o', 'a', 'os', 'as', 'um', 'uma', 'reais', 'real', 'conto', 'contos', 'hoje', 'ontem', 'anteontem', 'r', 'eu', 'agora', 'cartao', 'credito', 'debito', 'pix', 'dinheiro', 'conta', 'no cartao']);
+const EXPENSE_VERBS = /\b(gastei|paguei|comprei|torrei|gasto de|despesa de|saiu)\b/;
+const INCOME_VERBS = /\b(recebi|ganhei|entrou|caiu|receita de)\b/;
+
+/** Interpreta frases como "gastei 35,90 no mercado ontem no Nubank" ou "recebi 5000 de salário". */
+export function parseQuickEntry(question: string, data: FinanceData, ref = today()): QuickEntryDraft | null {
+  const raw = question.trim();
+  const q = norm(raw);
+  if (raw.includes('?') || /^(quanto|qual|quais|como|quando|onde|por que|porque)\b/.test(q)) return null;
+  const isExpense = EXPENSE_VERBS.test(q);
+  const isIncome = !isExpense && INCOME_VERBS.test(q);
+  const m = raw.match(/(?:r\$\s*)?(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)/i);
+  if (!m) return null;
+  // Sem verbo, aceita frases curtas do tipo "uber 23,50".
+  const words = q.split(' ').filter(Boolean);
+  if (!isExpense && !isIncome && words.length > 4) return null;
+  const amount = parseMoneyInput(m[1]);
+  if (!(amount > 0)) return null;
+  const type: 'income' | 'expense' = isIncome ? 'income' : 'expense';
+
+  const date = /\banteontem\b/.test(q) ? addDays(ref, -2) : /\bontem\b/.test(q) ? addDays(ref, -1) : ref;
+
+  // Conta ou cartão citado pelo nome/instituição; "cartão/crédito" → primeiro cartão.
+  const accounts = data.accounts.filter((a) => !a.archived);
+  let cardId: string | undefined;
+  let accountId: string | undefined;
+  const mentioned = (name: string) => name.length > 2 && q.includes(norm(name));
+  if (type === 'expense') {
+    const card = data.cards.find((c) => mentioned(c.name) || mentioned(c.institution) && /cartao|credito/.test(q));
+    if (card) cardId = card.id;
+    else if (/\b(cartao|credito)\b/.test(q) && data.cards[0]) cardId = data.cards[0].id;
+  }
+  if (!cardId) accountId = (accounts.find((a) => mentioned(a.name) || mentioned(a.institution)) ?? accounts.find((a) => a.type === 'checking' || a.type === 'digital') ?? accounts[0])?.id;
+
+  // Descrição: o que sobra sem verbo, valor, datas e palavras de ligação.
+  const stripNames = [...data.accounts.flatMap((a) => [a.name, a.institution]), ...data.cards.flatMap((c) => [c.name, c.institution])].map(norm).filter((n) => n.length > 2);
+  let rest = norm(raw.replace(m[0], ' '));
+  rest = rest.replace(EXPENSE_VERBS, ' ').replace(INCOME_VERBS, ' ');
+  for (const n of stripNames) rest = rest.replace(new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), ' ');
+  const descWords = rest.split(' ').filter((w) => w && !FILLER.has(w) && !/^\d+$/.test(w));
+  const kind = type === 'income' ? 'income' : 'expense';
+  let description = descWords.join(' ');
+  const cat = suggestCategory(description || raw, kind, data.categories, data.transactions);
+  if (!description) description = cat?.name ?? (type === 'income' ? 'Receita' : 'Despesa');
+  description = description.charAt(0).toUpperCase() + description.slice(1);
+  const fallback = data.categories.find((c) => c.kind === kind && /^outros$/i.test(c.name));
+  return { type, amount, description, categoryId: (cat ?? fallback)?.id, accountId, cardId, date };
+}
+
 export const SUGGESTIONS = [
   'Quanto gastei este mês?',
   'Quanto posso gastar hoje?',
@@ -74,6 +136,7 @@ export const SUGGESTIONS = [
   'Estou perto de ultrapassar algum orçamento?',
   'Quando vence minha fatura?',
   'Quanto tenho investido?',
+  'Gastei 35,90 no mercado',
 ];
 
 export function answer(question: string, data: FinanceData, money: (v: number) => string = (v) => formatMoney(v)): AssistantAnswer {
@@ -81,6 +144,25 @@ export function answer(question: string, data: FinanceData, money: (v: number) =
   const ref = today();
   const { period, label } = parsePeriod(q, ref);
   const hasTx = data.transactions.length > 0;
+  // --- Lançamento por conversa ("gastei 35 no mercado")
+  const draft = parseQuickEntry(question, data, ref);
+  if (draft) {
+    if (!data.accounts.length) return { text: 'Para registrar lançamentos, primeiro cadastre uma conta (banco ou carteira).', links: [{ label: 'Cadastrar conta', href: '/app/contas?nova=1' }] };
+    const cat = data.categories.find((c) => c.id === draft.categoryId);
+    const src = draft.cardId ? data.cards.find((c) => c.id === draft.cardId)?.name : data.accounts.find((a) => a.id === draft.accountId)?.name;
+    return {
+      text: `Entendi! Posso registrar esta **${draft.type === 'income' ? 'receita' : 'despesa'}** para você:`,
+      draft,
+      facts: [
+        { label: 'Valor', value: money(draft.amount) },
+        { label: 'Descrição', value: draft.description },
+        { label: 'Categoria', value: cat?.name ?? '—' },
+        { label: draft.cardId ? 'Cartão' : 'Conta', value: src ?? '—' },
+        { label: 'Data', value: draft.date === ref ? 'Hoje' : formatDate(draft.date) },
+      ],
+    };
+  }
+
   const noData: AssistantAnswer = {
     text: 'Ainda não há transações registradas, então não consigo calcular isso sem inventar números. Registre suas receitas e despesas e pergunte de novo.',
     links: [{ label: 'Adicionar transação', href: '/app/transacoes?nova=expense' }],

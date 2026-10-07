@@ -1,7 +1,7 @@
 import type { AppNotification, FinanceData, NotificationKind, NotificationPreferences } from '@/types';
 import { useFinance } from '@/store/finance';
 import { useSettings } from '@/store/settings';
-import { budgetUsage, cardSummary, goalProgress, nextCharge } from '@/lib/finance';
+import { budgetUsage, cardSummary, goalProgress, nextCharge, unusualExpenses } from '@/lib/finance';
 import { addDays, dateInMonth, diffDays, formatDate, monthKey, parseISODate, today } from '@/lib/dates';
 import { formatMoney } from '@/lib/format';
 
@@ -23,6 +23,7 @@ const PREF_BY_KIND: Record<NotificationKind, keyof NotificationPreferences | nul
   budget_warning: 'budgets',
   budget_exceeded: 'budgets',
   new_transaction: 'transactions',
+  unusual_spending: 'budgets',
   new_login: 'security',
   security: 'security',
   system: null,
@@ -131,6 +132,18 @@ export function evaluateAlerts(data: FinanceData, ref = today()): Alert[] {
       alerts.push({ kind: 'budget_warning', title: `${name}: 90% do orçamento usado`, body: `Restam ${brl(b.remaining)} para este mês.`, href: '/app/orcamentos', dedupeKey: `bud-90:${b.budget.id}:${m}` });
     else if (b.level === 'attention')
       alerts.push({ kind: 'budget_warning', title: `${name}: 70% do orçamento usado`, body: `Você já gastou ${brl(b.spent)} de ${brl(b.budget.amount)}.`, href: '/app/orcamentos', dedupeKey: `bud-70:${b.budget.id}:${m}` });
+  }
+
+  // Gasto fora do padrão (como o monitoramento diário de assistentes tipo Pierre):
+  // despesa recente bem acima do ticket médio da categoria nos 90 dias anteriores.
+  for (const u of unusualExpenses(data, ref)) {
+    alerts.push({
+      kind: 'unusual_spending',
+      title: `Gasto fora do padrão: ${u.tx.description}`,
+      body: `${brl(u.tx.amount)} em ${u.category} — cerca de ${u.ratio.toFixed(1).replace('.', ',')}x o seu gasto médio nessa categoria (${brl(u.avg)}). Foi você?`,
+      href: '/app/transacoes',
+      dedupeKey: `unusual:${u.tx.id}`,
+    });
   }
 
   for (const g of data.goals) {

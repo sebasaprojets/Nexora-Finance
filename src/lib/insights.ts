@@ -8,6 +8,7 @@ import {
   subscriptionsSummary,
   summarize,
   totalsByCategory,
+  unusualExpenses,
   type Period,
 } from './finance';
 import { formatMoney, formatPercent, pctChange } from './format';
@@ -109,6 +110,16 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
           ? `Você ultrapassou o orçamento de ${risky[0].category?.name} em ${money(Math.abs(risky[0].remaining))}.`
           : `Você já usou ${formatPercent(risky[0].pct, 0)} do orçamento de ${risky[0].category?.name} este mês.`,
       href: '/app/orcamentos',
+    });
+
+  const unusual = unusualExpenses(data)[0];
+  if (unusual)
+    out.push({
+      id: `unusual-${unusual.tx.id}`,
+      tone: 'warning',
+      title: 'Gasto fora do padrão',
+      text: `“${unusual.tx.description}” (${money(unusual.tx.amount)}) está bem acima do seu gasto médio em ${unusual.category.toLowerCase()} (${money(unusual.avg)}).`,
+      href: '/app/transacoes',
     });
 
   const subs = subscriptionsSummary(data.subscriptions);

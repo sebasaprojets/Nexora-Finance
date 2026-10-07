@@ -170,7 +170,7 @@ export const TOURS: Record<string, Tour> = {
     title: 'Nexora AI',
     steps: [
       { title: 'Nexora AI', body: 'Seu assistente financeiro. Ele responde usando somente os seus dados e avisa quando ainda não há informação suficiente.' },
-      { target: 'ai-input', title: 'Faça uma pergunta', body: 'Ex.: “Quanto gastei com alimentação este mês?”, “Quanto posso gastar hoje?” ou “Quando vence minha fatura?”.' },
+      { target: 'ai-input', title: 'Faça uma pergunta', body: 'Pergunte (“Quanto posso gastar hoje?”) ou registre conversando: “gastei 35,90 no mercado”, “paguei 120 de luz ontem”, “recebi 5000 de salário”. Eu mostro o lançamento e você confirma.' },
     ],
   },
 };

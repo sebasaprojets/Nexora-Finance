@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Lightbulb, Paperclip, Repeat2, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { ChevronDown, Lightbulb, Paperclip, Repeat2, Sparkles, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { suggestCategory } from '@/lib/categorize';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Field, Input, Select, Textarea } from '@/components/ui/Field';
@@ -73,6 +74,8 @@ export function TransactionModal() {
   const currency = useSettings((s) => s.currency);
   const [more, setMore] = useState(false);
   const [attachment, setAttachment] = useState<Attachment | undefined>();
+  const [autoCategory, setAutoCategory] = useState(false);
+  const categoryTouched = useRef(false);
   const editing = draft?.editing;
 
   const activeAccounts = useMemo(() => accounts.filter((a) => !a.archived), [accounts]);
@@ -106,6 +109,8 @@ export function TransactionModal() {
   useEffect(() => {
     if (draft) {
       reset(defaults);
+      setAutoCategory(false);
+      categoryTouched.current = !!(editing ?? draft.defaults?.categoryId);
       setMore(!!editing && (editing.tags.length > 0 || !!editing.notes || editing.recurrence !== 'none'));
       setAttachment(editing?.attachment);
     }
@@ -116,6 +121,17 @@ export function TransactionModal() {
   const date = watch('date');
   const categoryId = watch('categoryId');
   const amountRaw = watch('amount');
+  const description = watch('description');
+
+  // Categoria sugerida pela descrição (histórico do usuário + palavras-chave), até o usuário escolher uma.
+  useEffect(() => {
+    if (!draft || categoryTouched.current || type === 'transfer') return;
+    const s = suggestCategory(description ?? '', type === 'income' ? 'income' : 'expense', categories, transactions);
+    if (s && s.id !== categoryId) {
+      setValue('categoryId', s.id, { shouldValidate: formState.isSubmitted });
+      setAutoCategory(true);
+    }
+  }, [description, type, draft, categories, transactions, categoryId, setValue, formState.isSubmitted]);
   const isCard = source?.startsWith('card:');
   const typeCategories = categories.filter((c) => c.kind === (type === 'income' ? 'income' : 'expense'));
 
@@ -268,6 +284,7 @@ export function TransactionModal() {
             <fieldset>
               <legend className="mb-2 text-[13px] font-medium text-fg-muted">
                 Categoria<span className="ml-0.5 text-danger" aria-hidden>*</span>
+                {autoCategory && <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary"><Sparkles className="size-3" aria-hidden /> Sugerida pela descrição</span>}
               </legend>
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {typeCategories.map((c) => (
@@ -275,7 +292,11 @@ export function TransactionModal() {
                     type="button"
                     key={c.id}
                     aria-pressed={categoryId === c.id}
-                    onClick={() => setValue('categoryId', c.id, { shouldValidate: true })}
+                    onClick={() => {
+                      categoryTouched.current = true;
+                      setAutoCategory(false);
+                      setValue('categoryId', c.id, { shouldValidate: true });
+                    }}
                     className={cn(
                       'flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-xs font-medium transition-all',
                       categoryId === c.id ? 'border-primary bg-primary-soft text-fg' : 'border-border text-fg-muted hover:border-border-strong hover:bg-surface-2',

@@ -22,6 +22,7 @@ const KIND: Record<NotificationKind, { icon: typeof Bell; color: string }> = {
   budget_warning: { icon: Wallet, color: 'var(--warning)' },
   budget_exceeded: { icon: AlertTriangle, color: 'var(--danger)' },
   new_transaction: { icon: TrendingUp, color: 'var(--series-1)' },
+  unusual_spending: { icon: AlertTriangle, color: 'var(--series-2)' },
   new_login: { icon: LogIn, color: 'var(--series-2)' },
   security: { icon: Shield, color: 'var(--series-2)' },
   system: { icon: Info, color: 'var(--primary)' },

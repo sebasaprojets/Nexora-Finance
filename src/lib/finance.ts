@@ -892,6 +892,37 @@ export function dre(txs: Transaction[], categories: Category[], p: Period): DRE 
 }
 
 // ---------------------------------------------------------------------------
+// Gastos fora do padrão
+// ---------------------------------------------------------------------------
+
+/**
+ * Despesas dos últimos `days` dias que superam 2,5x o ticket médio da categoria
+ * nos 90 dias anteriores (mínimo de 4 lançamentos de histórico e R$ 80).
+ */
+export function unusualExpenses(data: FinanceData, ref: ISODate = today(), days = 3) {
+  const from = addDays(ref, -(days - 1));
+  const histFrom = addDays(from, -90);
+  const hist = new Map<string, { sum: number; n: number }>();
+  for (const t of data.transactions) {
+    if (t.type !== 'expense' || !t.categoryId || t.date < histFrom || t.date >= from) continue;
+    const h = hist.get(t.categoryId) ?? { sum: 0, n: 0 };
+    h.sum += t.amount;
+    h.n++;
+    hist.set(t.categoryId, h);
+  }
+  const names = new Map(data.categories.map((c) => [c.id, c.name]));
+  const out: { tx: Transaction; avg: number; ratio: number; category: string }[] = [];
+  for (const t of data.transactions) {
+    if (t.type !== 'expense' || !t.categoryId || t.date < from || t.date > ref || t.installment) continue;
+    const h = hist.get(t.categoryId);
+    if (!h || h.n < 4) continue;
+    const avg = h.sum / h.n;
+    if (t.amount >= 80 && t.amount > avg * 2.5) out.push({ tx: t, avg: round2(avg), ratio: t.amount / avg, category: names.get(t.categoryId) ?? 'categoria' });
+  }
+  return out.sort((a, b) => b.ratio - a.ratio);
+}
+
+// ---------------------------------------------------------------------------
 // Heatmap diário
 // ---------------------------------------------------------------------------
 

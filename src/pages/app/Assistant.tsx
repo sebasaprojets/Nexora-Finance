@@ -1,10 +1,13 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, Bot, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowRight, ArrowUp, Bot, Check, Pencil, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/common/Avatar';
 import { useFinanceData } from '@/hooks/useFinanceData';
+import { useFinance } from '@/store/finance';
+import { useUI } from '@/store/ui';
+import { toast } from '@/store/toast';
 import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { useMoney } from '@/hooks/useMoney';
 import { useAuth } from '@/store/auth';
@@ -17,6 +20,8 @@ interface Message {
   role: 'user' | 'assistant';
   text: string;
   answer?: AssistantAnswer;
+  /** Estado do lançamento sugerido por conversa. */
+  entry?: 'pending' | 'saved' | 'cancelled';
 }
 
 /** Renderiza **negrito** de forma segura (sem HTML injetado). */
@@ -47,6 +52,36 @@ export default function Assistant() {
     bottom.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, thinking]);
 
+  const addTransaction = useFinance((s) => s.addTransaction);
+  const openTx = useUI((s) => s.openTransaction);
+
+  const confirmEntry = (m: Message) => {
+    const d = m.answer?.draft;
+    if (!d) return;
+    addTransaction({
+      type: d.type,
+      amount: d.amount,
+      description: d.description,
+      categoryId: d.categoryId,
+      date: d.date,
+      accountId: d.accountId,
+      cardId: d.cardId,
+      method: d.cardId ? 'credit' : 'pix',
+      status: 'paid',
+      tags: [],
+      recurrence: 'none',
+    });
+    setMessages((list) => list.map((x) => (x.id === m.id ? { ...x, entry: 'saved' } : x)));
+    toast.success(d.type === 'income' ? 'Receita registrada' : 'Despesa registrada', { description: `${money(d.amount, { ignoreHidden: true })} · ${d.description}` });
+  };
+
+  const editEntry = (m: Message) => {
+    const d = m.answer?.draft;
+    if (!d) return;
+    setMessages((list) => list.map((x) => (x.id === m.id ? { ...x, entry: 'cancelled' } : x)));
+    openTx({ type: d.type, defaults: { amount: d.amount, description: d.description, categoryId: d.categoryId, date: d.date, accountId: d.accountId, cardId: d.cardId } });
+  };
+
   const ask = (q: string) => {
     const text = q.trim().slice(0, 300);
     if (!text || thinking) return;
@@ -56,7 +91,7 @@ export default function Assistant() {
     // Pequeno atraso para feedback visual; a resposta é calculada localmente.
     setTimeout(() => {
       const a = answer(text, data, (v) => money(v, { ignoreHidden: true }));
-      setMessages((m) => [...m, { id: uid('m'), role: 'assistant', text: a.text, answer: a }]);
+      setMessages((m) => [...m, { id: uid('m'), role: 'assistant', text: a.text, answer: a, entry: a.draft ? 'pending' : undefined }]);
       setThinking(false);
       inputRef.current?.focus();
     }, 450);
@@ -85,7 +120,7 @@ export default function Assistant() {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card holo p-6 text-center sm:p-10">
             <Bot className="mx-auto size-10 text-primary" aria-hidden />
             <h2 className="mt-3 font-display text-lg font-semibold">Olá, {user?.name.split(' ')[0]}! Como posso ajudar?</h2>
-            <p className="mx-auto mt-1 max-w-md text-sm text-fg-subtle">Pergunte sobre seus gastos, saldo, metas, orçamentos e faturas. Eu nunca invento números — se não houver dados, eu aviso.</p>
+            <p className="mx-auto mt-1 max-w-md text-sm text-fg-subtle">Pergunte sobre gastos, saldo, metas e faturas — ou registre conversando: “gastei 35 no mercado”, “recebi 5000 de salário”. Eu nunca invento números.</p>
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
               {SUGGESTIONS.map((s) => (
                 <button key={s} onClick={() => ask(s)} className="group flex items-center justify-between gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-left text-sm transition-colors hover:border-primary/50 hover:bg-surface-2">
@@ -115,6 +150,19 @@ export default function Assistant() {
                       </div>
                     ))}
                   </dl>
+                )}
+                {m.answer?.draft && (
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {m.entry === 'pending' && (
+                      <>
+                        <Button size="sm" leftIcon={<Check className="size-3.5" />} onClick={() => confirmEntry(m)}>Registrar</Button>
+                        <Button size="sm" variant="secondary" leftIcon={<Pencil className="size-3.5" />} onClick={() => editEntry(m)}>Editar antes</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setMessages((l) => l.map((x) => (x.id === m.id ? { ...x, entry: 'cancelled' } : x)))}>Cancelar</Button>
+                      </>
+                    )}
+                    {m.entry === 'saved' && <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success"><Check className="size-3.5" aria-hidden /> Registrado</span>}
+                    {m.entry === 'cancelled' && <span className="text-xs text-fg-subtle">Não registrado</span>}
+                  </div>
                 )}
                 {(m.answer?.links?.length || m.answer?.followUps?.length) && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
@@ -165,7 +213,7 @@ export default function Assistant() {
               ask(input);
             }
           }}
-          placeholder="Ex.: Quanto gastei com alimentação este mês?"
+          placeholder="Pergunte ou registre: “gastei 35 no mercado”"
           className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-fg-subtle"
         />
         <Button type="submit" size="icon" aria-label="Enviar pergunta" disabled={!input.trim() || thinking}>

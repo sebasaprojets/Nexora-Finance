@@ -137,3 +137,41 @@ describe('dados de demonstração e IA', () => {
     expect(answer('Quanto gastei este mês?', empty).text).toMatch(/não há transações/i);
   });
 });
+
+describe('lançamento por conversa e categoria automática', async () => {
+  const { parseQuickEntry } = await import('./assistant');
+  const { suggestCategory } = await import('./categorize');
+  const data = createDemoData();
+  it('interpreta despesas e receitas em linguagem natural', () => {
+    const a = parseQuickEntry('gastei 35,90 no mercado', data, '2026-10-07')!;
+    expect(a).toMatchObject({ type: 'expense', amount: 35.9, description: 'Mercado', categoryId: 'cat_food', date: '2026-10-07' });
+    const b = parseQuickEntry('recebi 5.000 de salário', data, '2026-10-07')!;
+    expect(b).toMatchObject({ type: 'income', amount: 5000, categoryId: 'cat_salary' });
+    const c = parseQuickEntry('paguei 120 de luz ontem', data, '2026-10-07')!;
+    expect(c).toMatchObject({ amount: 120, categoryId: 'cat_home', date: '2026-10-06' });
+    const d = parseQuickEntry('uber 23,50', data, '2026-10-07')!;
+    expect(d).toMatchObject({ type: 'expense', amount: 23.5, categoryId: 'cat_transport' });
+    const e = parseQuickEntry('gastei 80 no ifood no cartão nubank', data, '2026-10-07')!;
+    expect(e).toMatchObject({ cardId: 'card_nubank', categoryId: 'cat_food' });
+  });
+  it('não confunde perguntas com lançamentos', () => {
+    expect(parseQuickEntry('Quanto gastei este mês?', data)).toBeNull();
+    expect(parseQuickEntry('quanto gastei com 3 cafés', data)).toBeNull();
+  });
+  it('sugere categoria por palavra-chave e pelo histórico', () => {
+    expect(suggestCategory('Netflix', 'expense', data.categories)?.id).toBe('cat_subs');
+    expect(suggestCategory('Farmácia São João', 'expense', data.categories)?.id).toBe('cat_health');
+    expect(suggestCategory('Atacadão', 'expense', data.categories, data.transactions)?.id).toBe('cat_food');
+  });
+});
+
+describe('gasto fora do padrão', async () => {
+  const { unusualExpenses } = await import('./finance');
+  it('detecta despesa muito acima do ticket médio da categoria', () => {
+    const base = createDemoData('2026-10-07');
+    const spike = tx({ id: 'spike', categoryId: 'cat_food', amount: 900, date: '2026-10-07', description: 'Restaurante caro', accountId: 'acc_itau' });
+    const found = unusualExpenses({ ...base, transactions: [spike, ...base.transactions] }, '2026-10-07');
+    expect(found[0]?.tx.id).toBe('spike');
+    expect(unusualExpenses(base, '2026-10-07').some((u) => u.tx.amount < 80)).toBe(false);
+  });
+});

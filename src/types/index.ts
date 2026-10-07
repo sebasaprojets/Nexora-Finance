@@ -215,6 +215,7 @@ export type NotificationKind =
   | 'budget_warning'
   | 'budget_exceeded'
   | 'new_transaction'
+  | 'unusual_spending'
   | 'new_login'
   | 'security'
   | 'system';
