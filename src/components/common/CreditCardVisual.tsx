@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Wifi } from 'lucide-react';
 import type { CreditCard } from '@/types';
 import { cn } from '@/lib/cn';
+import { BankLogo } from './BankLogo';
 
 export const CARD_THEMES: Record<CreditCard['theme'], { bg: string; label: string }> = {
   violet: { bg: 'linear-gradient(135deg,#3b2f9e 0%,#6d5efc 45%,#1c1640 100%)', label: 'Violeta' },
@@ -39,9 +40,12 @@ export function CreditCardVisual({ card, className, compact }: { card: CreditCar
       <div className="pointer-events-none absolute -bottom-1/2 -left-1/4 h-full w-[150%] rotate-12 bg-gradient-to-r from-transparent via-white/8 to-transparent" />
       <div className="relative flex h-full flex-col justify-between">
         <div className="flex items-start justify-between">
-          <div>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <BankLogo slug={card.bank} texts={[card.institution, card.name]} size="sm" className="ring-white/25" />
+            <div className="min-w-0">
             <p className="text-[11px] font-medium tracking-wider text-white/70 uppercase">{card.institution}</p>
-            <p className="font-display text-sm font-semibold">{card.name}</p>
+            <p className="truncate font-display text-sm font-semibold">{card.name}</p>
+            </div>
           </div>
           <Wifi className="size-5 rotate-90 text-white/70" aria-hidden />
         </div>

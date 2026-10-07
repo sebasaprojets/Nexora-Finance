@@ -232,7 +232,11 @@ export default function Onboarding() {
                   </div>
                   <div className="mt-6 flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
                     <span className="flex items-center gap-3 text-sm font-medium">
-                      <CreditCard className="size-5 text-fg-muted" aria-hidden /> Cartões de crédito
+                      <CreditCard className="size-5 text-fg-muted" aria-hidden />
+                      <span>
+                        Cartões de crédito
+                        <span className="block text-xs font-normal text-fg-subtle">Opcional — deixe em 0 para pular</span>
+                      </span>
                     </span>
                     <div className="flex items-center gap-2">
                       <Button size="icon-sm" variant="secondary" onClick={() => setCards((c) => Math.max(0, c - 1))} aria-label="Menos cartões">−</Button>

@@ -9,6 +9,9 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Field, Input, Select } from '@/components/ui/Field';
 import { Modal, ConfirmDialog } from '@/components/ui/Modal';
 import { Dropdown } from '@/components/ui/Dropdown';
+import { BankLogo } from '@/components/common/BankLogo';
+import { BankPicker } from '@/components/common/BankPicker';
+import { bankBySlug, findBank } from '@/lib/banks';
 import { Sparkline } from '@/components/ui/Sparkline';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Badge } from '@/components/ui/Badge';
@@ -45,6 +48,7 @@ const schema = z.object({
   type: z.enum(['checking', 'savings', 'wallet', 'digital', 'investment', 'cash']),
   initialBalance: z.string().refine((v) => v.trim() === '' || !Number.isNaN(parseMoneyInput(v)), 'Valor inválido'),
   color: z.string(),
+  bank: z.string(),
 });
 type Values = z.infer<typeof schema>;
 
@@ -58,15 +62,18 @@ function AccountModal({ open, onClose, account }: { open: boolean; onClose: () =
       type: account?.type ?? 'checking',
       initialBalance: account ? formatMoney(account.initialBalance).replace(/[^\d,.-]/g, '') : '',
       color: account?.color ?? COLORS[0],
+      bank: account?.bank ?? findBank(account?.institution, account?.name)?.slug ?? '',
     },
   });
   const color = watch('color');
+  const bank = watch('bank');
   const submit = (v: Values) => {
     upsert('accounts', {
       id: account?.id ?? uid('acc'),
       name: sanitizeText(v.name, 40),
       institution: sanitizeText(v.institution, 40) || ACCOUNT_TYPES[v.type].label,
       type: v.type,
+      bank: v.bank || undefined,
       initialBalance: parseMoneyInput(v.initialBalance) || 0,
       color: v.color,
       archived: account?.archived,
@@ -89,6 +96,17 @@ function AccountModal({ open, onClose, account }: { open: boolean; onClose: () =
       }
     >
       <form id="account-form" onSubmit={handleSubmit(submit)} className="space-y-4" noValidate>
+        <BankPicker
+          value={bank}
+          onChange={(b) => {
+            const prev = bankBySlug(bank);
+            setValue('bank', b?.slug ?? '');
+            if (!b) return;
+            setValue('institution', b.name);
+            setValue('color', b.color);
+            if (!watch('name') || watch('name') === prev?.name) setValue('name', b.name);
+          }}
+        />
         <Field label="Nome" error={formState.errors.name?.message}>{(p) => <Input {...p} {...register('name')} placeholder="Ex.: Nubank" data-autofocus />}</Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Tipo">
@@ -204,9 +222,16 @@ export default function Accounts() {
             return (
               <Card key={a.id} className={cn('group cursor-pointer p-5 transition-colors hover:border-border-strong', selected === a.id && 'border-primary')} onClick={() => setSelected(selected === a.id ? null : a.id)}>
                 <div className="flex items-start gap-3">
-                  <span className="grid size-11 place-items-center rounded-xl text-white" style={{ background: `linear-gradient(135deg, ${a.color}, color-mix(in oklab, ${a.color} 45%, black))` }}>
-                    <Icon className="size-5" aria-hidden />
-                  </span>
+                  <BankLogo
+                    slug={a.bank}
+                    texts={[a.institution, a.name]}
+                    className="size-11"
+                    fallback={
+                      <span className="grid size-11 place-items-center rounded-xl text-white" style={{ background: `linear-gradient(135deg, ${a.color}, color-mix(in oklab, ${a.color} 45%, black))` }}>
+                        <Icon className="size-5" aria-hidden />
+                      </span>
+                    }
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{a.name}</p>
                     <p className="truncate text-xs text-fg-subtle">{a.institution} · {ACCOUNT_TYPES[a.type].label}</p>

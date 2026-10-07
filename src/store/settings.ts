@@ -29,6 +29,7 @@ interface SettingsState extends Settings {
   setTutorialsEnabled: (enabled: boolean) => void;
   resetTutorials: () => void;
   setChecklistHidden: (hidden: boolean) => void;
+  setStepSkipped: (key: string, skipped: boolean) => void;
   reset: () => void;
 }
 
@@ -43,6 +44,13 @@ export const useSettings = create<SettingsState>()(
       setTutorialsEnabled: (enabled) => set((s) => ({ tutorials: { ...s.tutorials, enabled } })),
       resetTutorials: () => set({ tutorials: { enabled: true, seen: [], checklistHidden: false } }),
       setChecklistHidden: (checklistHidden) => set((s) => ({ tutorials: { ...s.tutorials, checklistHidden } })),
+      setStepSkipped: (key, skipped) =>
+        set((s) => {
+          const cur = new Set(s.tutorials.skippedSteps ?? []);
+          if (skipped) cur.add(key);
+          else cur.delete(key);
+          return { tutorials: { ...s.tutorials, skippedSteps: [...cur] } };
+        }),
       reset: () => set(DEFAULT_SETTINGS),
     }),
     {

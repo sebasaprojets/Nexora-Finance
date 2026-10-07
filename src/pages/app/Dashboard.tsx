@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { BankLogo } from '@/components/common/BankLogo';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -359,7 +360,7 @@ function AccountsMini() {
           const balance = balances.get(a.id) ?? 0;
           return (
             <div key={a.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
-              <span className="size-9 shrink-0 rounded-xl" style={{ background: `linear-gradient(135deg, ${a.color}, color-mix(in oklab, ${a.color} 40%, black))` }} aria-hidden />
+              <BankLogo slug={a.bank} texts={[a.institution, a.name]} className="size-9" fallback={<span className="size-9 shrink-0 rounded-xl" style={{ background: `linear-gradient(135deg, ${a.color}, color-mix(in oklab, ${a.color} 40%, black))` }} aria-hidden />} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{a.name}</p>
                 <p className="truncate text-xs text-fg-subtle">{a.institution}</p>

@@ -1,4 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSettings } from '@/store/settings';
+import { BankPicker } from '@/components/common/BankPicker';
+import { bankBySlug, findBank } from '@/lib/banks';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -49,6 +53,7 @@ const schema = z
     dueDay: z.number().int().min(1).max(31),
     paymentAccountId: z.string().optional(),
     theme: z.enum(['violet', 'graphite', 'ocean', 'emerald', 'sunset', 'gold']),
+    bank: z.string(),
   })
   .refine((v) => v.closingDay !== v.dueDay, { path: ['dueDay'], message: 'Vencimento deve ser diferente do fechamento' });
 type Values = z.infer<typeof schema>;
@@ -56,7 +61,7 @@ type Values = z.infer<typeof schema>;
 function CardModal({ open, onClose, card }: { open: boolean; onClose: () => void; card?: CreditCard }) {
   const upsert = useFinance((s) => s.upsert);
   const accounts = useFinance((s) => s.accounts);
-  const { register, handleSubmit, formState, watch } = useForm<Values>({
+  const { register, handleSubmit, formState, watch, setValue } = useForm<Values>({
     resolver: zodResolver(schema),
     values: {
       name: card?.name ?? '',
@@ -68,12 +73,14 @@ function CardModal({ open, onClose, card }: { open: boolean; onClose: () => void
       dueDay: card?.dueDay ?? 10,
       paymentAccountId: card?.paymentAccountId ?? accounts[0]?.id,
       theme: card?.theme ?? 'violet',
+      bank: card?.bank ?? findBank(card?.institution, card?.name)?.slug ?? '',
     },
   });
   const preview: CreditCard = {
     id: 'preview',
     name: watch('name') || 'Meu cartão',
     institution: watch('institution') || 'Banco',
+    bank: watch('bank') || undefined,
     brand: watch('brand'),
     last4: watch('last4') || '0000',
     limit: 0,
@@ -104,6 +111,7 @@ function CardModal({ open, onClose, card }: { open: boolean; onClose: () => void
             id: card?.id ?? uid('card'),
             name: sanitizeText(v.name, 40),
             institution: sanitizeText(v.institution, 40),
+            bank: v.bank || undefined,
             brand: v.brand,
             last4: v.last4,
             limit: parseMoneyInput(v.limit),
@@ -122,6 +130,19 @@ function CardModal({ open, onClose, card }: { open: boolean; onClose: () => void
           <p className="text-xs text-fg-subtle">Nunca armazenamos o número completo, CVV ou senha do cartão.</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <BankPicker
+              label="Banco emissor"
+              value={watch('bank')}
+              onChange={(b) => {
+                const prev = bankBySlug(watch('bank'));
+                setValue('bank', b?.slug ?? '');
+                if (!b) return;
+                setValue('institution', b.name, { shouldValidate: formState.isSubmitted });
+                if (!watch('name') || watch('name') === prev?.name) setValue('name', b.name);
+              }}
+            />
+          </div>
           <Field label="Nome do cartão" error={formState.errors.name?.message}>{(p) => <Input {...p} {...register('name')} placeholder="Ex.: Nubank Ultravioleta" data-autofocus />}</Field>
           <Field label="Banco" error={formState.errors.institution?.message}>{(p) => <Input {...p} {...register('institution')} placeholder="Ex.: Nubank" />}</Field>
           <Field label="Bandeira">
@@ -217,6 +238,8 @@ export default function Cards() {
   const transactions = useFinance((s) => s.transactions);
   const remove = useFinance((s) => s.remove);
   const openTx = useUI((s) => s.openTransaction);
+  const navigate = useNavigate();
+  const skipCardStep = useSettings((s) => s.setStepSkipped);
   const money = useMoney();
   const lookups = useLookups();
   const [modal, setModal] = useState<{ open: boolean; card?: CreditCard }>({ open: false });
@@ -241,7 +264,22 @@ export default function Cards() {
 
       {cards.length === 0 ? (
         <Card>
-          <EmptyState icon={<CardIcon />} title="Nenhum cartão cadastrado" description="Adicione seus cartões de crédito para acompanhar faturas e limites." action={<Button onClick={() => setModal({ open: true })}>+ Adicionar cartão</Button>} />
+          <EmptyState icon={<CardIcon />} title="Nenhum cartão cadastrado" description="Adicione seus cartões de crédito para acompanhar faturas e limites." action={
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button onClick={() => setModal({ open: true })}>+ Adicionar cartão</Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    skipCardStep('card', true);
+                    toast.info('Tudo bem! Você pode adicionar um cartão quando quiser.');
+                    navigate('/app');
+                  }}
+                >
+                  Não tenho / agora não
+                </Button>
+              </div>
+            }
+          />
         </Card>
       ) : (
         <>

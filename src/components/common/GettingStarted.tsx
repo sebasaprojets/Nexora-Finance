@@ -16,6 +16,8 @@ interface Step {
   desc: string;
   cta: string;
   done: boolean;
+  /** Pulado pelo usuário (só itens opcionais). */
+  skipped?: boolean;
   optional?: boolean;
   icon: typeof Landmark;
   action: () => void;
@@ -26,7 +28,8 @@ export function useGettingStarted() {
   const data = useFinanceData();
   const openTx = useUI((s) => s.openTransaction);
   const navigate = useNavigate();
-  const steps: Step[] = [
+  const skippedSteps = useSettings((s) => s.tutorials.skippedSteps);
+  const raw: Step[] = [
     {
       key: 'account',
       title: 'Cadastre suas contas',
@@ -83,6 +86,8 @@ export function useGettingStarted() {
       action: () => navigate('/app/metas?nova=1'),
     },
   ];
+  // Itens opcionais pulados contam como concluídos (ex.: quem não quer cadastrar cartão agora).
+  const steps = raw.map((s) => (s.optional && !s.done && skippedSteps?.includes(s.key) ? { ...s, done: true, skipped: true } : s));
   const doneCount = steps.filter((s) => s.done).length;
   return { steps, doneCount, total: steps.length, complete: doneCount === steps.length, next: steps.find((s) => !s.done) };
 }
@@ -91,6 +96,7 @@ export function useGettingStarted() {
 export function GettingStarted({ variant = 'full' }: { variant?: 'full' | 'compact' }) {
   const { steps, doneCount, total, next } = useGettingStarted();
   const hide = useSettings((s) => s.setChecklistHidden);
+  const setSkipped = useSettings((s) => s.setStepSkipped);
 
   return (
     <Card data-tour="getting-started" className={cn('overflow-hidden', variant === 'full' && 'holo')}>
@@ -145,14 +151,26 @@ export function GettingStarted({ variant = 'full' }: { variant?: 'full' | 'compa
               <div className="min-w-0 flex-1">
                 <p className={cn('flex flex-wrap items-center gap-1.5 text-sm font-medium', s.done && 'text-fg-muted line-through decoration-1')}>
                   {s.title}
-                  {s.optional && <Badge>Opcional</Badge>}
-                  <span className="sr-only">{s.done ? '(concluído)' : '(pendente)'}</span>
+                  {s.optional && <Badge>{s.skipped ? 'Pulado' : 'Opcional'}</Badge>}
+                  <span className="sr-only">{s.skipped ? '(pulado)' : s.done ? '(concluído)' : '(pendente)'}</span>
                 </p>
                 {!s.done && <p className="mt-0.5 text-xs text-fg-subtle">{s.desc}</p>}
                 {!s.done && (
-                  <Button size="sm" variant={isNext ? 'primary' : 'secondary'} className="mt-2.5" rightIcon={<ArrowRight className="size-3.5" />} onClick={s.action}>
-                    {s.cta}
-                  </Button>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                    <Button size="sm" variant={isNext ? 'primary' : 'secondary'} rightIcon={<ArrowRight className="size-3.5" />} onClick={s.action}>
+                      {s.cta}
+                    </Button>
+                    {s.optional && (
+                      <Button size="sm" variant="ghost" onClick={() => setSkipped(s.key, true)}>
+                        Agora não
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {s.skipped && (
+                  <button type="button" onClick={() => setSkipped(s.key, false)} className="mt-1 text-left text-xs text-fg-subtle underline-offset-2 hover:text-fg hover:underline">
+                    Mostrar de novo
+                  </button>
                 )}
               </div>
             </motion.li>

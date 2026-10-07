@@ -32,6 +32,8 @@ export interface Account {
   name: string;
   institution: string;
   type: AccountType;
+  /** Banco/instituição com logo (slug de lib/banks.ts). */
+  bank?: string;
   initialBalance: number;
   color: string;
   archived?: boolean;
@@ -99,6 +101,8 @@ export interface CreditCard {
   id: ID;
   name: string;
   institution: string;
+  /** Banco emissor com logo (slug de lib/banks.ts). */
+  bank?: string;
   brand: CardBrand;
   last4: string;
   limit: number;
@@ -270,7 +274,7 @@ export interface Settings {
   notifications: NotificationPreferences;
   reducedMotion: 'system' | 'on' | 'off';
   /** Tutoriais guiados: ativos e quais já foram vistos/pulados. */
-  tutorials: { enabled: boolean; seen: string[]; checklistHidden?: boolean };
+  tutorials: { enabled: boolean; seen: string[]; checklistHidden?: boolean; skippedSteps?: string[] };
 }
 
 export type FinancialObjective =
