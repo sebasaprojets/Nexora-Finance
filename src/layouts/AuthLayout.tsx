@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { LanguageSwitcher } from '@/components/landing/LanguageSwitcher';
+import { t } from '@/i18n';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, ShieldCheck, Sparkles } from 'lucide-react';
@@ -9,9 +11,12 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: strin
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_1.05fr]">
       <div className="flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-6 sm:px-10">
-        <Link to="/" aria-label="Nexora — página inicial" className="w-fit">
-          <Logo />
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <Link to="/" aria-label={t('Nexora — página inicial')} className="w-fit">
+            <Logo />
+          </Link>
+          <LanguageSwitcher className="-mr-2.5" />
+        </div>
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
           <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
           <p className="mt-2 text-sm text-fg-subtle">{subtitle}</p>

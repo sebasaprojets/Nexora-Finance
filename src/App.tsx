@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode, Fragment } from 'react';
+import { useLang } from '@/i18n/lang';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { Toaster } from '@/components/ui/Toaster';
@@ -85,6 +86,8 @@ function FullScreenLoader() {
 export function App() {
   const init = useAuth((s) => s.init);
   const reduced = useReducedMotion();
+  // Trocar o idioma remonta a interface para todos os textos (t()) serem refeitos.
+  const lang = useLang((s) => s.lang);
   useApplyTheme();
   useWorkspaceSync();
   useEffect(() => init(), [init]);
@@ -99,6 +102,7 @@ export function App() {
   return (
     <MotionConfig reducedMotion={reduced ? 'always' : 'never'}>
       <ErrorBoundary>
+        <Fragment key={lang}>
         <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
           <Suspense fallback={<FullScreenLoader />}>
             <Routes>
@@ -140,6 +144,7 @@ export function App() {
           </Suspense>
         </BrowserRouter>
         <Toaster />
+        </Fragment>
         {intro && <IntroSplash onDone={() => setIntro(false)} />}
       </ErrorBoundary>
     </MotionConfig>

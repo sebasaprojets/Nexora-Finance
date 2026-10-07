@@ -108,9 +108,6 @@ export default function Landing() {
   const lang = useLang((s) => s.lang);
   useEffect(() => {
     document.documentElement.lang = LANGS.find((l) => l.code === lang)!.html;
-    return () => {
-      document.documentElement.lang = 'pt-BR'; // o restante do app está em português
-    };
   }, [lang]);
   return (
     <div className="overflow-x-clip">

@@ -1,4 +1,5 @@
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { t } from '@/i18n';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -29,7 +30,7 @@ export function Field({ label, hint, error, className, children, required }: Fie
       {children({ id, 'aria-invalid': error ? true : undefined, 'aria-describedby': descId })}
       {(error || hint) && (
         <p id={descId} role={error ? 'alert' : undefined} className={cn('text-xs', error ? 'text-danger' : 'text-fg-subtle')}>
-          {error ?? hint}
+          {error ? t(error) : hint}
         </p>
       )}
     </div>
