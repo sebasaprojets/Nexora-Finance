@@ -9,17 +9,29 @@ pronto para vender. Siga na ordem. Cada etapa diz **onde clicar** e **o que copi
 
 ---
 
-## Etapa 0 — Formalização (antes de cobrar)
+## Etapa 0 — Formalização
 
-- [ ] **Abrir um MEI** (gratuito) em [gov.br/mei](https://www.gov.br/empresas-e-negocios/pt-br/empreendedor).
-  Atividade sugerida: *“Desenvolvedor de programas de computador sob encomenda”* ou
-  consulte um contador — algumas atividades de software não são permitidas no MEI;
-  nesse caso o caminho é uma ME no Simples Nacional.
-- [ ] Conta bancária PJ (ou a própria conta do Mercado Pago no CNPJ).
-- [ ] E-mail de suporte (ex.: `contato@seudominio.com.br` ou um Gmail dedicado).
-- [ ] WhatsApp Business para suporte.
-- [ ] Ler e ajustar os **Termos** e a **Política de Privacidade** (`/termos` e `/privacidade`).
-  Eles já preenchem seus dados automaticamente (etapa 4). Recomendo uma revisão com advogado.
+### Começando sem CNPJ (pessoa física)
+Dá para começar só com CPF, principalmente no beta e nas primeiras vendas:
+- Conta do **Mercado Pago no seu CPF** — recebe Pix e cartão normalmente.
+- Em **GitHub → Variables**, preencha `VITE_COMPANY_NAME` com seu **nome completo** e deixe
+  `VITE_COMPANY_CNPJ` vazio. **Não publique seu CPF** no site.
+- Declare o que receber: rendimentos de pessoas físicas entram no **Carnê-Leão** (mensal,
+  pelo app/portal da Receita) e no Imposto de Renda anual. A alíquota segue a tabela
+  progressiva do IR (até 27,5%), por isso vale formalizar quando as vendas crescerem.
+
+### Quando formalizar
+- **MEI**: verifique com um contador se existe ocupação permitida para o seu caso —
+  desenvolvimento e licenciamento de software, em geral, **não** podem ser MEI.
+- **ME no Simples Nacional**: o caminho mais comum para software; com contador, o imposto
+  pode ficar em torno de 6% do faturamento (depende do enquadramento).
+- **Inova Simples**: regime especial gratuito para startups abrirem CNPJ de forma
+  simplificada — pergunte ao contador se a Nexora se encaixa.
+
+### Em qualquer caso
+- [ ] E-mail de suporte e WhatsApp (pode ser o Business no seu número).
+- [ ] Ler e ajustar os **Termos** e a **Política de Privacidade** (`/termos` e `/privacidade`) —
+  eles usam automaticamente o nome configurado na etapa 4.
 
 ## Etapa 1 — Criar o banco de dados (Supabase, grátis)
 
@@ -136,7 +148,7 @@ e o botão de WhatsApp.
 - [ ] Criei uma conta de teste no celular e entrei com ela no computador (dados aparecem nos dois).
 - [ ] “Esqueci minha senha” envia o e-mail e a troca funciona.
 - [ ] Pagamento de teste ativou o Pro e o cancelamento funcionou.
-- [ ] Rodapé mostra meu CNPJ e contato; Termos e Privacidade com meus dados.
+- [ ] Rodapé mostra meu nome (ou empresa) e contato; Termos e Privacidade com meus dados.
 - [ ] WhatsApp de suporte responde.
 - [ ] Testei no iPhone (Safari) e no Android (Chrome), inclusive “Adicionar à tela de início”.
 

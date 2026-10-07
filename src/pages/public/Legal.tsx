@@ -5,7 +5,7 @@ import { BUSINESS } from '@/config/business';
 
 const who = () =>
   BUSINESS.legalName
-    ? `${BUSINESS.legalName}${BUSINESS.cnpj ? `, inscrita no CNPJ ${BUSINESS.cnpj}` : ''}${BUSINESS.city ? `, com sede em ${BUSINESS.city}` : ''}`
+    ? `${BUSINESS.legalName}${BUSINESS.cnpj ? `, inscrita no CNPJ ${BUSINESS.cnpj}` : ''}${BUSINESS.city ? (BUSINESS.cnpj ? `, com sede em ${BUSINESS.city}` : `, de ${BUSINESS.city}`) : ''}`
     : 'a responsável pela Nexora Finance';
 const contact = () =>
   [BUSINESS.supportEmail && `e-mail ${BUSINESS.supportEmail}`, BUSINESS.whatsapp && `WhatsApp +${BUSINESS.whatsapp}`].filter(Boolean).join(' ou ') ||
