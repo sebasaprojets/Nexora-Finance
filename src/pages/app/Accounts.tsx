@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { usePlan } from '@/hooks/usePlan';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -145,7 +146,9 @@ export default function Accounts() {
   const money = useMoney();
   const lookups = useLookups();
   const [modal, setModal] = useState<{ open: boolean; account?: Account }>({ open: false });
-  useQueryAction('nova', useCallback(() => setModal({ open: true }), []));
+  const { canCreate } = usePlan();
+  const openNew = useCallback(() => canCreate('accounts') && setModal({ open: true }), [canCreate]);
+  useQueryAction('nova', openNew);
   const [selected, setSelected] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<Account | null>(null);
 
@@ -196,7 +199,7 @@ export default function Accounts() {
             <Button variant="secondary" leftIcon={<Repeat2 className="size-4" />} onClick={() => openTx({ type: 'transfer' })} disabled={active.length < 2}>
               Transferir
             </Button>
-            <Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>
+            <Button leftIcon={<Plus className="size-4" />} onClick={openNew}>
               Nova conta
             </Button>
           </>

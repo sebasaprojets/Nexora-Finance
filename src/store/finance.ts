@@ -13,6 +13,8 @@ import { uid } from '@/lib/id';
 import { sanitizeTags, sanitizeText } from '@/lib/sanitize';
 import { describeDevice } from '@/lib/device';
 import { readJSON, removeKey, writeJSON } from '@/services/storage';
+import { authService } from '@/services/auth';
+import { cloudEnabled, pullWorkspace, pushWorkspace, useSyncStatus } from '@/services/cloud';
 
 /**
  * Store do "workspace" do usuário: dados financeiros + notificações + sessões.
@@ -25,6 +27,8 @@ export interface Workspace extends FinanceData {
   sessions: DeviceSession[];
   onboarding?: OnboardingProfile;
   version: number;
+  /** Última alteração (para decidir entre a cópia local e a da nuvem). */
+  updatedAt?: string;
 }
 
 type CollectionKey = Exclude<keyof FinanceData, never>;
@@ -75,7 +79,7 @@ export interface NewTransactionInput extends Omit<Transaction, 'id' | 'createdAt
 interface FinanceState extends Workspace {
   userId: string | null;
   ready: boolean;
-  hydrate: (userId: string, opts?: { demo?: boolean }) => void;
+  hydrate: (userId: string, opts?: { demo?: boolean; email?: string }) => void;
   reset: () => void;
   loadDemo: () => void;
   clearAll: () => void;
@@ -108,21 +112,76 @@ const emptyWorkspace = (): Workspace => ({ ...createEmptyData(), notifications: 
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
 let pendingSave: (() => void) | null = null;
 
+// --- Sincronização com a nuvem (modo Supabase) -------------------------------
+let cloudUser: string | null = null;
+let remoteTimer: ReturnType<typeof setTimeout> | undefined;
+let remoteDirty = false;
+let lastRemoteAt: string | undefined;
+
+async function pushRemote(keepalive = false) {
+  clearTimeout(remoteTimer);
+  const s = useFinance.getState();
+  if (!cloudUser || s.userId !== cloudUser || !remoteDirty) return;
+  remoteDirty = false;
+  const ws = pickWorkspace(s);
+  const at = ws.updatedAt ?? new Date().toISOString();
+  useSyncStatus.getState().set('syncing');
+  try {
+    await pushWorkspace(cloudUser, ws, at, { keepalive });
+    lastRemoteAt = at;
+    useSyncStatus.getState().set('saved');
+  } catch {
+    remoteDirty = true;
+    useSyncStatus.getState().set(navigator.onLine ? 'error' : 'offline');
+    remoteTimer = setTimeout(() => void pushRemote(), 15_000);
+  }
+}
+
+function scheduleRemote() {
+  if (!cloudUser) return;
+  remoteDirty = true;
+  clearTimeout(remoteTimer);
+  remoteTimer = setTimeout(() => void pushRemote(), 1500);
+}
+
+/** Busca alterações feitas em outro aparelho (ao voltar para o app). */
+async function pullIfNewer() {
+  const s = useFinance.getState();
+  if (!cloudUser || s.userId !== cloudUser || remoteDirty || pendingSave) return;
+  try {
+    const remote = await pullWorkspace<Workspace>(cloudUser);
+    const cur = useFinance.getState();
+    if (!remote || cur.userId !== cloudUser || remoteDirty || pendingSave) return;
+    if (remote.updatedAt > (cur.updatedAt ?? '') && remote.updatedAt !== lastRemoteAt) {
+      lastRemoteAt = remote.updatedAt;
+      const ws = { ...remote.data, sessions: cur.sessions, updatedAt: remote.updatedAt };
+      useFinance.setState(ws);
+      writeJSON(`ws:${cloudUser}`, ws);
+    }
+    useSyncStatus.getState().set('saved');
+  } catch {
+    /* sem conexão: tenta de novo na próxima vez */
+  }
+}
+
 /** Grava imediatamente alterações pendentes (ao fechar/recarregar/ir para segundo plano). */
 export function flushWorkspace() {
   clearTimeout(saveTimer);
   pendingSave?.();
+  if (remoteDirty) void pushRemote(true);
 }
 if (typeof window !== 'undefined') {
   window.addEventListener('pagehide', flushWorkspace);
   window.addEventListener('beforeunload', flushWorkspace);
-  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && flushWorkspace());
+  document.addEventListener('visibilitychange', () => (document.visibilityState === 'hidden' ? flushWorkspace() : void pullIfNewer()));
+  window.addEventListener('online', () => (remoteDirty ? void pushRemote() : void pullIfNewer()));
 }
 
 export const useFinance = create<FinanceState>((set, get) => {
   /** Aplica uma mutação e agenda a persistência. */
   const commit = (fn: (s: FinanceState) => Partial<Workspace>) => {
-    set((s) => fn(s));
+    set((s) => ({ ...fn(s), updatedAt: new Date().toISOString() }));
+    scheduleRemote();
     const { userId } = get();
     if (!userId) return;
     clearTimeout(saveTimer);
@@ -140,15 +199,29 @@ export const useFinance = create<FinanceState>((set, get) => {
     ready: false,
 
     hydrate: (userId, opts) => {
+      clearTimeout(remoteTimer);
+      remoteDirty = false;
+      cloudUser = null;
+      if (cloudEnabled && !opts?.demo && authService.isCloudUser(userId)) {
+        void hydrateCloud(userId, opts?.email);
+        return;
+      }
+      useSyncStatus.getState().set('local');
       const ws = load(userId, !!opts?.demo);
       set({ ...ws, userId, ready: true });
       writeJSON(`ws:${userId}`, ws);
     },
-    reset: () => set({ ...emptyWorkspace(), userId: null, ready: false }),
+    reset: () => {
+      flushWorkspace();
+      cloudUser = null;
+      set({ ...emptyWorkspace(), userId: null, ready: false });
+    },
     loadDemo: () => commit((s) => ({ ...createDemoData(), notifications: s.notifications, sessions: s.sessions })),
     clearAll: () => commit((s) => ({ ...createEmptyData(), notifications: [], sessions: s.sessions })),
     deleteWorkspace: () => {
       const { userId } = get();
+      cloudUser = null;
+      remoteDirty = false;
       if (userId) removeKey(`ws:${userId}`);
       set({ ...emptyWorkspace(), userId: null, ready: false });
     },
@@ -292,7 +365,63 @@ function pickWorkspace(s: FinanceState): Workspace {
     sessions: s.sessions,
     onboarding: s.onboarding,
     version: WS_VERSION,
+    updatedAt: s.updatedAt,
   };
+}
+
+/**
+ * Carrega o workspace de uma conta na nuvem: usa a cópia mais recente entre
+ * este aparelho e o servidor. Sem internet, abre a cópia local e sincroniza depois.
+ */
+let hydratingFor: string | null = null;
+async function hydrateCloud(userId: string, email?: string) {
+  if (hydratingFor === userId) return;
+  hydratingFor = userId;
+  try {
+    await doHydrateCloud(userId, email);
+  } finally {
+    hydratingFor = null;
+  }
+}
+
+async function doHydrateCloud(userId: string, email?: string) {
+  useFinance.setState({ ready: false, userId: null });
+  useSyncStatus.getState().set('syncing');
+  const cached = readJSON<Workspace | null>(`ws:${userId}`, null);
+  let remote: { data: Workspace; updatedAt: string } | null = null;
+  let online = true;
+  try {
+    remote = await Promise.race([
+      pullWorkspace<Workspace>(userId),
+      new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000)),
+    ]);
+  } catch {
+    online = false;
+  }
+  let ws: Workspace;
+  let push = false;
+  if (remote && remote.data?.version === WS_VERSION && (!cached?.updatedAt || remote.updatedAt >= cached.updatedAt)) {
+    ws = { ...remote.data, updatedAt: remote.updatedAt, sessions: cached?.sessions ?? initialSessions() };
+    lastRemoteAt = remote.updatedAt;
+  } else if (cached && cached.version === WS_VERSION) {
+    ws = cached;
+    push = online; // edições feitas sem internet (ou primeira sincronização)
+  } else {
+    // Primeira vez na nuvem: importa os dados de uma conta antiga, só deste aparelho, com o mesmo e-mail.
+    const legacyId = email ? authService.legacyUserId(email) : null;
+    const legacy = legacyId ? readJSON<Workspace | null>(`ws:${legacyId}`, null) : null;
+    ws = legacy?.version === WS_VERSION ? { ...legacy, sessions: initialSessions() } : load(userId, false);
+    ws.updatedAt = new Date().toISOString();
+    push = online;
+  }
+  if (useFinance.getState().userId !== null && useFinance.getState().userId !== userId) return;
+  cloudUser = userId;
+  useFinance.setState({ ...ws, userId, ready: true });
+  writeJSON(`ws:${userId}`, ws);
+  if (push) {
+    remoteDirty = true;
+    void pushRemote();
+  } else useSyncStatus.getState().set(online ? 'saved' : 'offline');
 }
 
 /** Seletor estável com os dados financeiros (sem ações). */

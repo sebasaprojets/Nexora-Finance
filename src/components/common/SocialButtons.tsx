@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { cloudEnabled } from '@/services/cloud';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { authService } from '@/services/auth';
@@ -29,22 +30,32 @@ export function SocialButtons() {
     try {
       const r = provider === 'demo' ? await authService.signInDemo() : await authService.signInWithProvider(provider);
       setAuth(r);
-      if (provider !== 'demo') toast.info('Login social em modo demonstração', { description: 'Configure o Supabase Auth para OAuth real.' });
       navigate(r.user.onboarded ? '/app' : '/onboarding');
+    } catch (e) {
+      toast.error('Não foi possível entrar', { description: e instanceof Error ? e.message : undefined });
     } finally {
       setLoading(null);
     }
   };
+  // Login social só aparece quando configurado no Supabase (Authentication → Providers).
+  const google = cloudEnabled && import.meta.env.VITE_AUTH_GOOGLE === 'on';
+  const apple = cloudEnabled && import.meta.env.VITE_AUTH_APPLE === 'on';
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <Button variant="secondary" loading={loading === 'google'} leftIcon={<GoogleIcon />} onClick={() => go('google')}>
-          Google
-        </Button>
-        <Button variant="secondary" loading={loading === 'apple'} leftIcon={<AppleIcon />} onClick={() => go('apple')}>
-          Apple
-        </Button>
-      </div>
+      {(google || apple) && (
+        <div className={google && apple ? 'grid grid-cols-2 gap-3' : 'grid'}>
+          {google && (
+            <Button variant="secondary" loading={loading === 'google'} leftIcon={<GoogleIcon />} onClick={() => go('google')}>
+              {apple ? 'Google' : 'Continuar com Google'}
+            </Button>
+          )}
+          {apple && (
+            <Button variant="secondary" loading={loading === 'apple'} leftIcon={<AppleIcon />} onClick={() => go('apple')}>
+              {google ? 'Apple' : 'Continuar com Apple'}
+            </Button>
+          )}
+        </div>
+      )}
       <Button variant="soft" className="w-full" loading={loading === 'demo'} onClick={() => go('demo')}>
         Explorar com conta demonstração
       </Button>

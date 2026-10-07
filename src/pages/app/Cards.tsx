@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { usePlan } from '@/hooks/usePlan';
 import { useNavigate } from 'react-router-dom';
 import { useSettings } from '@/store/settings';
 import { BankPicker } from '@/components/common/BankPicker';
@@ -243,7 +244,9 @@ export default function Cards() {
   const money = useMoney();
   const lookups = useLookups();
   const [modal, setModal] = useState<{ open: boolean; card?: CreditCard }>({ open: false });
-  useQueryAction('novo', useCallback(() => setModal({ open: true }), []));
+  const { canCreate } = usePlan();
+  const openNew = useCallback(() => canCreate('cards') && setModal({ open: true }), [canCreate]);
+  useQueryAction('novo', openNew);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [view, setView] = useState<'previous' | 'current' | 'next'>('current');
   const [pay, setPay] = useState<{ summary: CardSummary; invoice: Invoice } | null>(null);
@@ -260,7 +263,7 @@ export default function Cards() {
 
   return (
     <div>
-      <PageHeader title="Cartões" description="Limites, faturas, vencimentos e compras." actions={<><TourButton id={tourId} /><Button data-tour="card-new" leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo cartão</Button></>} />
+      <PageHeader title="Cartões" description="Limites, faturas, vencimentos e compras." actions={<><TourButton id={tourId} /><Button data-tour="card-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>Novo cartão</Button></>} />
 
       {cards.length === 0 ? (
         <Card>

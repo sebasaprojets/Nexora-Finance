@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AlertCircle, Mail, User } from 'lucide-react';
+import { MailCheck } from 'lucide-react';
 import { AuthLayout } from '@/layouts/AuthLayout';
 import { Button } from '@/components/ui/Button';
 import { Field, Input } from '@/components/ui/Field';
@@ -30,6 +31,7 @@ type Values = z.infer<typeof schema>;
 
 export default function Register() {
   const [error, setError] = useState<string | null>(null);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const setAuth = useAuth((s) => s.setAuth);
   const navigate = useNavigate();
   const { register, handleSubmit, formState, watch } = useForm<Values>({
@@ -45,9 +47,26 @@ export default function Register() {
       toast.success('Conta criada com sucesso!', { description: 'Vamos personalizar sua experiência.' });
       navigate('/onboarding', { replace: true });
     } catch (e) {
+      if (e instanceof AuthError && e.code === 'confirm_email') return setSentTo(v.email.trim().toLowerCase());
       setError(e instanceof AuthError ? e.message : 'Não foi possível criar a conta.');
     }
   };
+
+  if (sentTo)
+    return (
+      <AuthLayout title="Confirme seu e-mail" subtitle="Falta só um passo para ativar sua conta.">
+        <div className="space-y-4 text-center">
+          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
+            <MailCheck className="size-7" aria-hidden />
+          </span>
+          <p className="text-sm text-fg-muted">
+            Enviamos um link de confirmação para <strong className="text-fg">{sentTo}</strong>. Abra o e-mail neste aparelho e toque no link — você entra direto na Nexora.
+          </p>
+          <p className="text-xs text-fg-subtle">Não chegou? Confira a caixa de spam ou promoções.</p>
+          <Link to="/entrar" className="inline-block text-sm font-medium text-primary hover:underline">Já confirmei — entrar</Link>
+        </div>
+      </AuthLayout>
+    );
 
   return (
     <AuthLayout

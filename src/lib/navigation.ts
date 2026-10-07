@@ -1,6 +1,6 @@
 import {
   BarChart3, Bell, Bot, CalendarDays, CreditCard, FileText, Gauge, HandCoins, Landmark, LayoutDashboard, Lock,
-  Repeat, Settings, Shapes, ShieldCheck, Target, TrendingUp, User, Wallet, ArrowLeftRight, type LucideIcon,
+  Repeat, Settings, Shapes, ShieldCheck, Target, TrendingUp, User, Wallet, ArrowLeftRight, Crown, LifeBuoy, type LucideIcon,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -47,6 +47,8 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
 export const ACCOUNT_NAV: NavItem[] = [
   { to: '/app/notificacoes', label: 'Notificações', icon: Bell },
   { to: '/app/perfil', label: 'Perfil', icon: User },
+  { to: '/app/plano', label: 'Meu plano', icon: Crown, keywords: 'assinatura pro pagamento preco' },
+  { to: '/app/ajuda', label: 'Ajuda e suporte', icon: LifeBuoy, keywords: 'suporte whatsapp contato duvidas' },
   { to: '/app/seguranca', label: 'Segurança', icon: ShieldCheck, keywords: 'dispositivos sessoes senha' },
   { to: '/app/configuracoes', label: 'Configurações', icon: Settings, keywords: 'tema moeda idioma preferencias' },
   { to: '/app/privacidade', label: 'Privacidade e dados', icon: Lock, keywords: 'lgpd exportar excluir' },

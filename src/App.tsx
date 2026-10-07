@@ -16,6 +16,9 @@ const Landing = lazy(() => import('@/pages/public/Landing'));
 const Legal = lazy(() => import('@/pages/public/Legal'));
 const Login = lazy(() => import('@/pages/auth/Login'));
 const Register = lazy(() => import('@/pages/auth/Register'));
+const Help = lazy(() => import('@/pages/app/Help'));
+const Plan = lazy(() => import('@/pages/app/Plan'));
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
 const Onboarding = lazy(() => import('@/pages/auth/Onboarding'));
 const Dashboard = lazy(() => import('@/pages/app/Dashboard'));
@@ -47,7 +50,7 @@ function useWorkspaceSync() {
   const hydrate = useFinance((s) => s.hydrate);
   const reset = useFinance((s) => s.reset);
   useEffect(() => {
-    if (user && user.id !== userId) hydrate(user.id, { demo: user.provider === 'demo' });
+    if (user && user.id !== userId) hydrate(user.id, { demo: user.provider === 'demo', email: user.email });
     if (!user && userId) reset();
   }, [user, userId, hydrate, reset]);
 }
@@ -105,6 +108,7 @@ export function App() {
               <Route path="/entrar" element={<GuestOnly><Login /></GuestOnly>} />
               <Route path="/cadastro" element={<GuestOnly><Register /></GuestOnly>} />
               <Route path="/recuperar-senha" element={<GuestOnly><ForgotPassword /></GuestOnly>} />
+              <Route path="/redefinir-senha" element={<ResetPassword />} />
               <Route path="/onboarding" element={<RequireAuth allowOnboarding><Onboarding /></RequireAuth>} />
               <Route path="/app" element={<RequireAuth><AppLayout /></RequireAuth>}>
                 <Route index element={<Dashboard />} />
@@ -124,6 +128,8 @@ export function App() {
                 <Route path="assistente" element={<Assistant />} />
                 <Route path="saude" element={<Health />} />
                 <Route path="perfil" element={<Profile />} />
+                <Route path="plano" element={<Plan />} />
+                <Route path="ajuda" element={<Help />} />
                 <Route path="configuracoes" element={<SettingsPage />} />
                 <Route path="seguranca" element={<Security />} />
                 <Route path="privacidade" element={<PrivacyData />} />

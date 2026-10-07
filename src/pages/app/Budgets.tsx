@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { usePlan } from '@/hooks/usePlan';
 import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Lightbulb, OctagonAlert, Pencil, Plus, Trash2, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { CategoryIcon } from '@/components/common/CategoryIcon';
@@ -94,7 +95,9 @@ export default function Budgets() {
 
   const tourId = budgets.length > 0 ? 'budgets' : 'budgets-empty';
   usePageTour(tourId);
-  useQueryAction('novo', useCallback(() => setModal({ open: true }), []));
+  const { canCreate } = usePlan();
+  const openNew = useCallback(() => canCreate('budgets') && setModal({ open: true }), [canCreate]);
+  useQueryAction('novo', openNew);
   const usage = useMemo(() => budgetUsage(budgets, categories, transactions, month), [budgets, categories, transactions, month]);
   const totals = usage.reduce((s, u) => ({ budget: s.budget + u.budget.amount, spent: s.spent + u.spent }), { budget: 0, spent: 0 });
   const isCurrent = month === monthKey(today());
@@ -115,7 +118,7 @@ export default function Budgets() {
       <PageHeader
         title="Orçamentos"
         description="Defina limites por categoria e acompanhe em tempo real."
-        actions={<><TourButton id={tourId} /><Button data-tour="budget-new" leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo orçamento</Button></>}
+        actions={<><TourButton id={tourId} /><Button data-tour="budget-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>Novo orçamento</Button></>}
       />
 
       <div className="mb-6 flex items-center justify-between gap-3">

@@ -10,6 +10,8 @@ import { Magnetic } from '@/components/landing/Magnetic';
 import { DashboardPreview } from '@/components/landing/DashboardPreview';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { cn } from '@/lib/cn';
+import { BUSINESS } from '@/config/business';
+import { Pricing } from '@/components/landing/Pricing';
 
 const reveal = {
   initial: { opacity: 0, y: 24 },
@@ -30,7 +32,8 @@ const ALL_IN_ONE = [
 ];
 
 const FAQ = [
-  { q: 'A Nexora é gratuita?', a: 'Sim, você pode começar gratuitamente com todas as funcionalidades essenciais. Planos Pro e Business adicionam recursos avançados.' },
+  { q: 'A Nexora é gratuita?', a: 'Sim. O plano Grátis tem tudo o que você precisa para organizar o mês. O Pro libera contas, cartões e metas ilimitados, relatórios em PDF/Excel e suporte prioritário.' },
+  { q: 'Como funciona o pagamento?', a: 'Pelo Mercado Pago, com Pix ou cartão. Sem fidelidade: você cancela quando quiser pelo próprio app, e em até 7 dias da primeira cobrança devolvemos o valor integral.' },
   { q: 'Preciso conectar minha conta bancária?', a: 'Não. Você registra suas movimentações em segundos — e pode importar ou conectar bancos quando a integração estiver disponível no seu plano.' },
   { q: 'Meus dados estão seguros?', a: 'Sim. Usamos criptografia em trânsito (HTTPS) e em repouso, sessões controladas por dispositivo e nunca armazenamos senhas bancárias, número completo de cartão ou CVV.' },
   { q: 'Funciona no celular?', a: 'Sim. A Nexora é um app instalável (PWA): funciona no navegador, pode ser adicionada à tela inicial, envia notificações e tem modo offline básico.' },
@@ -38,11 +41,8 @@ const FAQ = [
   { q: 'A Nexora recomenda investimentos?', a: 'Não. As informações de investimentos são educativas e não constituem recomendação nem garantia de retorno.' },
 ];
 
-const TESTIMONIALS = [
-  { name: 'Mariana, 29', role: 'Designer', text: 'Pela primeira vez sei exatamente para onde vai meu salário. O alerta de orçamento me salvou no fim do mês.' },
-  { name: 'Rafael, 35', role: 'Engenheiro', text: 'O plano de quitação mostrou que eu pagaria 4 meses antes com R$ 200 extras. Simples e direto.' },
-  { name: 'Juliana, 41', role: 'Empreendedora', text: 'A DRE e o fluxo de caixa deixaram claro o lucro real da minha empresa. Uso todos os dias.' },
-];
+/** Depoimentos REAIS (com autorização por escrito). Vazio = a seção não aparece. */
+const TESTIMONIALS: { name: string; role: string; text: string }[] = [];
 
 function Nav() {
   const [open, setOpen] = useState(false);
@@ -50,6 +50,7 @@ function Nav() {
     ['#recursos', 'Recursos'],
     ['#funcionalidades', 'Funcionalidades'],
     ['#seguranca', 'Segurança'],
+    ['#planos', 'Planos'],
     ['#faq', 'FAQ'],
   ];
   return (
@@ -283,11 +284,14 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* PLANOS + BETA DE FUNDADORES */}
+        <Pricing />
+
         {/* DEPOIMENTOS */}
+        {TESTIMONIALS.length > 0 && (
         <section className="cv-auto px-5 py-24">
           <div className="mx-auto max-w-7xl">
             <motion.h2 {...reveal} className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">Feita para o dia a dia</motion.h2>
-            <p className="mt-3 text-center text-xs text-fg-subtle">Depoimentos ilustrativos de perfis de uso.</p>
             <div className="mt-12 grid gap-4 md:grid-cols-3">
               {TESTIMONIALS.map((t, i) => (
                 <motion.figure key={t.name} {...reveal} transition={{ ...reveal.transition, delay: i * 0.08 }} className="card p-6">
@@ -302,6 +306,7 @@ export default function Landing() {
             </div>
           </div>
         </section>
+        )}
 
         {/* FAQ */}
         <section id="faq" className="cv-auto scroll-mt-20 px-5 py-24">
@@ -334,7 +339,7 @@ export default function Landing() {
             <p className="mt-4 max-w-xs text-sm text-fg-subtle">Inteligência financeira em um só lugar.</p>
           </div>
           {[
-            ['Produto', [['#recursos', 'Recursos'], ['#funcionalidades', 'Funcionalidades'], ['#seguranca', 'Segurança'], ['#faq', 'FAQ']]],
+            ['Produto', [['#recursos', 'Recursos'], ['#funcionalidades', 'Funcionalidades'], ['#planos', 'Planos'], ['#faq', 'FAQ']]],
             ['Conta', [['/entrar', 'Entrar'], ['/cadastro', 'Criar conta'], ['/recuperar-senha', 'Recuperar senha']]],
             ['Legal', [['/privacidade', 'Política de privacidade'], ['/termos', 'Termos de uso']]],
           ].map(([title, links]) => (
@@ -347,7 +352,11 @@ export default function Landing() {
           ))}
         </div>
         <div className="mx-auto mt-10 flex max-w-7xl flex-col justify-between gap-2 border-t border-border pt-6 text-xs text-fg-subtle sm:flex-row">
-          <p>© {new Date().getFullYear()} Nexora Finance. Todos os direitos reservados.</p>
+          <p>
+            © {new Date().getFullYear()} {BUSINESS.legalName || 'Nexora Finance'}
+            {BUSINESS.cnpj && ` · CNPJ ${BUSINESS.cnpj}`}
+            {BUSINESS.supportEmail && <> · <a href={`mailto:${BUSINESS.supportEmail}`} className="hover:text-fg">{BUSINESS.supportEmail}</a></>}
+          </p>
           <p>A Nexora não é uma instituição financeira e não oferece recomendação de investimentos.</p>
         </div>
       </footer>

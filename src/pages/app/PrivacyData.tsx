@@ -37,12 +37,18 @@ export default function PrivacyData() {
     toast.success('Exportação concluída', { description: 'Arquivo JSON com todos os seus dados.' });
   };
 
-  const deleteAccount = () => {
+  const deleteAccount = async () => {
+    const cloud = authService.isCloudUser(user.id);
+    try {
+      await authService.deleteUser(user.id);
+    } catch {
+      toast.error('Não foi possível excluir a conta', { description: 'Verifique sua conexão e tente novamente.' });
+      return;
+    }
     deleteWorkspace();
     disableBiometric(user.id);
-    authService.deleteUser(user.id);
     signOut();
-    toast.success('Conta excluída', { description: 'Seus dados foram removidos deste dispositivo.' });
+    toast.success('Conta excluída', { description: cloud ? 'Sua conta e todos os seus dados foram apagados dos nossos servidores.' : 'Seus dados foram removidos deste dispositivo.' });
     navigate('/');
   };
 

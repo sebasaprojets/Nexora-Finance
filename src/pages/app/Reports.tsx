@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { usePlan } from '@/hooks/usePlan';
 import { CheckSquare, FileSpreadsheet, FileText, Sheet, Square } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { PeriodFilter } from '@/components/common/PeriodFilter';
@@ -33,8 +34,10 @@ export default function Reports() {
     setPreview(k);
   };
 
+  const { canUse } = usePlan();
   const run = async (f: ExportFormat) => {
     if (!selected.length) return toast.warning('Selecione ao menos um relatório');
+    if (f !== 'csv' && !canUse(`O relatório em ${f === 'pdf' ? 'PDF' : 'Excel'}`)) return;
     setBusy(f);
     try {
       const tables = selected.map((k) => buildReport(k, data, period));

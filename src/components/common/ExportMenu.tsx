@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePlan } from '@/hooks/usePlan';
 import { Download, FileSpreadsheet, FileText, Sheet } from 'lucide-react';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Button } from '@/components/ui/Button';
@@ -7,7 +8,9 @@ import { toast } from '@/store/toast';
 
 export function ExportMenu({ getTables, title, label = 'Exportar', size = 'md' }: { getTables: () => ExportTable[]; title?: string; label?: string; size?: 'sm' | 'md' }) {
   const [busy, setBusy] = useState(false);
+  const { canUse } = usePlan();
   const run = async (f: ExportFormat) => {
+    if (f !== 'csv' && !canUse(`A exportação em ${f === 'pdf' ? 'PDF' : 'Excel'}`)) return;
     setBusy(true);
     try {
       const tables = getTables();

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { billingEnabled, hasPro } from '@/lib/plans';
 import { Link, useNavigate } from 'react-router-dom';
 import { Camera, ChevronRight, Crown, Lock, LogOut, Settings, ShieldCheck, Bell } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -75,7 +76,7 @@ export default function Profile() {
             <h2 className="font-display text-xl font-semibold">{user.name}</h2>
             <p className="text-sm text-fg-subtle">{user.email}</p>
             <div className="mt-2 flex flex-wrap justify-center gap-2 sm:justify-start">
-              <Badge tone="primary"><Crown aria-hidden /> Plano {user.plan === 'pro' ? 'Pro' : user.plan === 'business' ? 'Business' : 'Gratuito'}</Badge>
+              <Link to="/app/plano" aria-label="Ver meu plano"><Badge tone="primary"><Crown aria-hidden /> {billingEnabled ? (hasPro(user) ? 'Plano Pro' : 'Plano Grátis') : 'Beta · tudo liberado'}</Badge></Link>
               <Badge>Cliente desde {formatDate(toISODate(new Date(user.createdAt)))}</Badge>
             </div>
           </div>

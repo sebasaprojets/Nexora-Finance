@@ -2,6 +2,10 @@ import type { User } from '@/types';
 import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import { readJSON, removeKey, writeJSON } from './storage';
+import { AuthError, type Session } from './authTypes';
+import { cloudEnabled } from './cloud';
+import { cloudAuth, knownName } from './cloudAuth';
+import { biometricEnabledFor } from './biometric';
 
 /**
  * Serviço de autenticação.
@@ -15,22 +19,7 @@ import { readJSON, removeKey, writeJSON } from './storage';
  * Rate limiting, bloqueio de força bruta e sessões devem ser aplicados no servidor.
  */
 
-export interface Session {
-  token: string;
-  userId: string;
-  createdAt: string;
-  expiresAt: string;
-  remember: boolean;
-}
-
-export class AuthError extends Error {
-  constructor(
-    message: string,
-    public code: 'invalid_credentials' | 'email_in_use' | 'rate_limited' | 'not_found' | 'unknown',
-  ) {
-    super(message);
-  }
-}
+export { AuthError, type Session } from './authTypes';
 
 interface StoredUser extends User {
   passwordHash?: string;
@@ -126,7 +115,19 @@ export const authService = {
     return { session, user: user.provider === 'demo' ? { ...pub, name: 'Visitante', avatarUrl: undefined } : pub };
   },
 
+  /** Restaura a sessão ao abrir o app (demo local ou conta na nuvem). */
+  async restore(): Promise<{ session: Session; user: User } | null> {
+    const local = this.getSession();
+    if (local || !cloudEnabled) return local;
+    try {
+      return await cloudAuth.restore();
+    } catch {
+      return null;
+    }
+  },
+
   async signIn(email: string, password: string, remember: boolean) {
+    if (cloudEnabled) return cloudAuth.signIn(email, password);
     const normalized = email.trim().toLowerCase();
     checkRateLimit(normalized);
     await delay(450);
@@ -141,6 +142,7 @@ export const authService = {
   },
 
   async signUp(name: string, email: string, password: string) {
+    if (cloudEnabled) return cloudAuth.signUp(name, email, password);
     const normalized = email.trim().toLowerCase();
     await delay(500);
     const list = users();
@@ -163,6 +165,7 @@ export const authService = {
 
   /** OAuth simulado no modo local. Com Supabase: `supabase.auth.signInWithOAuth({ provider })`. */
   async signInWithProvider(provider: 'google' | 'apple') {
+    if (cloudEnabled) return cloudAuth.signInWithProvider(provider);
     await delay(600);
     const email = `voce@${provider === 'google' ? 'gmail.com' : 'icloud.com'}`;
     const list = users();
@@ -202,6 +205,7 @@ export const authService = {
 
   /** Sessão após Face ID/biometria confirmada pelo aparelho (ver services/biometric.ts). */
   async signInWithBiometric(userId: string) {
+    if (cloudEnabled && !users().some((u) => u.id === userId)) return cloudAuth.signInWithBiometric(userId);
     const user = users().find((u) => u.id === userId);
     if (!user) throw new AuthError('Conta não encontrada neste aparelho.', 'not_found');
     return { session: createSession(user.id, true), user: publicUser(user) };
@@ -209,17 +213,28 @@ export const authService = {
 
   /** Nome exibido no botão de login biométrico. */
   displayName(userId: string): string | null {
+    if (cloudEnabled && knownName(userId)) return knownName(userId);
     const u = users().find((x) => x.id === userId);
     return u ? u.name : null;
   },
 
   async requestPasswordReset(email: string) {
+    if (cloudEnabled) return cloudAuth.requestPasswordReset(email);
     await delay(700);
     // Sempre responde com sucesso para não revelar quais e-mails existem.
     return { email: email.trim().toLowerCase() };
   },
 
-  updateUser(id: string, patch: Partial<User>) {
+  /** Conta criada antes da nuvem, só neste aparelho, com o mesmo e-mail (para importar os dados). */
+  legacyUserId(email: string): string | null {
+    return users().find((u) => u.provider === 'password' && u.email === email.trim().toLowerCase())?.id ?? null;
+  },
+
+  updateUser(id: string, patch: Partial<User>, current?: User) {
+    if (this.isCloudUser(id) && current) {
+      void cloudAuth.updateProfile(id, patch).catch(() => {});
+      return { ...current, ...patch, id: current.id, email: current.email };
+    }
     const list = users();
     const idx = list.findIndex((u) => u.id === id);
     if (idx < 0) throw new AuthError('Usuário não encontrado.', 'not_found');
@@ -229,6 +244,7 @@ export const authService = {
   },
 
   async changePassword(id: string, current: string, next: string) {
+    if (cloudEnabled && !users().some((u) => u.id === id)) return cloudAuth.changePassword(current, next);
     const list = users();
     const user = list.find((u) => u.id === id);
     if (!user?.salt || !user.passwordHash) throw new AuthError('Conta sem senha local (login social ou demo).', 'unknown');
@@ -238,13 +254,21 @@ export const authService = {
     saveUsers(list);
   },
 
-  deleteUser(id: string) {
+  async deleteUser(id: string) {
+    if (cloudEnabled && !users().some((u) => u.id === id)) await cloudAuth.deleteAccount(id);
     saveUsers(users().filter((u) => u.id !== id));
-    this.signOut();
+    await this.signOut();
   },
 
-  signOut() {
+  /** A conta é da nuvem (e não a demonstração local)? */
+  isCloudUser(id: string) {
+    return cloudEnabled && !users().some((u) => u.id === id);
+  },
+
+  async signOut(userId?: string) {
+    const local = readJSON<Session | null>(SESSION_KEY, null) ?? readJSON<Session | null>(SESSION_KEY, null, sessionStorage);
     removeKey(SESSION_KEY);
     removeKey(SESSION_KEY, sessionStorage);
+    if (cloudEnabled && !local) await cloudAuth.signOut(userId, !!userId && biometricEnabledFor(userId)).catch(() => {});
   },
 };

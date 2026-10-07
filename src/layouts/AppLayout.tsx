@@ -5,6 +5,7 @@ import { WifiOff } from 'lucide-react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { DemoBanner } from '@/components/layout/DemoBanner';
+import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { InstallPrompt } from '@/components/layout/InstallPrompt';
@@ -120,6 +121,7 @@ export function AppLayout() {
       <InstallPrompt />
       <TourOverlay />
       <BiometricPrompt />
+      <UpgradeModal />
     </div>
   );
 }

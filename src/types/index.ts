@@ -20,6 +20,11 @@ export interface User {
   email: string;
   avatarUrl?: string;
   plan: 'free' | 'pro' | 'business';
+  /** Situação da assinatura no provedor de pagamento (modo nuvem). */
+  planStatus?: string;
+  planRenewsAt?: ISODateTime;
+  /** Participante do beta de fundadores (preço especial vitalício). */
+  founder?: boolean;
   createdAt: ISODateTime;
   onboarded: boolean;
   provider: 'password' | 'google' | 'apple' | 'demo';

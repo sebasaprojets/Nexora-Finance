@@ -5,6 +5,7 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { Avatar } from '@/components/common/Avatar';
 import { Logo } from '@/components/common/Logo';
 import { ThemeToggle } from './ThemeToggle';
+import { SyncIndicator } from './SyncIndicator';
 import { useUI } from '@/store/ui';
 import { useAuth } from '@/store/auth';
 import { useSettings } from '@/store/settings';
@@ -44,6 +45,7 @@ export function Topbar() {
           <Button data-tour="hide-values" variant="ghost" size="icon" aria-label={hide ? 'Mostrar valores' : 'Ocultar valores'} aria-pressed={hide} onClick={toggleHide}>
             {hide ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
           </Button>
+          <SyncIndicator />
           <ThemeToggle />
           <Link
             to="/app/notificacoes"

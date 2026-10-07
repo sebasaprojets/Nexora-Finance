@@ -30,7 +30,25 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          BASE_PATH: /${{ github.event.repository.name }}/
+          # Com domínio próprio (ex.: nexorafinance.com.br), crie a variável BASE_PATH com o valor "/".
+          BASE_PATH: ${{ vars.BASE_PATH || format('/{0}/', github.event.repository.name) }}
+          # Configuração pública do app — GitHub → Settings → Secrets and variables → Actions → Variables.
+          # (A anon key do Supabase é pública por design; NUNCA coloque aqui a service_role key.)
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_AUTH_GOOGLE: ${{ vars.VITE_AUTH_GOOGLE }}
+          VITE_AUTH_APPLE: ${{ vars.VITE_AUTH_APPLE }}
+          VITE_BILLING: ${{ vars.VITE_BILLING }}
+          VITE_FOUNDER_OFFER: ${{ vars.VITE_FOUNDER_OFFER }}
+          VITE_PRICE_PRO_MONTHLY: ${{ vars.VITE_PRICE_PRO_MONTHLY }}
+          VITE_PRICE_PRO_YEARLY: ${{ vars.VITE_PRICE_PRO_YEARLY }}
+          VITE_PRICE_FOUNDER_MONTHLY: ${{ vars.VITE_PRICE_FOUNDER_MONTHLY }}
+          VITE_COMPANY_NAME: ${{ vars.VITE_COMPANY_NAME }}
+          VITE_COMPANY_CNPJ: ${{ vars.VITE_COMPANY_CNPJ }}
+          VITE_COMPANY_CITY: ${{ vars.VITE_COMPANY_CITY }}
+          VITE_SUPPORT_EMAIL: ${{ vars.VITE_SUPPORT_EMAIL }}
+          VITE_SUPPORT_WHATSAPP: ${{ vars.VITE_SUPPORT_WHATSAPP }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VITE_VAPID_PUBLIC_KEY }}
       # SPA: o GitHub Pages devolve 404.html para rotas como /app/analises.
       - run: cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5

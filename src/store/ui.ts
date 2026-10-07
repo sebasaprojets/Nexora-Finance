@@ -13,6 +13,10 @@ interface UIState {
   commandOpen: boolean;
   quickAddOpen: boolean;
   sidebarCollapsed: boolean;
+  /** Janela "Seja Pro" (motivo exibido no topo). */
+  upgrade: string | null;
+  openUpgrade: (reason: string) => void;
+  closeUpgrade: () => void;
   openTransaction: (draft: TransactionDraft) => void;
   closeTransaction: () => void;
   setCommandOpen: (open: boolean) => void;
@@ -25,6 +29,9 @@ export const useUI = create<UIState>((set) => ({
   commandOpen: false,
   quickAddOpen: false,
   sidebarCollapsed: false,
+  upgrade: null,
+  openUpgrade: (upgrade) => set({ upgrade, quickAddOpen: false, commandOpen: false }),
+  closeUpgrade: () => set({ upgrade: null }),
   openTransaction: (draft) => set({ txModal: draft, quickAddOpen: false, commandOpen: false }),
   closeTransaction: () => set({ txModal: null }),
   setCommandOpen: (commandOpen) => set({ commandOpen }),
