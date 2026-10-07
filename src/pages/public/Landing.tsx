@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -12,6 +12,9 @@ import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { cn } from '@/lib/cn';
 import { BUSINESS } from '@/config/business';
 import { Pricing } from '@/components/landing/Pricing';
+import { LanguageSwitcher } from '@/components/landing/LanguageSwitcher';
+import { useLandingText } from '@/i18n/landing';
+import { LANGS, useLang } from '@/i18n/lang';
 
 const reveal = {
   initial: { opacity: 0, y: 24 },
@@ -20,38 +23,32 @@ const reveal = {
   transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
 };
 
-const ALL_IN_ONE = [
-  { icon: TrendingUp, title: 'Receitas', desc: 'Salário, freelas e vendas com evolução por origem.', color: '#1baf7a' },
-  { icon: TrendingDown, title: 'Despesas', desc: 'Categorias, ranking e para onde vai cada real.', color: '#eb6834' },
-  { icon: BarChart3, title: 'Investimentos', desc: 'Carteira, rentabilidade, proventos e distribuição.', color: '#9085e9' },
-  { icon: Landmark, title: 'Contas', desc: 'Saldos, entradas, saídas e histórico por conta.', color: '#2a78d6' },
-  { icon: CreditCard, title: 'Cartões', desc: 'Faturas, limites, vencimentos e parcelamentos.', color: '#e87ba4' },
-  { icon: Target, title: 'Metas', desc: 'Quanto guardar por mês e quando você chega lá.', color: '#0891b2' },
-  { icon: Wallet, title: 'Orçamento', desc: 'Limites por categoria com alertas em 70%, 90% e 100%.', color: '#eda100' },
-  { icon: FileText, title: 'Relatórios', desc: 'DRE, fluxo de caixa e exportação PDF, Excel e CSV.', color: '#1baf7a' },
+const ALL_IN_ONE_STYLE = [
+  { icon: TrendingUp, color: '#1baf7a' },
+  { icon: TrendingDown, color: '#eb6834' },
+  { icon: BarChart3, color: '#9085e9' },
+  { icon: Landmark, color: '#2a78d6' },
+  { icon: CreditCard, color: '#e87ba4' },
+  { icon: Target, color: '#0891b2' },
+  { icon: Wallet, color: '#eda100' },
+  { icon: FileText, color: '#1baf7a' },
 ];
-
-const FAQ = [
-  { q: 'A Nexora é gratuita?', a: 'Sim. O plano Grátis tem tudo o que você precisa para organizar o mês. O Pro libera contas, cartões e metas ilimitados, relatórios em PDF/Excel e suporte prioritário.' },
-  { q: 'Como funciona o pagamento?', a: 'Pelo Mercado Pago, com Pix ou cartão. Sem fidelidade: você cancela quando quiser pelo próprio app, e em até 7 dias da primeira cobrança devolvemos o valor integral.' },
-  { q: 'Preciso conectar minha conta bancária?', a: 'Não. Você registra suas movimentações em segundos — e pode importar ou conectar bancos quando a integração estiver disponível no seu plano.' },
-  { q: 'Meus dados estão seguros?', a: 'Sim. Usamos criptografia em trânsito (HTTPS) e em repouso, sessões controladas por dispositivo e nunca armazenamos senhas bancárias, número completo de cartão ou CVV.' },
-  { q: 'Funciona no celular?', a: 'Sim. A Nexora é um app instalável (PWA): funciona no navegador, pode ser adicionada à tela inicial, envia notificações e tem modo offline básico.' },
-  { q: 'O score da Nexora é um score de crédito?', a: 'Não. É um indicador educativo de saúde financeira calculado com os seus dados, sem relação com birôs de crédito.' },
-  { q: 'A Nexora recomenda investimentos?', a: 'Não. As informações de investimentos são educativas e não constituem recomendação nem garantia de retorno.' },
-];
+const FEATURE_ICONS = [BarChart3, Bot, Smartphone];
+const SECURITY_ICONS = [Lock, Fingerprint, ServerCog, PiggyBank];
+const ALERT_ICONS = [Bell, Wallet, Target, Command];
 
 /** Depoimentos REAIS (com autorização por escrito). Vazio = a seção não aparece. */
 const TESTIMONIALS: { name: string; role: string; text: string }[] = [];
 
 function Nav() {
   const [open, setOpen] = useState(false);
+  const t = useLandingText().nav;
   const links = [
-    ['#recursos', 'Recursos'],
-    ['#funcionalidades', 'Funcionalidades'],
-    ['#seguranca', 'Segurança'],
-    ['#planos', 'Planos'],
-    ['#faq', 'FAQ'],
+    ['#recursos', t.features],
+    ['#funcionalidades', t.functions],
+    ['#seguranca', t.security],
+    ['#planos', t.plans],
+    ['#faq', t.faq],
   ];
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
@@ -60,11 +57,12 @@ function Nav() {
         <ul className="ml-6 hidden gap-6 text-sm text-fg-muted md:flex">
           {links.map(([h, l]) => <li key={h}><a href={h} className="transition-colors hover:text-fg">{l}</a></li>)}
         </ul>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
+          <LanguageSwitcher />
           <ThemeToggle />
-          <Link to="/entrar" className="hidden h-10 items-center rounded-xl px-4 text-sm font-medium text-fg-muted hover:text-fg sm:inline-flex">Entrar</Link>
-          <Link to="/cadastro" className="hidden sm:inline-flex"><Button>Começar agora</Button></Link>
-          <Button variant="ghost" size="icon" className="md:hidden" aria-label={open ? 'Fechar menu' : 'Abrir menu'} aria-expanded={open} onClick={() => setOpen(!open)}>
+          <Link to="/entrar" className="hidden h-10 items-center rounded-xl px-4 text-sm font-medium text-fg-muted hover:text-fg sm:inline-flex">{t.login}</Link>
+          <Link to="/cadastro" className="hidden sm:inline-flex"><Button>{t.start}</Button></Link>
+          <Button variant="ghost" size="icon" className="md:hidden" aria-label={open ? t.closeMenu : t.openMenu} aria-expanded={open} onClick={() => setOpen(!open)}>
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </Button>
         </div>
@@ -75,8 +73,8 @@ function Nav() {
             <ul className="space-y-1 p-4">
               {links.map(([h, l]) => <li key={h}><a href={h} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm hover:bg-surface-2">{l}</a></li>)}
               <li className="grid grid-cols-2 gap-2 pt-2">
-                <Link to="/entrar"><Button variant="secondary" className="w-full">Entrar</Button></Link>
-                <Link to="/cadastro"><Button className="w-full">Começar agora</Button></Link>
+                <Link to="/entrar"><Button variant="secondary" className="w-full">{t.login}</Button></Link>
+                <Link to="/cadastro"><Button className="w-full">{t.start}</Button></Link>
               </li>
             </ul>
           </motion.div>
@@ -106,6 +104,14 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function Landing() {
+  const t = useLandingText();
+  const lang = useLang((s) => s.lang);
+  useEffect(() => {
+    document.documentElement.lang = LANGS.find((l) => l.code === lang)!.html;
+    return () => {
+      document.documentElement.lang = 'pt-BR'; // o restante do app está em português
+    };
+  }, [lang]);
   return (
     <div className="overflow-x-clip">
       <Nav />
@@ -116,25 +122,25 @@ export default function Landing() {
           <div className="pointer-events-none absolute top-0 left-1/2 size-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#7b6dff]/15 blur-[140px]" aria-hidden />
           <div className="relative mx-auto max-w-4xl text-center">
             <motion.a href="#funcionalidades" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass mx-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-fg-muted">
-              <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-fg">Novo</span>
-              Nexora AI responde sobre suas finanças <ArrowRight className="size-3" aria-hidden />
+              <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-fg">{t.hero.badge}</span>
+              {t.hero.badgeText} <ArrowRight className="size-3" aria-hidden />
             </motion.a>
             <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="mt-6 font-display text-[40px] leading-[1.05] font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
-              Controle seu dinheiro.{' '}
-              <span className="bg-gradient-to-r from-[#8f83ff] via-[#a99fff] to-[#22d3ee] bg-clip-text text-transparent">Construa seu futuro.</span>
+              {t.hero.title1}{' '}
+              <span className="bg-gradient-to-r from-[#8f83ff] via-[#a99fff] to-[#22d3ee] bg-clip-text text-transparent">{t.hero.title2}</span>
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.7 }} className="mx-auto mt-6 max-w-2xl text-base text-fg-muted text-balance sm:text-lg">
-              Uma plataforma inteligente para organizar, acompanhar e melhorar sua vida financeira em um único lugar.
+              {t.hero.subtitle}
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.7 }} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Magnetic>
-                <Link to="/cadastro"><Button size="lg" className="h-13 px-7" rightIcon={<ArrowRight className="size-4" />}>Começar agora</Button></Link>
+                <Link to="/cadastro"><Button size="lg" className="h-13 px-7" rightIcon={<ArrowRight className="size-4" />}>{t.hero.cta}</Button></Link>
               </Magnetic>
-              <a href="#recursos"><Button size="lg" variant="secondary" className="h-13 px-7">Conhecer a Nexora</Button></a>
+              <a href="#recursos"><Button size="lg" variant="secondary" className="h-13 px-7">{t.hero.secondary}</Button></a>
             </motion.div>
             <motion.ul initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-fg-subtle">
-              {['Grátis para começar', 'Sem cartão de crédito', 'Funciona no celular e no computador'].map((t) => (
-                <li key={t} className="flex items-center gap-1.5"><Check className="size-3.5 text-success" aria-hidden />{t}</li>
+              {t.hero.checks.map((c) => (
+                <li key={c} className="flex items-center gap-1.5"><Check className="size-3.5 text-success" aria-hidden />{c}</li>
               ))}
             </motion.ul>
           </div>
@@ -147,13 +153,13 @@ export default function Landing() {
         <section id="recursos" className="cv-auto scroll-mt-20 px-5 py-24">
           <div className="mx-auto max-w-7xl">
             <motion.div {...reveal} className="mx-auto max-w-2xl text-center">
-              <p className="text-sm font-medium text-primary">Visão completa</p>
-              <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-5xl">Tudo sobre suas finanças em um só lugar</h2>
-              <p className="mt-4 text-fg-muted">Pare de alternar entre planilhas, apps de banco e anotações. A Nexora reúne tudo e transforma em respostas.</p>
+              <p className="text-sm font-medium text-primary">{t.all.tag}</p>
+              <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-5xl">{t.all.title}</h2>
+              <p className="mt-4 text-fg-muted">{t.all.text}</p>
             </motion.div>
             <div className="mt-14 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-              {ALL_IN_ONE.map((f, i) => (
-                <motion.div key={f.title} {...reveal} transition={{ ...reveal.transition, delay: i * 0.05 }} whileHover={{ y: -4 }} className="card group relative overflow-hidden p-4 sm:p-6">
+              {t.all.items.map(([title, desc], i) => ({ ...ALL_IN_ONE_STYLE[i], title, desc })).map((f, i) => (
+                <motion.div key={i} {...reveal} transition={{ ...reveal.transition, delay: i * 0.05 }} whileHover={{ y: -4 }} className="card group relative overflow-hidden p-4 sm:p-6">
                   <div className="absolute -top-12 -right-12 size-32 rounded-full opacity-0 blur-2xl transition-opacity group-hover:opacity-40" style={{ background: f.color }} aria-hidden />
                   <span className="grid size-11 place-items-center rounded-xl" style={{ background: `color-mix(in oklab, ${f.color} 16%, transparent)`, color: f.color }}>
                     <f.icon className="size-5" aria-hidden />
@@ -169,12 +175,7 @@ export default function Landing() {
         {/* BENEFÍCIOS */}
         <section className="cv-auto border-y border-border bg-bg-elevated/50 px-5 py-20">
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 md:grid-cols-4 md:gap-10">
-            {[
-              ['5 s', 'para registrar uma despesa no celular'],
-              ['13', 'perguntas respondidas no seu dashboard'],
-              ['0–1000', 'score de saúde financeira explicado'],
-              ['3', 'formatos de exportação: PDF, Excel e CSV'],
-            ].map(([v, l], i) => (
+            {t.stats.map(([v, l], i) => (
               <motion.div key={l} {...reveal} transition={{ ...reveal.transition, delay: i * 0.06 }} className="text-center md:text-left">
                 <p className="tabular font-display text-4xl font-semibold tracking-tight sm:text-5xl">{v}</p>
                 <p className="mt-2 text-sm text-fg-muted">{l}</p>
@@ -186,30 +187,8 @@ export default function Landing() {
         {/* FUNCIONALIDADES */}
         <section id="funcionalidades" className="cv-auto scroll-mt-20 px-5 py-24">
           <div className="mx-auto max-w-7xl space-y-24">
-            {[
-              {
-                tag: 'Análises financeiras',
-                title: 'Cada gráfico responde uma pergunta.',
-                text: 'Receitas x despesas, lucros e perdas, DRE simplificada, fluxo de caixa, heatmap diário e comparação de períodos — tudo calculado com os seus dados reais.',
-                bullets: ['DRE com comparação e exportação', 'Para onde vai meu dinheiro, com detalhamento por categoria', 'Indicadores: taxa de economia, reserva, dívida/renda'],
-                icon: BarChart3,
-              },
-              {
-                tag: 'Nexora AI',
-                title: 'Pergunte. A Nexora responde com números.',
-                text: '“Quanto posso gastar hoje?” “Qual foi minha maior despesa?” O assistente usa somente os seus dados — e avisa quando não há informação suficiente.',
-                bullets: ['Respostas com fatos e atalhos', 'Nunca inventa valores', 'Privacidade: cálculos no seu dispositivo'],
-                icon: Bot,
-              },
-              {
-                tag: 'Sempre com você',
-                title: 'App no celular, notificações no tempo certo.',
-                text: 'Instale a Nexora na tela inicial, receba alertas de fatura, orçamento e metas, e lance uma despesa em segundos pelo botão “+”.',
-                bullets: ['PWA instalável com modo offline', 'Push no desktop e no celular', 'Atalhos de teclado e Ctrl + K'],
-                icon: Smartphone,
-              },
-            ].map((f, i) => (
-              <motion.div key={f.tag} {...reveal} className={cn('grid items-center gap-10 lg:grid-cols-2', i % 2 && 'lg:[&>*:first-child]:order-2')}>
+            {t.features.map((f, i) => ({ ...f, icon: FEATURE_ICONS[i] })).map((f, i) => (
+              <motion.div key={i} {...reveal} className={cn('grid items-center gap-10 lg:grid-cols-2', i % 2 && 'lg:[&>*:first-child]:order-2')}>
                 <div>
                   <p className="flex items-center gap-2 text-sm font-medium text-primary"><f.icon className="size-4" aria-hidden /> {f.tag}</p>
                   <h3 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">{f.title}</h3>
@@ -221,8 +200,8 @@ export default function Landing() {
                 <div className="card holo relative overflow-hidden p-6 sm:p-8" aria-hidden>
                   {i === 0 && (
                     <div className="space-y-3">
-                      {[['Receita', 'R$ 30.000', '+11,1%'], ['Custos', 'R$ 8.500', '+7,6%'], ['Despesas', 'R$ 13.000', '+4,0%'], ['Lucro líquido', 'R$ 8.500', '+28,8%']].map(([a, b, c], k) => (
-                        <div key={a} className={cn('flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 text-sm', k === 3 && 'border-primary/40 bg-primary-soft font-semibold')}>
+                      {t.dre.map(([a, b, c], k) => (
+                        <div key={k} className={cn('flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 text-sm', k === 3 && 'border-primary/40 bg-primary-soft font-semibold')}>
                           <span>{a}</span><span className="tabular">{b}</span><span className="tabular text-success">{c}</span>
                         </div>
                       ))}
@@ -230,21 +209,21 @@ export default function Landing() {
                   )}
                   {i === 1 && (
                     <div className="space-y-3 text-sm">
-                      <div className="ml-auto w-fit rounded-2xl rounded-tr-md bg-primary px-4 py-2.5 text-primary-fg">Quanto posso gastar hoje?</div>
+                      <div className="ml-auto w-fit rounded-2xl rounded-tr-md bg-primary px-4 py-2.5 text-primary-fg">{t.chat.q1}</div>
                       <div className="w-[90%] rounded-2xl rounded-tl-md border border-border bg-surface px-4 py-3 text-fg-muted">
-                        Você pode gastar cerca de <strong className="text-fg">R$ 87,40 por dia</strong> até o fim do mês, mantendo 20% da renda guardados e as contas previstas pagas.
+                        {t.chat.a1a}<strong className="text-fg">{t.chat.a1b}</strong>{t.chat.a1c}
                       </div>
-                      <div className="ml-auto w-fit rounded-2xl rounded-tr-md bg-primary px-4 py-2.5 text-primary-fg">E minha maior despesa?</div>
+                      <div className="ml-auto w-fit rounded-2xl rounded-tr-md bg-primary px-4 py-2.5 text-primary-fg">{t.chat.q2}</div>
                     </div>
                   )}
                   {i === 2 && (
                     <div className="grid grid-cols-2 gap-3">
-                      {[[Bell, 'Fatura vence amanhã'], [Wallet, 'Alimentação: 90% do orçamento'], [Target, 'Meta atingida 🎉'], [Command, 'Ctrl + K']].map(([I, t]) => {
-                        const Icon = I as typeof Bell;
+                      {t.alerts.map((label, k) => {
+                        const Icon = ALERT_ICONS[k];
                         return (
-                          <div key={t as string} className="rounded-xl border border-border bg-surface p-4 text-sm">
+                          <div key={k} className="rounded-xl border border-border bg-surface p-4 text-sm">
                             <Icon className="size-5 text-primary" />
-                            <p className="mt-3 font-medium">{t as string}</p>
+                            <p className="mt-3 font-medium">{label}</p>
                           </div>
                         );
                       })}
@@ -260,23 +239,18 @@ export default function Landing() {
         <section id="seguranca" className="cv-auto scroll-mt-20 px-5 py-24">
           <div className="mx-auto max-w-7xl rounded-[32px] border border-border bg-bg-elevated p-8 sm:p-14">
             <motion.div {...reveal} className="max-w-2xl">
-              <p className="flex items-center gap-2 text-sm font-medium text-primary"><ShieldCheck className="size-4" aria-hidden /> Segurança e privacidade</p>
-              <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Seu dinheiro é sério. Sua privacidade também.</h2>
-              <p className="mt-4 text-fg-muted">Construída com boas práticas de segurança e em conformidade com a LGPD. Você controla seus dados — inclusive para exportar ou excluir quando quiser.</p>
+              <p className="flex items-center gap-2 text-sm font-medium text-primary"><ShieldCheck className="size-4" aria-hidden /> {t.security.tag}</p>
+              <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t.security.title}</h2>
+              <p className="mt-4 text-fg-muted">{t.security.text}</p>
             </motion.div>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                [Lock, 'Criptografia', 'HTTPS em trânsito e dados protegidos em repouso.'],
-                [Fingerprint, 'Sessões sob controle', 'Veja dispositivos conectados e encerre acessos.'],
-                [ServerCog, 'Sem dados bancários', 'Nunca pedimos senha do banco, CVV ou número completo do cartão.'],
-                [PiggyBank, 'LGPD', 'Exportação e exclusão dos seus dados a qualquer momento.'],
-              ].map(([I, t, d]) => {
-                const Icon = I as typeof Lock;
+              {t.security.items.map(([title, d], k) => {
+                const Icon = SECURITY_ICONS[k];
                 return (
-                  <motion.div key={t as string} {...reveal} className="rounded-2xl border border-border bg-surface p-5">
+                  <motion.div key={k} {...reveal} className="rounded-2xl border border-border bg-surface p-5">
                     <Icon className="size-5 text-primary" aria-hidden />
-                    <h3 className="mt-4 font-semibold">{t as string}</h3>
-                    <p className="mt-1 text-sm text-fg-muted">{d as string}</p>
+                    <h3 className="mt-4 font-semibold">{title}</h3>
+                    <p className="mt-1 text-sm text-fg-muted">{d}</p>
                   </motion.div>
                 );
               })}
@@ -291,7 +265,7 @@ export default function Landing() {
         {TESTIMONIALS.length > 0 && (
         <section className="cv-auto px-5 py-24">
           <div className="mx-auto max-w-7xl">
-            <motion.h2 {...reveal} className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">Feita para o dia a dia</motion.h2>
+            <motion.h2 {...reveal} className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t.testimonials}</motion.h2>
             <div className="mt-12 grid gap-4 md:grid-cols-3">
               {TESTIMONIALS.map((t, i) => (
                 <motion.figure key={t.name} {...reveal} transition={{ ...reveal.transition, delay: i * 0.08 }} className="card p-6">
@@ -311,8 +285,8 @@ export default function Landing() {
         {/* FAQ */}
         <section id="faq" className="cv-auto scroll-mt-20 px-5 py-24">
           <div className="mx-auto max-w-3xl">
-            <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">Perguntas frequentes</h2>
-            <div className="mt-10">{FAQ.map((f) => <FaqItem key={f.q} {...f} />)}</div>
+            <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t.faqTitle}</h2>
+            <div className="mt-10">{t.faq.map(([q, a]) => <FaqItem key={q} q={q} a={a} />)}</div>
           </div>
         </section>
 
@@ -321,11 +295,11 @@ export default function Landing() {
           <motion.div {...reveal} className="relative mx-auto max-w-5xl overflow-hidden rounded-[32px] border border-border bg-[#0d0f16] px-6 py-16 text-center text-white sm:px-16">
             <div className="absolute inset-0 bg-[radial-gradient(600px_circle_at_50%_0%,rgba(123,109,255,0.35),transparent_60%)]" aria-hidden />
             <div className="relative">
-              <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-5xl">Comece hoje a construir seu futuro.</h2>
-              <p className="mx-auto mt-4 max-w-xl text-white/70">Crie sua conta em menos de um minuto ou explore com dados de demonstração.</p>
+              <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-5xl">{t.cta.title}</h2>
+              <p className="mx-auto mt-4 max-w-xl text-white/70">{t.cta.text}</p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                <Magnetic><Link to="/cadastro"><Button size="lg" rightIcon={<ArrowRight className="size-4" />}>Começar agora</Button></Link></Magnetic>
-                <Link to="/entrar"><Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10">Ver demonstração</Button></Link>
+                <Magnetic><Link to="/cadastro"><Button size="lg" rightIcon={<ArrowRight className="size-4" />}>{t.cta.start}</Button></Link></Magnetic>
+                <Link to="/entrar"><Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10">{t.cta.demo}</Button></Link>
               </div>
             </div>
           </motion.div>
@@ -336,12 +310,13 @@ export default function Landing() {
         <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <Logo />
-            <p className="mt-4 max-w-xs text-sm text-fg-subtle">Inteligência financeira em um só lugar.</p>
+            <p className="mt-4 max-w-xs text-sm text-fg-subtle">{t.footer.tagline}</p>
+            <LanguageSwitcher className="mt-4 -ml-2.5" />
           </div>
           {[
-            ['Produto', [['#recursos', 'Recursos'], ['#funcionalidades', 'Funcionalidades'], ['#planos', 'Planos'], ['#faq', 'FAQ']]],
-            ['Conta', [['/entrar', 'Entrar'], ['/cadastro', 'Criar conta'], ['/recuperar-senha', 'Recuperar senha']]],
-            ['Legal', [['/privacidade', 'Política de privacidade'], ['/termos', 'Termos de uso']]],
+            [t.footer.product, [['#recursos', t.nav.features], ['#funcionalidades', t.nav.functions], ['#planos', t.nav.plans], ['#faq', t.nav.faq]]],
+            [t.footer.account, [['/entrar', t.footer.login], ['/cadastro', t.footer.signup], ['/recuperar-senha', t.footer.recover]]],
+            [t.footer.legal, [['/privacidade', t.footer.privacy], ['/termos', t.footer.terms]]],
           ].map(([title, links]) => (
             <div key={title as string}>
               <p className="text-sm font-semibold">{title as string}</p>
@@ -355,9 +330,10 @@ export default function Landing() {
           <p>
             © {new Date().getFullYear()} {BUSINESS.legalName || 'Nexora Finance'}
             {BUSINESS.cnpj && ` · CNPJ ${BUSINESS.cnpj}`}
+            {' · '}{t.footer.rights}
             {BUSINESS.supportEmail && <> · <a href={`mailto:${BUSINESS.supportEmail}`} className="hover:text-fg">{BUSINESS.supportEmail}</a></>}
           </p>
-          <p>A Nexora não é uma instituição financeira e não oferece recomendação de investimentos.</p>
+          <p>{t.footer.disclaimer}</p>
         </div>
       </footer>
     </div>
