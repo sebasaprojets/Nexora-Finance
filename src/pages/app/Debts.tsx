@@ -17,7 +17,7 @@ import { toast } from '@/store/toast';
 import { useMoney } from '@/hooks/useMoney';
 import { debtTotals, payoffPlan } from '@/lib/finance';
 import { formatMonthLong, formatMonthShort } from '@/lib/dates';
-import { formatMoney, formatPercent, parseMoneyInput, round2 } from '@/lib/format';
+import { formatMoney, formatPercent, parseMoneyInput, round2, formatAxis } from '@/lib/format';
 import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import type { Debt, DebtStatus } from '@/types';
@@ -231,7 +231,7 @@ export default function Debts() {
                           </linearGradient>
                         </defs>
                         <XAxis dataKey="label" {...axisProps} minTickGap={20} />
-                        <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+                        <YAxis {...axisProps} width={56} tickFormatter={formatAxis} />
                         <Tooltip content={({ active, payload }) => (active && payload?.length ? <ChartTooltipBox title={formatMonthLong((payload[0].payload as { month: string }).month)} rows={[{ label: t('Saldo devedor'), value: money(Number(payload[0].value)), color: 'var(--series-2)' }]} /> : null)} />
                         <Area type="monotone" dataKey="remainingTotal" stroke="var(--series-2)" strokeWidth={2} fill="url(#debt-g)" />
                       </AreaChart>

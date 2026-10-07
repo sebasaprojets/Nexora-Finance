@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { SeriesPoint } from '@/lib/finance';
-import { formatMoney } from '@/lib/format';
+import { formatAxis } from '@/lib/format';
 import { formatDate } from '@/lib/dates';
 import { useMoney } from '@/hooks/useMoney';
 import { axisProps, ChartTooltipBox } from './ChartTooltip';
@@ -28,7 +28,7 @@ export const FlowChart = memo(function FlowChart({ data, height = 300, showNet =
           </defs>
           <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="0" />
           <XAxis dataKey="label" {...axisProps} minTickGap={16} dy={6} />
-          <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+          <YAxis {...axisProps} width={56} tickFormatter={formatAxis} />
           <Tooltip
             cursor={{ stroke: 'var(--border-strong)', strokeWidth: 1 }}
             content={({ active, payload }) => {

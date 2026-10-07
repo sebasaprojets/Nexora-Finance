@@ -24,7 +24,7 @@ import { toast } from '@/store/toast';
 import { cn } from '@/lib/cn';
 import { addMonths, eachMonth, formatDate, formatDayMonth, formatMonthLong, formatMonthShort, monthKey, monthName, startOfMonth, today } from '@/lib/dates';
 import { inPeriod, isRealized, monthlyByCategory, totalsByCategory, type DayActivity, type Period } from '@/lib/finance';
-import { formatMoney, formatPercent } from '@/lib/format';
+import { formatMoney, formatPercent, formatAxis } from '@/lib/format';
 import type { FinanceData, Transaction } from '@/types';
 import { METHOD_LABELS, STATUS_LABELS } from '@/lib/labels';
 import { currentLocale, t } from '@/i18n';
@@ -187,7 +187,7 @@ function SpendingEvolution({ data }: { data: FinanceData }) {
                 <BarChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
                   <XAxis dataKey="label" {...axisProps} />
-                  <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+                  <YAxis {...axisProps} width={56} tickFormatter={formatAxis} />
                   <Tooltip cursor={{ fill: 'var(--surface-2)' }} content={({ active, payload }) => (active && payload?.length ? <ChartTooltipBox title={formatMonthLong(String((payload[0].payload as { key: string }).key))} rows={[{ label: t('Gastos'), value: money(Number(payload[0].value)), color: 'var(--series-expense)' }]} footer={t('Média do intervalo: {valor}', { valor: money(avg) })} /> : null)} />
                   <Bar dataKey="total" fill="var(--series-expense)" radius={[4, 4, 0, 0]} maxBarSize={44} />
                 </BarChart>
@@ -195,7 +195,7 @@ function SpendingEvolution({ data }: { data: FinanceData }) {
                 <LineChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
                   <XAxis dataKey="label" {...axisProps} />
-                  <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+                  <YAxis {...axisProps} width={56} tickFormatter={formatAxis} />
                   <Tooltip content={({ active, payload }) => (active && payload?.length ? <ChartTooltipBox title={formatMonthLong(String((payload[0].payload as { key: string }).key))} rows={payload.map((p) => ({ label: t(catById.get(String(p.dataKey))?.name ?? ''), value: money(Number(p.value)), color: catById.get(String(p.dataKey))?.color }))} /> : null)} />
                   {compare.map((id) => (
                     <Line key={id} type="monotone" dataKey={id} stroke={catById.get(id)?.color} strokeWidth={2} dot={{ r: 3, strokeWidth: 2, stroke: 'var(--surface)' }} />

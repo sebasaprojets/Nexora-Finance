@@ -18,7 +18,7 @@ import { toast } from '@/store/toast';
 import { useMoney } from '@/hooks/useMoney';
 import { INVESTMENT_LABELS, portfolioSummary } from '@/lib/finance';
 import { formatMonthLong, formatMonthShort, monthKey, today } from '@/lib/dates';
-import { formatMoney, formatPercent, parseMoneyInput, round2 } from '@/lib/format';
+import { formatMoney, formatPercent, parseMoneyInput, round2, formatAxis } from '@/lib/format';
 import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import { cn } from '@/lib/cn';
@@ -179,7 +179,7 @@ export default function Investments() {
                       </defs>
                       <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
                       <XAxis dataKey="label" {...axisProps} />
-                      <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+                      <YAxis {...axisProps} width={56} tickFormatter={formatAxis} />
                       <Tooltip content={({ active, payload }) => (active && payload?.length ? <ChartTooltipBox title={formatMonthLong((payload[0].payload as { month: string }).month)} rows={[{ label: t('Patrimônio'), value: money(Number(payload[0].value)), color: 'var(--series-7)' }]} /> : null)} />
                       <Area type="monotone" dataKey="value" stroke="var(--series-7)" strokeWidth={2} fill="url(#inv-g)" />
                     </AreaChart>

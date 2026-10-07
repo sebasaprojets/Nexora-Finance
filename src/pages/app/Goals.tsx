@@ -20,7 +20,7 @@ import { useMoney } from '@/hooks/useMoney';
 import { useQueryAction } from '@/hooks/useQueryAction';
 import { goalProgress } from '@/lib/finance';
 import { addMonths, formatDate, formatMonthLong, formatMonthShort, monthKey, today } from '@/lib/dates';
-import { formatMoney, parseMoneyInput } from '@/lib/format';
+import { formatMoney, parseMoneyInput, formatAxis } from '@/lib/format';
 import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import { cn } from '@/lib/cn';
@@ -250,7 +250,7 @@ export default function Goals() {
                             </linearGradient>
                           </defs>
                           <XAxis dataKey="label" {...axisProps} />
-                          <YAxis {...axisProps} width={56} domain={[0, sel.goal.target]} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+                          <YAxis {...axisProps} width={56} domain={[0, sel.goal.target]} tickFormatter={formatAxis} />
                           <Tooltip content={({ active, payload }) => (active && payload?.length ? <ChartTooltipBox title={formatMonthLong((payload[0].payload as { month: string }).month)} rows={[{ label: (payload[0].payload as { projected: boolean }).projected ? t('Projeção') : t('Acumulado'), value: money(Number(payload[0].value)), color: sel.goal.color }]} /> : null)} />
                           <Area type="monotone" dataKey={(d: { projected: boolean; value: number }) => (d.projected ? null : d.value)} name={t('Acumulado')} stroke={sel.goal.color} strokeWidth={2} fill="url(#goal-g)" connectNulls={false} />
                           <Area type="monotone" dataKey={(d: { projected: boolean; value: number; month: string }) => (d.projected || d.month === monthKey(today()) ? d.value : null)} name={t('Projeção')} stroke={sel.goal.color} strokeDasharray="5 4" strokeWidth={2} fill="none" />

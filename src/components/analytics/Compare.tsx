@@ -8,7 +8,7 @@ import { axisProps, ChartTooltipBox, Legend } from '@/components/charts/ChartToo
 import { useMoney } from '@/hooks/useMoney';
 import { addDays, addMonths, endOfMonth, formatDate, monthKey, startOfMonth, today } from '@/lib/dates';
 import { inPeriod, isRealized, summarize, type Period } from '@/lib/finance';
-import { formatMoney, formatNumber, pctChange, round2 } from '@/lib/format';
+import { formatNumber, pctChange, round2, formatAxis } from '@/lib/format';
 import type { FinanceData } from '@/types';
 import { t } from '@/i18n';
 
@@ -169,7 +169,7 @@ export function Compare({ data }: { data: FinanceData }) {
                 <BarChart data={chart} margin={{ top: 8, right: 0, left: 0, bottom: 0 }} barGap={2}>
                   <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
                   <XAxis dataKey="label" {...axisProps} interval={0} fontSize={10} />
-                  <YAxis {...axisProps} width={48} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+                  <YAxis {...axisProps} width={48} tickFormatter={formatAxis} />
                   <Tooltip cursor={{ fill: 'var(--surface-2)' }} content={({ active, payload, label }) => (active && payload?.length ? <ChartTooltipBox title={String(label)} rows={[{ label: 'A', value: money(Number(payload[0].value)), color: 'var(--series-1)' }, { label: 'B', value: money(Number(payload[1]?.value ?? 0)), color: 'var(--series-2)' }]} /> : null)} />
                   <Bar dataKey="A" fill="var(--series-1)" radius={[3, 3, 0, 0]} maxBarSize={18} />
                   <Bar dataKey="B" fill="var(--series-2)" radius={[3, 3, 0, 0]} maxBarSize={18} />

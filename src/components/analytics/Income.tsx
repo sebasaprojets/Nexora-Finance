@@ -8,7 +8,7 @@ import { CategoryIcon } from '@/components/common/CategoryIcon';
 import { useMoney } from '@/hooks/useMoney';
 import { addMonths, eachMonth, formatMonthLong, formatMonthShort, startOfMonth, today, diffDays } from '@/lib/dates';
 import { monthlyByCategory, summarize, totalsByCategory, type Period } from '@/lib/finance';
-import { formatMoney, formatNumber, pctChange } from '@/lib/format';
+import { formatNumber, pctChange, formatAxis } from '@/lib/format';
 import type { FinanceData } from '@/types';
 import { t } from '@/i18n';
 
@@ -47,7 +47,7 @@ export function Income({ data, period, previous }: { data: FinanceData; period: 
                 <BarChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
                   <XAxis dataKey="label" {...axisProps} />
-                  <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+                  <YAxis {...axisProps} width={56} tickFormatter={formatAxis} />
                   <Tooltip
                     cursor={{ fill: 'var(--surface-2)' }}
                     content={({ active, payload }) => {

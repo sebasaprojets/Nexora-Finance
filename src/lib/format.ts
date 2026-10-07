@@ -43,8 +43,10 @@ export function formatMoney(value: number, opts: MoneyOptions = {}): string {
   const v = Object.is(value, -0) ? 0 : value;
   let out: string;
   if (opts.abbreviate && Math.abs(v) >= 10_000) {
-    out = nf(`${currency}-abbr`, () =>
-      new Intl.NumberFormat(locale, { style: 'currency', currency, notation: 'compact', maximumFractionDigits: 1 }),
+    // Abreviação ("mil", "K", "mi") segue o idioma do app.
+    const abbrLocale = currentLocale();
+    out = nf(`${currency}-abbr-${abbrLocale}`, () =>
+      new Intl.NumberFormat(abbrLocale, { style: 'currency', currency, notation: 'compact', maximumFractionDigits: 1 }),
     ).format(v);
   } else {
     const digits = opts.compact ? 0 : 2;
@@ -117,3 +119,9 @@ export function parseMoneyInput(raw: string): number {
 }
 
 export const MASK = '••••••';
+
+/** Rótulo curto para eixos de gráficos, sem símbolo da moeda: "10,5 mil" · "10.5K". */
+export function formatAxis(value: number): string {
+  const loc = currentLocale();
+  return nf(`axis-${loc}`, () => new Intl.NumberFormat(loc, { notation: 'compact', maximumFractionDigits: 1 })).format(value);
+}

@@ -9,7 +9,7 @@ import { useMoney } from '@/hooks/useMoney';
 import { cn } from '@/lib/cn';
 import { addDays, addMonths, startOfMonth, today } from '@/lib/dates';
 import { cashFlow, type Granularity, type Period } from '@/lib/finance';
-import { formatMoney } from '@/lib/format';
+import { formatAxis } from '@/lib/format';
 import type { FinanceData } from '@/types';
 import { t } from '@/i18n';
 
@@ -91,7 +91,7 @@ export function CashFlow({ data }: { data: FinanceData }) {
               <ComposedChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
                 <XAxis dataKey="label" {...axisProps} minTickGap={12} />
-                <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+                <YAxis {...axisProps} width={56} tickFormatter={formatAxis} />
                 <Tooltip
                   cursor={{ fill: 'var(--surface-2)' }}
                   content={({ active, payload }) => {

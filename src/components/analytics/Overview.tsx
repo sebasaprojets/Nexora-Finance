@@ -16,7 +16,7 @@ import { useMoney } from '@/hooks/useMoney';
 import { cn } from '@/lib/cn';
 import { addMonths, formatDate, monthKey, formatMonthLong, formatMonthShort, startOfMonth, today } from '@/lib/dates';
 import { autoGranularity, dre, indicators, netWorth, summarize, timeSeries, type Period } from '@/lib/finance';
-import { formatMoney, formatNumber, formatPercent, pctChange } from '@/lib/format';
+import { formatNumber, formatPercent, pctChange, formatAxis } from '@/lib/format';
 import { generateInsights } from '@/lib/insights';
 import type { FinanceData } from '@/types';
 import { t } from '@/i18n';
@@ -180,7 +180,7 @@ function ProfitLoss({ income, expense, monthly }: { income: number; expense: num
             <BarChart data={monthly.map((x) => ({ ...x, label: formatMonthShort(x.key) }))} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
               <XAxis dataKey="label" {...axisProps} />
-              <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
+              <YAxis {...axisProps} width={56} tickFormatter={formatAxis} />
               <ReferenceLine y={0} stroke="var(--border-strong)" />
               <Tooltip
                 cursor={{ fill: 'var(--surface-2)' }}
