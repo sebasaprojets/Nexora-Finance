@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { KeyRound, LogOut, Monitor, ShieldCheck, Smartphone, Tablet } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { PasswordInput, StrengthMeter } from '@/components/common/PasswordInput';
+import { BiometricSettings } from '@/components/common/BiometricSettings';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Field } from '@/components/ui/Field';
@@ -89,6 +90,8 @@ export default function Security() {
           )}
         </CardBody>
       </Card>
+
+      <BiometricSettings />
 
       <Card>
         <CardHeader title="Alterar senha" icon={<KeyRound />} />

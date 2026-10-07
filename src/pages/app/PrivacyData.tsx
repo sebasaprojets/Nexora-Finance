@@ -11,6 +11,7 @@ import { useFinance } from '@/store/finance';
 import { useSettings } from '@/store/settings';
 import { toast } from '@/store/toast';
 import { authService } from '@/services/auth';
+import { disableBiometric } from '@/services/biometric';
 import { today } from '@/lib/dates';
 
 export default function PrivacyData() {
@@ -38,6 +39,7 @@ export default function PrivacyData() {
 
   const deleteAccount = () => {
     deleteWorkspace();
+    disableBiometric(user.id);
     authService.deleteUser(user.id);
     signOut();
     toast.success('Conta excluída', { description: 'Seus dados foram removidos deste dispositivo.' });

@@ -3,12 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AlertCircle, Mail } from 'lucide-react';
+import { AlertCircle, Mail, Smartphone } from 'lucide-react';
 import { AuthLayout } from '@/layouts/AuthLayout';
 import { Button } from '@/components/ui/Button';
 import { Field, Input } from '@/components/ui/Field';
 import { PasswordInput } from '@/components/common/PasswordInput';
 import { Divider, SocialButtons } from '@/components/common/SocialButtons';
+import { BiometricLogin } from '@/components/common/BiometricLogin';
 import { authService, AuthError } from '@/services/auth';
 import { useAuth } from '@/store/auth';
 import { toast } from '@/store/toast';
@@ -53,6 +54,7 @@ export default function Login() {
         </>
       }
     >
+      <BiometricLogin from={from} />
       <SocialButtons />
       <Divider label="ou entre com e-mail" />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
@@ -78,6 +80,10 @@ export default function Login() {
         <Button type="submit" size="lg" className="w-full" loading={formState.isSubmitting}>
           Entrar
         </Button>
+        <p className="flex items-start gap-2 rounded-xl bg-surface-2/70 px-3 py-2.5 text-xs text-fg-subtle">
+          <Smartphone className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+          Versão atual: sua conta e seus dados ficam salvos neste aparelho e navegador. Se você criou a conta em outro aparelho, entre por lá — a sincronização entre dispositivos chega em breve.
+        </p>
       </form>
     </AuthLayout>
   );

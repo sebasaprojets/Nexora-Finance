@@ -198,6 +198,19 @@ export const authService = {
     return { session: createSession(user.id, true), user: publicUser(user) };
   },
 
+  /** Sessão após Face ID/biometria confirmada pelo aparelho (ver services/biometric.ts). */
+  async signInWithBiometric(userId: string) {
+    const user = users().find((u) => u.id === userId);
+    if (!user) throw new AuthError('Conta não encontrada neste aparelho.', 'not_found');
+    return { session: createSession(user.id, true), user: publicUser(user) };
+  },
+
+  /** Nome exibido no botão de login biométrico. */
+  displayName(userId: string): string | null {
+    const u = users().find((x) => x.id === userId);
+    return u ? u.name : null;
+  },
+
   async requestPasswordReset(email: string) {
     await delay(700);
     // Sempre responde com sucesso para não revelar quais e-mails existem.

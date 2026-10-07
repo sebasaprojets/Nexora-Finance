@@ -37,7 +37,7 @@ export function usePageTour(id: string, ready = true) {
     const tryStart = (wait: number) => {
       t = setTimeout(() => {
         if (useTourStore.getState().active) return;
-        if (document.querySelector('[role="dialog"][aria-modal="true"]')) return tryStart(700);
+        if (document.querySelector('[role="dialog"][aria-modal="true"]') || document.body.dataset.biometricPending) return tryStart(700);
         start(id);
       }, wait);
     };

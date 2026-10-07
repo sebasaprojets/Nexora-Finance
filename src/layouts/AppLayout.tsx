@@ -8,6 +8,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { InstallPrompt } from '@/components/layout/InstallPrompt';
 import { TourOverlay } from '@/components/tour/Tour';
+import { BiometricPrompt } from '@/components/common/BiometricPrompt';
 import { TransactionModal } from '@/components/transactions/TransactionModal';
 import { PageSkeleton } from '@/components/ui/Skeleton';
 import { useShortcuts } from '@/hooks/useShortcuts';
@@ -95,6 +96,7 @@ export function AppLayout() {
       <TransactionModal />
       <InstallPrompt />
       <TourOverlay />
+      <BiometricPrompt />
     </div>
   );
 }
