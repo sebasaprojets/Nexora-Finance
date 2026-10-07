@@ -12,6 +12,7 @@ export default {
     Continuar: 'Continue',
     Confirmar: 'Confirm',
     Idioma: 'Language',
+    'Navegação principal': 'Main navigation',
   },
   es: {
     Cancelar: 'Cancelar',
@@ -23,5 +24,6 @@ export default {
     Continuar: 'Continuar',
     Confirmar: 'Confirmar',
     Idioma: 'Idioma',
+    'Navegação principal': 'Navegación principal',
   },
 } satisfies LocaleModule;

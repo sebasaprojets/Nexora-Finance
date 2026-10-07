@@ -58,7 +58,7 @@ export default {
     'Em negociação': 'Under negotiation',
     // Tipos de investimento
     'Renda fixa': 'Fixed income',
-    'Ações': 'Stocks',
+    'Ações||investimento': 'Stocks',
     'FIIs': 'REITs',
     'ETFs': 'ETFs',
     'Criptomoedas': 'Crypto',
@@ -117,7 +117,7 @@ export default {
     'Tablet': 'Tablet',
     'Computador': 'Computer',
     // Calendário
-    'Conta': 'Bill',
+    'Conta||a pagar': 'Bill',
     'Fatura': 'Card bill',
     'Meta': 'Goal',
     'Lembrete': 'Reminder',
@@ -373,7 +373,7 @@ export default {
     'Em negociação': 'En negociación',
     // Tipos de investimento
     'Renda fixa': 'Renta fija',
-    'Ações': 'Acciones',
+    'Ações||investimento': 'Acciones',
     'FIIs': 'FII',
     'ETFs': 'ETF',
     'Criptomoedas': 'Criptomonedas',
@@ -432,7 +432,7 @@ export default {
     'Tablet': 'Tableta',
     'Computador': 'Computadora',
     // Calendário
-    'Conta': 'Cuenta',
+    'Conta||a pagar': 'Cuenta por pagar',
     'Fatura': 'Resumen de la tarjeta',
     'Meta': 'Meta',
     'Lembrete': 'Recordatorio',

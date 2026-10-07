@@ -21,7 +21,7 @@ export interface CalendarEvent {
 
 /** `label` é traduzido no idioma atual a cada leitura. */
 export const EVENT_META: Record<EventKind, { label: string; color: string }> = {
-  bill: { get label() { return t('Conta'); }, color: 'var(--series-2)' },
+  bill: { get label() { return t('Conta||a pagar'); }, color: 'var(--series-2)' },
   invoice: { get label() { return t('Fatura'); }, color: 'var(--series-7)' },
   income: { get label() { return t('Receita'); }, color: 'var(--series-3)' },
   goal: { get label() { return t('Meta'); }, color: 'var(--series-1)' },

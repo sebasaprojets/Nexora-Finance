@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { LanguageSwitcher } from '@/components/landing/LanguageSwitcher';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -48,21 +49,35 @@ const GOAL_OPTIONS = [
 
 const STEPS = ['Objetivo', 'Renda e gastos', 'Contas e cartões', 'Metas', 'Diagnóstico'];
 
+let draft = {
+  step: 0,
+  objectives: [] as FinancialObjective[],
+  income: '',
+  expenses: '',
+  accounts: {} as Record<string, string>,
+  cards: 0,
+  goals: [] as string[],
+};
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
   const updateUser = useAuth((s) => s.updateUser);
   const finance = useFinance();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(draft.step);
   const [dir, setDir] = useState(1);
-  const [objectives, setObjectives] = useState<FinancialObjective[]>([]);
+  const [objectives, setObjectives] = useState<FinancialObjective[]>(draft.objectives);
   const toggleObjective = (v: FinancialObjective) => setObjectives((l) => (l.includes(v) ? l.filter((x) => x !== v) : [...l, v]));
   const wantsDebtFree = objectives.includes('debt_free');
-  const [income, setIncome] = useState('');
-  const [expenses, setExpenses] = useState('');
-  const [accounts, setAccounts] = useState<Record<string, string>>({});
-  const [cards, setCards] = useState(0);
-  const [goals, setGoals] = useState<string[]>([]);
+  const [income, setIncome] = useState(draft.income);
+  const [expenses, setExpenses] = useState(draft.expenses);
+  const [accounts, setAccounts] = useState<Record<string, string>>(draft.accounts);
+  const [cards, setCards] = useState(draft.cards);
+  const [goals, setGoals] = useState<string[]>(draft.goals);
+  // Trocar o idioma remonta a tela: guarda as respostas para não perder o progresso.
+  useEffect(() => {
+    draft = { step, objectives, income, expenses, accounts, cards, goals };
+  }, [step, objectives, income, expenses, accounts, cards, goals]);
 
   const inc = parseMoneyInput(income) || 0;
   const exp = parseMoneyInput(expenses) || 0;
@@ -102,6 +117,7 @@ export default function Onboarding() {
         finance.upsert('goals', { id: uid('goal'), name: t(g), target, deadline: addMonths(today(), 12), icon: o.icon, color: o.color, initialAmount: 0, contributions: [], createdAt: now });
       }
     }
+    draft = { step: 0, objectives: [], income: '', expenses: '', accounts: {}, cards: 0, goals: [] };
     finance.setOnboarding({ objective: objectives[0], objectives, monthlyIncome: inc, monthlyExpenses: exp, accountsCount: Object.keys(accounts).length, cardsCount: cards, goals, completedAt: new Date().toISOString() });
     updateUser({ onboarded: true });
     toast.success(t('Tudo pronto!'), { description: withDemo ? t('Carregamos dados de exemplo para você explorar.') : t('Sua Nexora está configurada.') });
@@ -114,11 +130,15 @@ export default function Onboarding() {
       <div className="relative mx-auto flex min-h-dvh max-w-2xl flex-col px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-6">
         <div className="flex items-center justify-between">
           <Logo />
-          <span className="text-xs text-fg-subtle">
-            {t('Etapa {n} de {total}', { n: step + 1, total: STEPS.length })} · {t(STEPS[step])}
-          </span>
+          <div className="flex items-center gap-1">
+            <span className="hidden text-xs text-fg-subtle sm:inline">
+              {t('Etapa {n} de {total}', { n: step + 1, total: STEPS.length })} · {t(STEPS[step])}
+            </span>
+            <LanguageSwitcher className="-mr-2.5" />
+          </div>
         </div>
         <Progress value={((step + 1) / STEPS.length) * 100} className="mt-5" size="sm" label={t('Progresso do onboarding')} />
+        <p className="mt-2 text-xs text-fg-subtle sm:hidden">{t('Etapa {n} de {total}', { n: step + 1, total: STEPS.length })} · {t(STEPS[step])}</p>
 
         <div className="flex flex-1 flex-col justify-center py-10">
           <AnimatePresence mode="wait" custom={dir}>

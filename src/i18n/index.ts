@@ -38,10 +38,16 @@ export function currentLocale(): string {
 
 const VAR = /\{(\w+)\}/g;
 
+/**
+ * Chaves com contexto: `'Ações||investimento'` diferencia palavras iguais com sentidos
+ * diferentes (ações da bolsa × menu de ações). Em português, o `||contexto` é removido.
+ */
+const CONTEXT = /\|\|.*$/s;
+
 export function t(key: string, vars?: Record<string, string | number | null | undefined>): string {
   if (key == null) return key;
   const lang = currentLang();
-  const text = lang === 'pt' ? key : (DICTS[lang][key] ?? key);
+  const text = (lang === 'pt' ? key : (DICTS[lang][key] ?? key)).replace(CONTEXT, '');
   return vars ? text.replace(VAR, (m, k: string) => (vars[k] === undefined || vars[k] === null ? m : String(vars[k]))) : text;
 }
 

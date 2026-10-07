@@ -737,7 +737,7 @@ export function debtTotals(debts: Debt[]) {
 
 export const INVESTMENT_LABELS: Record<InvestmentType, string> = localizedRecord({
   fixed_income: 'Renda fixa',
-  stocks: 'Ações',
+  stocks: 'Ações||investimento',
   reits: 'FIIs',
   etfs: 'ETFs',
   crypto: 'Criptomoedas',

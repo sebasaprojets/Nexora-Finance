@@ -58,5 +58,5 @@ export default defineConfig({
     cssMinify: true,
     reportCompressedSize: false,
   },
-  test: { environment: 'node', include: ['src/**/*.test.ts'] },
+  test: { environment: 'node', include: ['src/**/*.test.ts'], setupFiles: ['src/test/setup.ts'] },
 });

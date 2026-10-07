@@ -30,7 +30,7 @@ import {
   accountBalances, autoGranularity, balanceHistory, budgetUsage, cardSummary, goalProgress, netWorth, portfolioSummary, subscriptionsSummary, summarize, timeSeries, totalsByCategory, type Granularity,
 } from '@/lib/finance';
 import { generateInsights } from '@/lib/insights';
-import { addDays, diffDays, formatDate, formatDayMonth, today } from '@/lib/dates';
+import { addDays, diffDays, formatDate, formatDayMonth, monthName, today } from '@/lib/dates';
 import { pctChange } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n';
@@ -260,7 +260,7 @@ export default function Dashboard() {
                         <li key={u.id}>
                           <Link to={u.href} className="flex items-center gap-3 py-2.5">
                             <div className="grid w-11 shrink-0 place-items-center rounded-lg border border-border py-1 text-center">
-                              <span className="text-[10px] text-fg-subtle uppercase">{formatDayMonth(u.date).slice(3)}</span>
+                              <span className="text-[10px] text-fg-subtle uppercase">{monthName(u.date.slice(0, 7)).slice(0, 3)}</span>
                               <span className="font-display text-sm font-semibold">{u.date.slice(8)}</span>
                             </div>
                             <div className="min-w-0 flex-1">

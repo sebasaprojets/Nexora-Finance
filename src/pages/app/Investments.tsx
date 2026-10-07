@@ -23,7 +23,7 @@ import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import { cn } from '@/lib/cn';
 import type { Investment, InvestmentType } from '@/types';
-import { currentLang, t } from '@/i18n';
+import { t } from '@/i18n';
 
 // Ordem fixa de cores por tipo (a cor segue a entidade, nunca a posição no ranking).
 export const TYPE_COLORS: Record<InvestmentType, string> = {
@@ -37,7 +37,7 @@ export const TYPE_COLORS: Record<InvestmentType, string> = {
 };
 
 /** Nome da classe no idioma atual ("Ações" sozinho colide com o rótulo genérico "Ações" = menu de ações). */
-const typeLabel = (ty: InvestmentType) => (ty === 'stocks' && currentLang() !== 'pt' ? t('Ações (classe de ativo)') : t(INVESTMENT_LABELS[ty]));
+const typeLabel = (ty: InvestmentType) => t(INVESTMENT_LABELS[ty]);
 
 function InvestmentModal({ open, onClose, inv }: { open: boolean; onClose: () => void; inv?: Investment }) {
   const upsert = useFinance((s) => s.upsert);

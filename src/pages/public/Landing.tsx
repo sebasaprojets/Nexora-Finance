@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t as tr } from '@/i18n';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -52,8 +53,8 @@ function Nav() {
   ];
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
-      <nav className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-5" aria-label="Principal">
-        <Link to="/" aria-label="Nexora — início"><Logo /></Link>
+      <nav className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-5" aria-label={tr('Navegação principal')}>
+        <Link to="/" aria-label={tr('Nexora — início')}><Logo /></Link>
         <ul className="ml-6 hidden gap-6 text-sm text-fg-muted md:flex">
           {links.map(([h, l]) => <li key={h}><a href={h} className="transition-colors hover:text-fg">{l}</a></li>)}
         </ul>
