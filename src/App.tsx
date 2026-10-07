@@ -18,6 +18,7 @@ const Landing = lazy(() => import('@/pages/public/Landing'));
 const Legal = lazy(() => import('@/pages/public/Legal'));
 const Login = lazy(() => import('@/pages/auth/Login'));
 const Register = lazy(() => import('@/pages/auth/Register'));
+const More = lazy(() => import('@/pages/app/More'));
 const Help = lazy(() => import('@/pages/app/Help'));
 const Plan = lazy(() => import('@/pages/app/Plan'));
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
@@ -135,6 +136,7 @@ export function App() {
                 <Route path="perfil" element={<Profile />} />
                 <Route path="plano" element={<Plan />} />
                 <Route path="ajuda" element={<Help />} />
+                <Route path="mais" element={<More />} />
                 <Route path="configuracoes" element={<SettingsPage />} />
                 <Route path="seguranca" element={<Security />} />
                 <Route path="privacidade" element={<PrivacyData />} />

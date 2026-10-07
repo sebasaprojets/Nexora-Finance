@@ -21,8 +21,8 @@ export function PeriodFilter({
 }) {
   return (
     <div data-tour="period" className="flex w-full max-w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
-      {/* Celular: grade de 3 colunas, todos os botões visíveis e do mesmo tamanho. */}
-      <div role="radiogroup" aria-label={t('Período')} className="grid w-full grid-cols-3 gap-1.5 sm:hidden">
+      {/* Celular: uma linha só, rolável para o lado. */}
+      <div role="radiogroup" aria-label={t('Período')} className="-mx-4 flex w-[calc(100%+2rem)] gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] sm:hidden [&::-webkit-scrollbar]:hidden">
         {presets.map((p) => (
           <button
             key={p}
@@ -30,7 +30,7 @@ export function PeriodFilter({
             aria-checked={preset === p}
             onClick={() => onPreset(p)}
             className={cn(
-              'flex h-10 items-center justify-center gap-1.5 rounded-xl border text-[13px] font-medium transition-colors [&>svg]:size-3.5',
+              'flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium whitespace-nowrap transition-colors [&>svg]:size-3.5',
               preset === p ? 'border-primary bg-primary-soft text-fg' : 'border-border bg-surface-2/60 text-fg-muted',
             )}
           >

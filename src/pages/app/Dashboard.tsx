@@ -127,7 +127,7 @@ export default function Dashboard() {
             />
             <StatCard label={t('Entradas')} icon={<ArrowDownLeft />} value={m.cur.income} format={(v) => money(v)} delta={pctChange(m.cur.income, m.prev.income)} comparison={t('ant. {value}', { value: money(m.prev.income, { compact: true }) })} spark={m.series.map((s) => s.income)} sparkColor="var(--series-income)" info={t('Total de receitas no período selecionado, comparado ao período anterior de mesma duração.')} />
             <StatCard label={t('Saídas')} icon={<ArrowUpRight />} value={m.cur.expense} format={(v) => money(v)} inverse delta={pctChange(m.cur.expense, m.prev.expense)} comparison={t('ant. {value}', { value: money(m.prev.expense, { compact: true }) })} spark={m.series.map((s) => s.expense)} sparkColor="var(--series-expense)" info={t('Total de despesas (inclui compras no cartão pela data da compra). Transferências não contam.')} />
-            <StatCard label={t('Economia')} icon={<PiggyBank />} value={m.cur.net} format={(v) => money(v)} delta={pctChange(m.cur.net, savingsPrev)} comparison={t('{pct}% da renda', { pct: m.cur.savingsRate.toFixed(0) })} spark={m.series.map((s) => s.net)} sparkColor="var(--series-net)" info={t('Entradas − saídas no período. A porcentagem indica quanto da renda foi poupado.')} />
+            <StatCard className="hidden sm:flex" label={t('Economia')} icon={<PiggyBank />} value={m.cur.net} format={(v) => money(v)} delta={pctChange(m.cur.net, savingsPrev)} comparison={t('{pct}% da renda', { pct: m.cur.savingsRate.toFixed(0) })} spark={m.series.map((s) => s.net)} sparkColor="var(--series-net)" info={t('Entradas − saídas no período. A porcentagem indica quanto da renda foi poupado.')} />
           </section>
 
           {/* 3. Fluxo financeiro + categorias */}
@@ -197,7 +197,8 @@ export default function Dashboard() {
           </div>
 
           {/* 4. Ações rápidas */}
-          <section data-tour="quick-actions" aria-label={t('Ações rápidas')} className="grid grid-cols-4 gap-2 sm:gap-3">
+          {/* No celular o botão "+" da barra inferior já faz isso. */}
+          <section data-tour="quick-actions" aria-label={t('Ações rápidas')} className="hidden grid-cols-4 gap-2 sm:grid sm:gap-3">
             {[
               { label: t('Receita'), icon: TrendingUp, color: 'var(--series-income)', onClick: () => openTx({ type: 'income' }) },
               { label: t('Despesa'), icon: TrendingDown, color: 'var(--series-expense)', onClick: () => openTx({ type: 'expense' }) },

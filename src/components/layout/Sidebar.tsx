@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { t } from '@/i18n';
 import { motion } from 'framer-motion';
-import { ChevronDown, ChevronsLeft, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, ChevronsLeft, Crown, MoreHorizontal } from 'lucide-react';
+import { PlanCard } from '@/components/billing/PlanCard';
 import { cn } from '@/lib/cn';
 import { MORE_NAV, PRIMARY_NAV, type NavItem } from '@/lib/navigation';
 import { Logo, LogoMark } from '@/components/common/Logo';
@@ -112,7 +113,14 @@ export function Sidebar() {
           </motion.div>
         )}
       </nav>
-      <div className="p-3">
+      <div className="space-y-2 p-3">
+        {collapsed ? (
+          <NavLink to="/app/plano" title={t('Meu plano')} className="flex h-9 items-center justify-center rounded-lg text-primary hover:bg-surface-2">
+            <Crown className="size-[18px]" aria-hidden />
+          </NavLink>
+        ) : (
+          <PlanCard compact />
+        )}
         <button
           onClick={toggle}
           className={cn('flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-xs text-fg-subtle hover:bg-surface-2 hover:text-fg', collapsed && 'justify-center')}

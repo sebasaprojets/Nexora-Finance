@@ -1,7 +1,7 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { t } from '@/i18n';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeftRight, BarChart3, House, Plus, User, TrendingDown, TrendingUp, Repeat2 } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, House, LayoutGrid, Plus, TrendingDown, TrendingUp, Repeat2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useUI } from '@/store/ui';
 
@@ -10,7 +10,7 @@ const items = [
   { to: '/app/transacoes', label: 'Transações', icon: ArrowLeftRight },
   null,
   { to: '/app/analises', label: 'Análises', icon: BarChart3 },
-  { to: '/app/perfil', label: 'Perfil', icon: User },
+  { to: '/app/mais', label: 'Mais', icon: LayoutGrid },
 ] as const;
 
 /** Navegação inferior (mobile) com botão central "+" para lançamento rápido. */
@@ -18,6 +18,9 @@ export function BottomNav() {
   const open = useUI((s) => s.quickAddOpen);
   const setOpen = useUI((s) => s.setQuickAddOpen);
   const openTx = useUI((s) => s.openTransaction);
+  const { pathname } = useLocation();
+  // "Mais" fica aceso também nas telas que ele agrupa (Contas, Metas, Perfil…).
+  const inMore = !['/app', '/app/transacoes', '/app/analises'].some((p) => (p === '/app' ? pathname === '/app' || pathname === '/app/' : pathname.startsWith(p)));
 
   const actions = [
     { label: t('Receita'), icon: TrendingUp, type: 'income' as const, color: 'var(--series-income)' },
@@ -93,7 +96,7 @@ export function BottomNav() {
                   end={it.to === '/app'}
                   onClick={() => setOpen(false)}
                   className={({ isActive }) =>
-                    cn('flex flex-col items-center gap-1 text-[10.5px] font-medium transition-colors', isActive ? 'text-primary' : 'text-fg-subtle')
+                    cn('flex flex-col items-center gap-1 text-[10.5px] font-medium transition-colors', isActive || (it.to === '/app/mais' && inMore) ? 'text-primary' : 'text-fg-subtle')
                   }
                 >
                   <it.icon className="size-5" aria-hidden />
