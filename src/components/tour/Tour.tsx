@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, GraduationCap, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useSettings } from '@/store/settings';
+import { useToasts } from '@/store/toast';
 import { TOURS } from '@/lib/tours';
 import { cn } from '@/lib/cn';
 
@@ -30,10 +31,17 @@ export function usePageTour(id: string, ready = true) {
   const start = useTourStore((s) => s.start);
   useEffect(() => {
     if (!ready || !enabled || seen || !TOURS[id]) return;
-    // Espera a página (gráficos, animações) assentar antes de destacar elementos.
-    const t = setTimeout(() => {
-      if (!useTourStore.getState().active && !document.querySelector('[role="dialog"][aria-modal="true"]')) start(id);
-    }, 900);
+    // Espera a página assentar e qualquer diálogo/abertura animada sair da tela
+    // (tenta de novo a cada 700 ms) antes de destacar os elementos.
+    let t: ReturnType<typeof setTimeout>;
+    const tryStart = (wait: number) => {
+      t = setTimeout(() => {
+        if (useTourStore.getState().active) return;
+        if (document.querySelector('[role="dialog"][aria-modal="true"]')) return tryStart(700);
+        start(id);
+      }, wait);
+    };
+    tryStart(900);
     return () => clearTimeout(t);
   }, [id, ready, enabled, seen, start]);
   return useCallback(() => start(id), [id, start]);
@@ -70,6 +78,8 @@ export function TourOverlay() {
   useEffect(() => {
     setIndex(0);
     setDontShow(false);
+    // Fecha mensagens na tela para não cobrirem o que o tutorial destaca.
+    if (active) useToasts.setState({ toasts: [] });
   }, [active]);
 
   const finish = useCallback(() => {
@@ -224,7 +234,7 @@ export function TourButton({ id, className }: { id: string; className?: string }
   const start = useTourStore((s) => s.start);
   if (!TOURS[id]) return null;
   return (
-    <Button variant="ghost" size="sm" className={className} leftIcon={<GraduationCap className="size-3.5" />} onClick={() => start(id)} aria-label={`Ver tutorial: ${TOURS[id].title}`}>
+    <Button data-tour="help" variant="ghost" size="sm" className={className} leftIcon={<GraduationCap className="size-3.5" />} onClick={() => start(id)} aria-label={`Ver tutorial: ${TOURS[id].title}`}>
       <span className="hidden sm:inline">Como usar</span>
     </Button>
   );

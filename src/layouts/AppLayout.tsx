@@ -1,5 +1,5 @@
-import { Suspense, useEffect, useMemo } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate, useOutlet } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { WifiOff } from 'lucide-react';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -17,6 +17,17 @@ import { useFinanceData } from '@/hooks/useFinanceData';
 import { useUI } from '@/store/ui';
 import { useDebounce } from '@/hooks/useDebounce';
 import { runAlertRules } from '@/services/notifications';
+
+/**
+ * Mantém o conteúdo da rota em que o elemento foi montado. Sem isso, durante a
+ * transição (AnimatePresence mode="wait") a página que sai renderizaria a rota
+ * nova — montando-a duas vezes e perdendo estado (ex.: modal aberto via ?nova=1).
+ */
+function FrozenOutlet() {
+  const outlet = useOutlet();
+  const [frozen] = useState(outlet);
+  return frozen;
+}
 
 export function AppLayout() {
   const location = useLocation();
@@ -73,7 +84,7 @@ export function AppLayout() {
               transition={{ duration: 0.18, ease: 'easeOut' }}
             >
               <Suspense fallback={<PageSkeleton />}>
-                <Outlet />
+                <FrozenOutlet />
               </Suspense>
             </motion.div>
           </AnimatePresence>

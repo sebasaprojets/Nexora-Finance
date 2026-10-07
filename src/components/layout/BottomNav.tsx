@@ -67,6 +67,7 @@ export function BottomNav() {
         )}
       </AnimatePresence>
       <nav
+        data-tour="nav"
         aria-label="Navegação inferior"
         className="glass fixed inset-x-0 bottom-0 z-50 border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)] lg:hidden"
       >

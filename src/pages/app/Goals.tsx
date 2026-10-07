@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { CalendarDays, MoreHorizontal, Pencil, PiggyBank, Plus, Target, Trash2, TrendingUp } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -16,6 +16,7 @@ import { useFinance } from '@/store/finance';
 import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { toast } from '@/store/toast';
 import { useMoney } from '@/hooks/useMoney';
+import { useQueryAction } from '@/hooks/useQueryAction';
 import { goalProgress } from '@/lib/finance';
 import { addMonths, formatDate, formatMonthLong, formatMonthShort, monthKey, today } from '@/lib/dates';
 import { formatMoney, parseMoneyInput } from '@/lib/format';
@@ -136,7 +137,9 @@ export default function Goals() {
   const [confirm, setConfirm] = useState<Goal | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
-  usePageTour('goals');
+  const tourId = goals.length > 0 ? 'goals' : 'goals-empty';
+  usePageTour(tourId);
+  useQueryAction('nova', useCallback(() => setModal({ open: true }), []));
   const progress = useMemo(() => goals.map((g) => goalProgress(g)), [goals]);
   const total = progress.reduce((s, p) => ({ current: s.current + p.current, target: s.target + p.goal.target }), { current: 0, target: 0 });
   const sel = progress.find((p) => p.goal.id === (selected ?? progress[0]?.goal.id));
@@ -165,7 +168,7 @@ export default function Goals() {
 
   return (
     <div>
-      <PageHeader title="Metas Financeiras" description="Acompanhe progresso, prazo e quanto guardar por mês." actions={<><TourButton id="goals" /><Button data-tour="goal-new" leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Nova meta</Button></>} />
+      <PageHeader title="Metas Financeiras" description="Acompanhe progresso, prazo e quanto guardar por mês." actions={<><TourButton id={tourId} /><Button data-tour="goal-new" leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Nova meta</Button></>} />
 
       {goals.length === 0 ? (
         <Card>

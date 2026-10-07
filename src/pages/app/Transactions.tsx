@@ -62,7 +62,8 @@ export default function Transactions() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<string[] | null>(null);
   const debounced = useDebounce(query, 200);
-  usePageTour('transactions');
+  const tourId = transactions.length > 0 ? 'transactions' : 'transactions-empty';
+  usePageTour(tourId);
 
   // Atalhos de URL: ?nova=expense (atalho do PWA) e ?busca=
   useEffect(() => {
@@ -221,7 +222,7 @@ export default function Transactions() {
         description="Receitas, despesas e transferências em um só lugar."
         actions={
           <>
-            <TourButton id="transactions" />
+            <TourButton id={tourId} />
             <ExportMenu getTables={exportTables} title="Transações" />
             <Button leftIcon={<Plus className="size-4" />} onClick={() => openTx({ type: 'expense' })}>
               Nova transação
@@ -348,12 +349,19 @@ export default function Transactions() {
 
       <Card data-tour="tx-list">
         {transactions.length === 0 ? (
+          <div data-tour="tx-empty">
           <EmptyState
             icon={<Plus />}
             title="Você ainda não possui transações."
-            description="Registre sua primeira receita ou despesa — leva poucos segundos."
-            action={<Button onClick={() => openTx({ type: 'expense' })}>+ Adicionar primeira transação</Button>}
+            description="Comece pela sua renda (salário) e depois registre as despesas do mês. Leva poucos segundos."
+            action={
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button onClick={() => openTx({ type: 'income' })}>+ Adicionar receita</Button>
+                <Button variant="secondary" onClick={() => openTx({ type: 'expense' })}>+ Adicionar despesa</Button>
+              </div>
+            }
           />
+          </div>
         ) : filtered.length === 0 ? (
           <EmptyState icon={<Search />} title="Nenhum resultado" description="Nenhuma transação corresponde aos filtros. Tente ajustar a busca." action={<Button variant="secondary" onClick={clearFilters}>Limpar filtros</Button>} />
         ) : (

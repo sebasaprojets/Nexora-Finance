@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Lightbulb, OctagonAlert, Pencil, Plus, Trash2, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { CategoryIcon } from '@/components/common/CategoryIcon';
@@ -13,6 +13,7 @@ import { useFinance } from '@/store/finance';
 import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { toast } from '@/store/toast';
 import { useMoney } from '@/hooks/useMoney';
+import { useQueryAction } from '@/hooks/useQueryAction';
 import { budgetUsage, totalsByCategory, type BudgetLevel } from '@/lib/finance';
 import { addDays, addMonths, formatMonthLong, monthKey, startOfMonth, today } from '@/lib/dates';
 import { formatMoney, parseMoneyInput, round2 } from '@/lib/format';
@@ -91,7 +92,9 @@ export default function Budgets() {
   const [month, setMonth] = useState(monthKey(today()));
   const [modal, setModal] = useState<{ open: boolean; budget?: Budget; suggestion?: { categoryId: string; amount: number } }>({ open: false });
 
-  usePageTour('budgets');
+  const tourId = budgets.length > 0 ? 'budgets' : 'budgets-empty';
+  usePageTour(tourId);
+  useQueryAction('novo', useCallback(() => setModal({ open: true }), []));
   const usage = useMemo(() => budgetUsage(budgets, categories, transactions, month), [budgets, categories, transactions, month]);
   const totals = usage.reduce((s, u) => ({ budget: s.budget + u.budget.amount, spent: s.spent + u.spent }), { budget: 0, spent: 0 });
   const isCurrent = month === monthKey(today());
@@ -112,7 +115,7 @@ export default function Budgets() {
       <PageHeader
         title="Orçamentos"
         description="Defina limites por categoria e acompanhe em tempo real."
-        actions={<><TourButton id="budgets" /><Button data-tour="budget-new" leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo orçamento</Button></>}
+        actions={<><TourButton id={tourId} /><Button data-tour="budget-new" leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo orçamento</Button></>}
       />
 
       <div className="mb-6 flex items-center justify-between gap-3">

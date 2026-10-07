@@ -2,13 +2,11 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarClock, CreditCard, Landmark, PiggyBank, Plus, Repeat2, Scale, Sparkles, TrendingDown, TrendingUp, Wallet,
+  ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarClock, CreditCard, Landmark, PiggyBank, Repeat2, Scale, Sparkles, TrendingDown, TrendingUp, Wallet,
 } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
 import { Segmented } from '@/components/ui/Segmented';
-import { EmptyState } from '@/components/ui/EmptyState';
 import { StatCard } from '@/components/common/StatCard';
 import { PeriodFilter } from '@/components/common/PeriodFilter';
 import { InsightList } from '@/components/common/InsightList';
@@ -23,6 +21,8 @@ import { usePeriod } from '@/hooks/usePeriod';
 import { useLookups } from '@/hooks/useLookups';
 import { useAuth } from '@/store/auth';
 import { TourButton, usePageTour } from '@/components/tour/Tour';
+import { GettingStarted, useGettingStarted } from '@/components/common/GettingStarted';
+import { useSettings } from '@/store/settings';
 import { useUI } from '@/store/ui';
 import {
   accountBalances, autoGranularity, balanceHistory, budgetUsage, cardSummary, goalProgress, netWorth, portfolioSummary, subscriptionsSummary, summarize, timeSeries, totalsByCategory, type Granularity,
@@ -78,8 +78,12 @@ export default function Dashboard() {
   }, [data]);
 
   const firstName = user?.name.split(' ')[0] ?? '';
-  usePageTour('dashboard');
   const hasData = data.transactions.length > 0;
+  // Sem lançamentos: tutorial de boas-vindas (como começar). Com dados: tutorial do painel.
+  const tourId = hasData ? 'dashboard' : 'welcome';
+  usePageTour(tourId);
+  const checklist = useGettingStarted();
+  const checklistHidden = useSettings((s) => s.tutorials.checklistHidden);
   const balanceSpark = m.history.filter((_, i, arr) => i % Math.max(1, Math.floor(arr.length / 30)) === 0 || i === arr.length - 1).map((h) => h.balance);
   const nwDelta = pctChange(m.nw.total, m.nw.total - (m.history.at(-1)?.balance ?? 0) + m.prevBalance);
   const savingsPrev = m.prev.net;
@@ -94,29 +98,19 @@ export default function Dashboard() {
             </p>
             <h1 className="mt-1 truncate font-display text-2xl font-semibold tracking-tight sm:text-[28px]">Olá, {firstName} 👋</h1>
           </div>
-          <TourButton id="dashboard" className="lg:hidden" />
+          <TourButton id={tourId} className="lg:hidden" />
         </div>
         <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
-          <TourButton id="dashboard" className="hidden lg:inline-flex" />
-          <PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />
+          <TourButton id={tourId} className="hidden lg:inline-flex" />
+          {hasData && <PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />}
         </div>
       </div>
 
       {!hasData ? (
-        <Card>
-          <EmptyState
-            icon={<Wallet />}
-            title="Você ainda não possui transações."
-            description="Comece registrando uma receita ou despesa. Em segundos seu painel ganha vida com gráficos e insights."
-            action={
-              <Button leftIcon={<Plus className="size-4" />} onClick={() => openTx({ type: 'expense' })}>
-                Adicionar primeira transação
-              </Button>
-            }
-          />
-        </Card>
+        <GettingStarted variant="full" />
       ) : (
         <>
+          {!checklist.complete && !checklistHidden && <GettingStarted variant="compact" />}
           {/* 1–2. Saldo, entradas/saídas e KPIs */}
           <section data-tour="kpis" aria-label="Resumo financeiro" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
             <StatCard

@@ -28,6 +28,7 @@ interface SettingsState extends Settings {
   markTutorialSeen: (id: string) => void;
   setTutorialsEnabled: (enabled: boolean) => void;
   resetTutorials: () => void;
+  setChecklistHidden: (hidden: boolean) => void;
   reset: () => void;
 }
 
@@ -40,13 +41,14 @@ export const useSettings = create<SettingsState>()(
       toggleHideValues: () => set((s) => ({ hideValues: !s.hideValues })),
       markTutorialSeen: (id) => set((s) => ({ tutorials: { ...s.tutorials, seen: [...new Set([...s.tutorials.seen, id])] } })),
       setTutorialsEnabled: (enabled) => set((s) => ({ tutorials: { ...s.tutorials, enabled } })),
-      resetTutorials: () => set({ tutorials: { enabled: true, seen: [] } }),
+      resetTutorials: () => set({ tutorials: { enabled: true, seen: [], checklistHidden: false } }),
+      setChecklistHidden: (checklistHidden) => set((s) => ({ tutorials: { ...s.tutorials, checklistHidden } })),
       reset: () => set(DEFAULT_SETTINGS),
     }),
     {
       name: 'nexora:settings',
       storage: createJSONStorage(() => localStorage),
-      partialize: ({ set: _a, setNotifications: _b, toggleHideValues: _c, reset: _d, markTutorialSeen: _e, setTutorialsEnabled: _f, resetTutorials: _g, ...s }) => s,
+      partialize: ({ set: _a, setNotifications: _b, toggleHideValues: _c, reset: _d, markTutorialSeen: _e, setTutorialsEnabled: _f, resetTutorials: _g, setChecklistHidden: _h, ...s }) => s,
     },
   ),
 );

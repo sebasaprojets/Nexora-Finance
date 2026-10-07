@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Paperclip, Repeat2, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { ChevronDown, Lightbulb, Paperclip, Repeat2, TrendingDown, TrendingUp, X } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Field, Input, Select, Textarea } from '@/components/ui/Field';
@@ -68,7 +68,8 @@ const MAX_ATTACHMENT = 1.5 * 1024 * 1024;
 export function TransactionModal() {
   const draft = useUI((s) => s.txModal);
   const close = useUI((s) => s.closeTransaction);
-  const { accounts, cards, categories, addTransaction, updateTransaction, deleteTransactions, upsert } = useFinance();
+  const { accounts, cards, categories, transactions, addTransaction, updateTransaction, deleteTransactions, upsert } = useFinance();
+  const firstOfType = (t: TransactionType) => !transactions.some((x) => x.type === t);
   const currency = useSettings((s) => s.currency);
   const [more, setMore] = useState(false);
   const [attachment, setAttachment] = useState<Attachment | undefined>();
@@ -222,6 +223,23 @@ export function TransactionModal() {
               name="type"
               render={({ field }) => <Segmented label="Tipo de transação" value={field.value} onChange={field.onChange} options={TYPE_OPTIONS} className="w-full [&>button]:flex-1 [&>button]:justify-center" />}
             />
+          )}
+
+          {!editing && type !== 'transfer' && firstOfType(type) && (
+            <div role="note" className="flex gap-2.5 rounded-xl border border-primary/30 bg-primary-soft px-3.5 py-3 text-sm">
+              <Lightbulb className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+              <p className="text-fg-muted">
+                {type === 'income' ? (
+                  <>
+                    <strong className="text-fg">Sua primeira receita.</strong> Comece pelo salário: informe o valor, escolha “Salário”, a data do pagamento e a conta onde cai. Em <em>Mais detalhes</em>, marque “Mensal” para lembrar todo mês.
+                  </>
+                ) : (
+                  <>
+                    <strong className="text-fg">Sua primeira despesa.</strong> Comece pelas contas fixas (aluguel, luz, internet). Informe o valor, a categoria e de onde saiu o dinheiro — conta ou cartão.
+                  </>
+                )}
+              </p>
+            </div>
           )}
 
           <Field label="Valor" error={formState.errors.amount?.message} required>

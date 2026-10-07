@@ -106,6 +106,18 @@ interface FinanceState extends Workspace {
 const emptyWorkspace = (): Workspace => ({ ...createEmptyData(), notifications: [], sessions: [], version: WS_VERSION });
 
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
+let pendingSave: (() => void) | null = null;
+
+/** Grava imediatamente alterações pendentes (ao fechar/recarregar/ir para segundo plano). */
+export function flushWorkspace() {
+  clearTimeout(saveTimer);
+  pendingSave?.();
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flushWorkspace);
+  window.addEventListener('beforeunload', flushWorkspace);
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && flushWorkspace());
+}
 
 export const useFinance = create<FinanceState>((set, get) => {
   /** Aplica uma mutação e agenda a persistência. */
@@ -114,10 +126,12 @@ export const useFinance = create<FinanceState>((set, get) => {
     const { userId } = get();
     if (!userId) return;
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
+    pendingSave = () => {
+      pendingSave = null;
       const s = get();
       if (s.userId) writeJSON(`ws:${s.userId}`, pickWorkspace(s));
-    }, 250);
+    };
+    saveTimer = setTimeout(() => pendingSave?.(), 250);
   };
 
   return {

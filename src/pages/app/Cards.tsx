@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,6 +20,7 @@ import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { useUI } from '@/store/ui';
 import { toast } from '@/store/toast';
 import { useMoney } from '@/hooks/useMoney';
+import { useQueryAction } from '@/hooks/useQueryAction';
 import { useLookups } from '@/hooks/useLookups';
 import { cardSummary, type CardSummary } from '@/lib/finance';
 import { formatDate, formatMonthLong, today } from '@/lib/dates';
@@ -219,12 +220,14 @@ export default function Cards() {
   const money = useMoney();
   const lookups = useLookups();
   const [modal, setModal] = useState<{ open: boolean; card?: CreditCard }>({ open: false });
+  useQueryAction('novo', useCallback(() => setModal({ open: true }), []));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [view, setView] = useState<'previous' | 'current' | 'next'>('current');
   const [pay, setPay] = useState<{ summary: CardSummary; invoice: Invoice } | null>(null);
   const [confirm, setConfirm] = useState<CreditCard | null>(null);
 
-  usePageTour('cards', cards.length > 0);
+  const tourId = cards.length > 0 ? 'cards' : 'cards-empty';
+  usePageTour(tourId);
   const summaries = useMemo(() => cards.map((c) => cardSummary(c, transactions)), [cards, transactions]);
   const selected = summaries.find((s) => s.card.id === (selectedId ?? summaries[0]?.card.id));
   const totalLimit = summaries.reduce((s, c) => s + c.card.limit, 0);
@@ -234,7 +237,7 @@ export default function Cards() {
 
   return (
     <div>
-      <PageHeader title="Cartões" description="Limites, faturas, vencimentos e compras." actions={<><TourButton id="cards" /><Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo cartão</Button></>} />
+      <PageHeader title="Cartões" description="Limites, faturas, vencimentos e compras." actions={<><TourButton id={tourId} /><Button data-tour="card-new" leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo cartão</Button></>} />
 
       {cards.length === 0 ? (
         <Card>

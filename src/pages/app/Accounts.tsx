@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,6 +18,7 @@ import { useFinance } from '@/store/finance';
 import { useUI } from '@/store/ui';
 import { toast } from '@/store/toast';
 import { useMoney } from '@/hooks/useMoney';
+import { useQueryAction } from '@/hooks/useQueryAction';
 import { useLookups } from '@/hooks/useLookups';
 import { accountBalances, accountEffect, accountFlows, periodFromPreset } from '@/lib/finance';
 import { addDays, eachDay, today } from '@/lib/dates';
@@ -126,6 +127,7 @@ export default function Accounts() {
   const money = useMoney();
   const lookups = useLookups();
   const [modal, setModal] = useState<{ open: boolean; account?: Account }>({ open: false });
+  useQueryAction('nova', useCallback(() => setModal({ open: true }), []));
   const [selected, setSelected] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<Account | null>(null);
 

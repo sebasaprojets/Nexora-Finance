@@ -269,7 +269,7 @@ export interface Settings {
   notifications: NotificationPreferences;
   reducedMotion: 'system' | 'on' | 'off';
   /** Tutoriais guiados: ativos e quais já foram vistos/pulados. */
-  tutorials: { enabled: boolean; seen: string[] };
+  tutorials: { enabled: boolean; seen: string[]; checklistHidden?: boolean };
 }
 
 export type FinancialObjective =
