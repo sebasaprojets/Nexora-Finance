@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, ChevronsUpDown, Pencil, Search, Trash2, X } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
+import { Deferred } from '@/components/common/Deferred';
 import { Segmented } from '@/components/ui/Segmented';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Field';
@@ -85,9 +86,15 @@ export function Spending({ data, period }: { data: FinanceData; period: Period }
         </Card>
       </div>
 
-      <SpendingEvolution data={data} />
-      <SpendingTable data={data} period={period} />
-      <Heatmap data={data} />
+      <Deferred minHeight={460}>
+        <SpendingEvolution data={data} />
+      </Deferred>
+      <Deferred minHeight={560}>
+        <SpendingTable data={data} period={period} />
+      </Deferred>
+      <Deferred minHeight={520}>
+        <Heatmap data={data} />
+      </Deferred>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useOutlet } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { WifiOff } from 'lucide-react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
@@ -22,13 +22,35 @@ import { runAlertRules } from '@/services/notifications';
 
 /**
  * Mantém o conteúdo da rota em que o elemento foi montado. Sem isso, durante a
- * transição (AnimatePresence mode="wait") a página que sai renderizaria a rota
+ * transição a página que sai renderizaria a rota
  * nova — montando-a duas vezes e perdendo estado (ex.: modal aberto via ?nova=1).
  */
 function FrozenOutlet() {
   const outlet = useOutlet();
   const [frozen] = useState(outlet);
   return frozen;
+}
+
+/** Baixa em segundo plano as telas mais usadas, para a navegação ser instantânea. */
+function usePrefetchRoutes() {
+  useEffect(() => {
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (conn?.saveData) return; // respeita o "economia de dados" do usuário
+    const load = () => {
+      void import('@/pages/app/Transactions');
+      void import('@/pages/app/Analytics');
+      void import('@/pages/app/Accounts');
+      void import('@/pages/app/Cards');
+      void import('@/pages/app/Assistant');
+      void import('@/pages/app/Goals');
+      void import('@/pages/app/Budgets');
+    };
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+    const id = w.requestIdleCallback ? w.requestIdleCallback(load, { timeout: 4000 }) : window.setTimeout(load, 2500);
+    return () => {
+      if (!w.requestIdleCallback) clearTimeout(id);
+    };
+  }, []);
 }
 
 export function AppLayout() {
@@ -38,6 +60,7 @@ export function AppLayout() {
   const reduced = useReducedMotion();
   const openTx = useUI((s) => s.openTransaction);
   const setCommandOpen = useUI((s) => s.setCommandOpen);
+  usePrefetchRoutes();
   const data = useFinanceData();
   const debounced = useDebounce(data, 800);
 
@@ -78,19 +101,17 @@ export function AppLayout() {
           </div>
         )}
         <main id="conteudo" className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-6 pb-28 sm:px-6 lg:px-8 lg:pb-12">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
+          {/* Entrada suave da nova página, sem esperar a anterior sair (navegação instantânea). */}
+          <motion.div
               key={location.pathname}
               initial={reduced ? false : { opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={reduced ? undefined : { opacity: 0 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             >
               <Suspense fallback={<PageSkeleton />}>
                 <FrozenOutlet />
               </Suspense>
             </motion.div>
-          </AnimatePresence>
         </main>
       </div>
       <BottomNav />

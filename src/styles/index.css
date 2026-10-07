@@ -18,7 +18,7 @@
   --surface-2: #f0f2f7;
   --surface-3: #e6e9f1;
   --overlay: rgb(10 12 20 / 0.45);
-  --glass: rgb(255 255 255 / 0.72);
+  --glass: rgb(255 255 255 / 0.86);
   /* Bordas */
   --border: rgb(15 20 40 / 0.08);
   --border-strong: rgb(15 20 40 / 0.16);
@@ -74,7 +74,7 @@
   --surface-2: #171a25;
   --surface-3: #1f2330;
   --overlay: rgb(0 0 0 / 0.6);
-  --glass: rgb(17 19 28 / 0.66);
+  --glass: rgb(17 19 28 / 0.82);
   --border: rgb(255 255 255 / 0.07);
   --border-strong: rgb(255 255 255 / 0.14);
   --fg: #eef0f7;
@@ -195,7 +195,7 @@
     @apply min-w-0 rounded-xl border border-border bg-surface shadow-sm;
   }
   .glass {
-    @apply border border-border bg-glass backdrop-blur-xl;
+    @apply border border-border bg-glass backdrop-blur-md;
   }
   .hairline-top {
     background-image: linear-gradient(90deg, transparent, var(--border-strong), transparent);
@@ -246,6 +246,23 @@
   animation: nx-particle 8s ease-in-out infinite;
   box-shadow: 0 0 6px 1px rgb(127 233 255 / 0.6);
   will-change: transform, opacity;
+}
+
+/* Toques mais responsivos (sem atraso de duplo toque) e rolagem suave em iOS. */
+a,
+button,
+[role='button'],
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
+/* Seções longas fora da tela só são desenhadas quando chegam perto (landing). */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
 }
 
 @media (prefers-reduced-motion: reduce) {

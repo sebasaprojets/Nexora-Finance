@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
-import { AppLayout } from '@/layouts/AppLayout';
 import { Toaster } from '@/components/ui/Toaster';
 import { PageSkeleton } from '@/components/ui/Skeleton';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -11,7 +10,8 @@ import { useAuth } from '@/store/auth';
 import { useFinance } from '@/store/finance';
 import { IntroSplash, REPLAY_INTRO_EVENT } from '@/components/brand/IntroSplash';
 
-// Code splitting por rota.
+// Code splitting por rota (o shell do app só é baixado depois do login).
+const AppLayout = lazy(() => import('@/layouts/AppLayout').then((m) => ({ default: m.AppLayout })));
 const Landing = lazy(() => import('@/pages/public/Landing'));
 const Legal = lazy(() => import('@/pages/public/Legal'));
 const Login = lazy(() => import('@/pages/auth/Login'));

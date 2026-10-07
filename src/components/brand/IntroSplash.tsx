@@ -47,11 +47,18 @@ function useParticles(count: number) {
 
 export function IntroSplash({ onDone }: { onDone: () => void }) {
   const reduced = useReducedMotion();
+  // Aparelhos de toque/modestos: menos partículas e desfoque mais leve (mantém 60 fps).
+  const lite = useMemo(
+    () => typeof window !== 'undefined' && (window.matchMedia('(pointer: coarse)').matches || (navigator.hardwareConcurrency ?? 8) <= 4),
+    [],
+  );
+  const blurIn = lite ? 'blur(6px)' : 'blur(14px)';
+  const blurOut = lite ? 'blur(8px)' : 'blur(18px)';
   const [phase, setPhase] = useState<Phase>('enter');
   const [visible, setVisible] = useState(true);
   const uid = `nxi${useId().replace(/:/g, '')}`;
   const fill = markFill(uid);
-  const particles = useParticles(typeof window !== 'undefined' && window.innerWidth < 640 ? 14 : 26);
+  const particles = useParticles(lite ? 10 : 24);
   const exited = useRef(false);
 
   const exit = useCallback(() => {
@@ -88,14 +95,14 @@ export function IntroSplash({ onDone }: { onDone: () => void }) {
   const camera: { initial: TargetAndTransition; enter: TargetAndTransition; exit: TargetAndTransition } = reduced
     ? { initial: { opacity: 0 }, enter: { opacity: 1, transition: { duration: 0.5 } }, exit: { opacity: 0, transition: { duration: 0.45 } } }
     : {
-        initial: { opacity: 0, scale: 0.72, rotateX: 24, rotateY: -26, y: 40, filter: 'blur(14px)' },
+        initial: { opacity: 0, scale: 0.72, rotateX: 24, rotateY: -26, y: 40, filter: blurIn },
         enter: {
           opacity: 1,
           scale: [0.72, 1, 1.04],
           rotateX: [24, 0, -1.5],
           rotateY: [-26, 0, 2],
           y: [40, 0, -4],
-          filter: ['blur(14px)', 'blur(0px)', 'blur(0px)'],
+          filter: [blurIn, 'blur(0px)', 'blur(0px)'],
           transition: { duration: 6.5, times: [0, 0.45, 1], ease: [[...EASE_CINE], 'linear'] as Transition['ease'] },
         },
         exit: {
@@ -103,7 +110,7 @@ export function IntroSplash({ onDone }: { onDone: () => void }) {
           scale: 1.16,
           rotateX: -8,
           y: -26,
-          filter: 'blur(18px)',
+          filter: blurOut,
           transition: { duration: 1.4, ease: [0.4, 0, 0.2, 1] as const },
         },
       };
@@ -165,7 +172,7 @@ export function IntroSplash({ onDone }: { onDone: () => void }) {
               <div className="relative" style={{ width: 'min(42vw, 32vh, 340px)' }}>
                 <motion.div
                   aria-hidden
-                  className="absolute inset-[-30%] rounded-full blur-3xl"
+                  className="absolute inset-[-30%] rounded-full"
                   style={{ background: 'radial-gradient(circle, rgba(34,230,214,0.35), rgba(59,63,240,0.18) 45%, transparent 70%)' }}
                   initial={{ opacity: 0, scale: 0.6 }}
                   animate={{ opacity: [0, 0.9, 0.55], scale: [0.6, 1.1, 1] }}

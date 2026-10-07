@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ArrowDown, ArrowUp, ChevronsUpDown, Equal, Gauge, Minus, Sparkles } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
+import { Deferred } from '@/components/common/Deferred';
 import { Segmented } from '@/components/ui/Segmented';
 import { Sparkline } from '@/components/ui/Sparkline';
 import { Delta } from '@/components/ui/Delta';
@@ -97,12 +98,15 @@ export function Overview({ data, period, previous }: { data: FinanceData; period
       </Card>
 
       {/* 13. Lucros e Perdas */}
-      <ProfitLoss income={m.cur.income} expense={m.cur.expense} monthly={m.monthly} />
+      <Deferred minHeight={460}>
+        <ProfitLoss income={m.cur.income} expense={m.cur.expense} monthly={m.monthly} />
+      </Deferred>
 
       {/* 14. DRE */}
       <DRETable data={data} period={period} previous={previous} />
 
       {/* 21. Indicadores */}
+      <Deferred minHeight={380}>
       <Card>
         <CardHeader title="Indicadores financeiros" icon={<Gauge />} description="Calculados sobre seus dados no período" />
         <CardBody className="grid grid-cols-2 gap-3 lg:grid-cols-3">
@@ -127,14 +131,17 @@ export function Overview({ data, period, previous }: { data: FinanceData; period
           ))}
         </CardBody>
       </Card>
+      </Deferred>
 
       {/* 24. Insights */}
+      <Deferred minHeight={300}>
       <Card>
         <CardHeader title="Nexora Insights" icon={<Sparkles />} description="Gerados a partir dos seus números — nada é estimado sem dados." />
         <CardBody className="grid gap-x-6 px-3 md:grid-cols-2">
           <InsightList insights={insights} />
         </CardBody>
       </Card>
+      </Deferred>
     </div>
   );
 }

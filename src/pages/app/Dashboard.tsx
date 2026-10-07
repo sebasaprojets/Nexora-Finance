@@ -22,6 +22,7 @@ import { useLookups } from '@/hooks/useLookups';
 import { useAuth } from '@/store/auth';
 import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { GettingStarted, useGettingStarted } from '@/components/common/GettingStarted';
+import { Deferred } from '@/components/common/Deferred';
 import { useSettings } from '@/store/settings';
 import { useUI } from '@/store/ui';
 import {
@@ -228,6 +229,7 @@ export default function Dashboard() {
           </section>
 
           {/* 5. Transações + próximos vencimentos */}
+          <Deferred minHeight={420}>
           <div className="grid gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardHeader title="Transações recentes" action={<Link to="/app/transacoes" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">Ver todas <ArrowRight className="size-3" /></Link>} />
@@ -277,6 +279,7 @@ export default function Dashboard() {
               </CardBody>
             </Card>
           </div>
+          </Deferred>
 
           {/* 6–8. Metas, orçamentos e insights */}
           <div className="grid gap-4 lg:grid-cols-3">
@@ -330,12 +333,14 @@ export default function Dashboard() {
             </Card>
           </div>
 
+          <Deferred minHeight={160}>
           <Card>
             <CardHeader title="Contas" description="Saldo atual por conta" icon={<Landmark />} action={<Link to="/app/contas" className="text-xs font-medium text-primary hover:underline">Ver contas</Link>} />
             <CardBody className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <AccountsMini />
             </CardBody>
           </Card>
+          </Deferred>
         </>
       )}
     </div>

@@ -22,7 +22,7 @@ export function Topbar() {
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-bg/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-border bg-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <div className="flex h-16 items-center gap-2 px-4 sm:px-6">
         <Link to="/app" className="lg:hidden" aria-label="Nexora — início">
           <Logo compact />

@@ -52,17 +52,11 @@ export default defineConfig({
   ],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return;
-          if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) return 'charts';
-          if (id.includes('framer-motion') || id.includes('motion-')) return 'motion';
-          if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('write-excel-file')) return;
-          if (id.includes('react') || id.includes('scheduler')) return 'react';
-        },
-      },
-    },
+    // Divisão automática por rota (lazy): cada tela baixa só o que usa.
+    // Gráficos, PDF e Excel ficam fora da página inicial.
+    target: 'es2022',
+    cssMinify: true,
+    reportCompressedSize: false,
   },
   test: { environment: 'node', include: ['src/**/*.test.ts'] },
 });

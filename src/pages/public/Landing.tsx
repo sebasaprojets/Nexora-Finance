@@ -53,7 +53,7 @@ function Nav() {
     ['#faq', 'FAQ'],
   ];
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-bg/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <nav className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-5" aria-label="Principal">
         <Link to="/" aria-label="Nexora — início"><Logo /></Link>
         <ul className="ml-6 hidden gap-6 text-sm text-fg-muted md:flex">
@@ -143,7 +143,7 @@ export default function Landing() {
         </section>
 
         {/* TUDO EM UM SÓ LUGAR */}
-        <section id="recursos" className="scroll-mt-20 px-5 py-24">
+        <section id="recursos" className="cv-auto scroll-mt-20 px-5 py-24">
           <div className="mx-auto max-w-7xl">
             <motion.div {...reveal} className="mx-auto max-w-2xl text-center">
               <p className="text-sm font-medium text-primary">Visão completa</p>
@@ -166,7 +166,7 @@ export default function Landing() {
         </section>
 
         {/* BENEFÍCIOS */}
-        <section className="border-y border-border bg-bg-elevated/50 px-5 py-20">
+        <section className="cv-auto border-y border-border bg-bg-elevated/50 px-5 py-20">
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 md:grid-cols-4 md:gap-10">
             {[
               ['5 s', 'para registrar uma despesa no celular'],
@@ -183,7 +183,7 @@ export default function Landing() {
         </section>
 
         {/* FUNCIONALIDADES */}
-        <section id="funcionalidades" className="scroll-mt-20 px-5 py-24">
+        <section id="funcionalidades" className="cv-auto scroll-mt-20 px-5 py-24">
           <div className="mx-auto max-w-7xl space-y-24">
             {[
               {
@@ -256,7 +256,7 @@ export default function Landing() {
         </section>
 
         {/* SEGURANÇA */}
-        <section id="seguranca" className="scroll-mt-20 px-5 py-24">
+        <section id="seguranca" className="cv-auto scroll-mt-20 px-5 py-24">
           <div className="mx-auto max-w-7xl rounded-[32px] border border-border bg-bg-elevated p-8 sm:p-14">
             <motion.div {...reveal} className="max-w-2xl">
               <p className="flex items-center gap-2 text-sm font-medium text-primary"><ShieldCheck className="size-4" aria-hidden /> Segurança e privacidade</p>
@@ -284,7 +284,7 @@ export default function Landing() {
         </section>
 
         {/* DEPOIMENTOS */}
-        <section className="px-5 py-24">
+        <section className="cv-auto px-5 py-24">
           <div className="mx-auto max-w-7xl">
             <motion.h2 {...reveal} className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">Feita para o dia a dia</motion.h2>
             <p className="mt-3 text-center text-xs text-fg-subtle">Depoimentos ilustrativos de perfis de uso.</p>
@@ -304,7 +304,7 @@ export default function Landing() {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="scroll-mt-20 px-5 py-24">
+        <section id="faq" className="cv-auto scroll-mt-20 px-5 py-24">
           <div className="mx-auto max-w-3xl">
             <h2 className="text-center font-display text-3xl font-semibold tracking-tight sm:text-4xl">Perguntas frequentes</h2>
             <div className="mt-10">{FAQ.map((f) => <FaqItem key={f.q} {...f} />)}</div>
@@ -312,7 +312,7 @@ export default function Landing() {
         </section>
 
         {/* CTA */}
-        <section className="px-5 pb-24">
+        <section className="cv-auto px-5 pb-24">
           <motion.div {...reveal} className="relative mx-auto max-w-5xl overflow-hidden rounded-[32px] border border-border bg-[#0d0f16] px-6 py-16 text-center text-white sm:px-16">
             <div className="absolute inset-0 bg-[radial-gradient(600px_circle_at_50%_0%,rgba(123,109,255,0.35),transparent_60%)]" aria-hidden />
             <div className="relative">
