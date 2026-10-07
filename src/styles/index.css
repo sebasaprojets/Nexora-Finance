@@ -177,6 +177,11 @@
     outline-offset: 2px;
     border-radius: 6px;
   }
+  /* Contêineres roláveis prendem filhos absolutos (ex.: rótulos sr-only em tabelas). */
+  [class*='overflow-x-auto'],
+  [class*='overflow-auto'] {
+    position: relative;
+  }
   ::selection {
     background: var(--primary-soft);
   }
@@ -187,7 +192,7 @@
 
 @layer components {
   .card {
-    @apply rounded-xl border border-border bg-surface shadow-sm;
+    @apply min-w-0 rounded-xl border border-border bg-surface shadow-sm;
   }
   .glass {
     @apply border border-border bg-glass backdrop-blur-xl;

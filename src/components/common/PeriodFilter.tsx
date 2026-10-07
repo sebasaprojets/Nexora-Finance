@@ -18,7 +18,7 @@ export function PeriodFilter({
   presets?: PeriodPreset[];
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2">
       <Segmented
         label="Período"
         size="sm"

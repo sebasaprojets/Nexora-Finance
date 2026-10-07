@@ -150,15 +150,15 @@ export default function Landing() {
               <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-5xl">Tudo sobre suas finanças em um só lugar</h2>
               <p className="mt-4 text-fg-muted">Pare de alternar entre planilhas, apps de banco e anotações. A Nexora reúne tudo e transforma em respostas.</p>
             </motion.div>
-            <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-14 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {ALL_IN_ONE.map((f, i) => (
-                <motion.div key={f.title} {...reveal} transition={{ ...reveal.transition, delay: i * 0.05 }} whileHover={{ y: -4 }} className="card group relative overflow-hidden p-6">
+                <motion.div key={f.title} {...reveal} transition={{ ...reveal.transition, delay: i * 0.05 }} whileHover={{ y: -4 }} className="card group relative overflow-hidden p-4 sm:p-6">
                   <div className="absolute -top-12 -right-12 size-32 rounded-full opacity-0 blur-2xl transition-opacity group-hover:opacity-40" style={{ background: f.color }} aria-hidden />
                   <span className="grid size-11 place-items-center rounded-xl" style={{ background: `color-mix(in oklab, ${f.color} 16%, transparent)`, color: f.color }}>
                     <f.icon className="size-5" aria-hidden />
                   </span>
-                  <h3 className="mt-5 font-display text-lg font-semibold">{f.title}</h3>
-                  <p className="mt-1.5 text-sm text-fg-muted">{f.desc}</p>
+                  <h3 className="mt-4 font-display font-semibold sm:mt-5 sm:text-lg">{f.title}</h3>
+                  <p className="mt-1.5 text-xs text-fg-muted sm:text-sm">{f.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -167,7 +167,7 @@ export default function Landing() {
 
         {/* BENEFÍCIOS */}
         <section className="border-y border-border bg-bg-elevated/50 px-5 py-20">
-          <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-4">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 md:grid-cols-4 md:gap-10">
             {[
               ['5 s', 'para registrar uma despesa no celular'],
               ['13', 'perguntas respondidas no seu dashboard'],

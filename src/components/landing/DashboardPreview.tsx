@@ -76,13 +76,13 @@ export function DashboardPreview() {
       </motion.div>
 
       {/* Cards flutuantes */}
-      <motion.div aria-hidden initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0, y: [0, -8, 0] }} transition={{ opacity: { delay: 1.2 }, x: { delay: 1.2 }, y: { duration: 6, repeat: Infinity, ease: 'easeInOut' } }} className="glass absolute top-[22%] -left-4 hidden w-52 rounded-2xl p-3.5 shadow-lg lg:-left-16 lg:block">
+      <motion.div aria-hidden initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0, y: [0, -8, 0] }} transition={{ opacity: { delay: 1.2 }, x: { delay: 1.2 }, y: { duration: 6, repeat: Infinity, ease: 'easeInOut' } }} className="absolute border border-border bg-bg-elevated/95 backdrop-blur-xl top-[22%] -left-4 hidden w-52 rounded-2xl p-3.5 shadow-lg lg:-left-16 lg:block">
         <div className="flex items-center gap-2 text-xs text-fg-muted"><Target className="size-4 text-[#2a78d6]" /> Comprar carro</div>
         <div className="tabular mt-1 font-display text-lg font-semibold">37%</div>
         <div className="mt-1.5 h-1.5 rounded-full bg-surface-3"><div className="h-1.5 w-[37%] rounded-full bg-[#2a78d6]" /></div>
         <div className="mt-1 text-[10px] text-fg-subtle">R$ 18.500 de R$ 50.000</div>
       </motion.div>
-      <motion.div aria-hidden initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0, y: [0, 10, 0] }} transition={{ opacity: { delay: 1.4 }, x: { delay: 1.4 }, y: { duration: 7, repeat: Infinity, ease: 'easeInOut' } }} className="glass absolute top-[10%] -right-4 hidden w-60 rounded-2xl p-3.5 shadow-lg lg:-right-14 lg:block">
+      <motion.div aria-hidden initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0, y: [0, 10, 0] }} transition={{ opacity: { delay: 1.4 }, x: { delay: 1.4 }, y: { duration: 7, repeat: Infinity, ease: 'easeInOut' } }} className="absolute border border-border bg-bg-elevated/95 backdrop-blur-xl top-[10%] -right-4 hidden w-60 rounded-2xl p-3.5 shadow-lg lg:-right-14 lg:block">
         <div className="flex items-start gap-2.5">
           <span className="grid size-8 place-items-center rounded-lg bg-primary-soft text-primary"><Bell className="size-4" /></span>
           <div>
@@ -91,12 +91,12 @@ export function DashboardPreview() {
           </div>
         </div>
       </motion.div>
-      <motion.div aria-hidden initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: [0, -6, 0] }} transition={{ opacity: { delay: 1.6 }, y: { duration: 5, repeat: Infinity, ease: 'easeInOut' } }} className="glass absolute -right-2 bottom-[12%] hidden w-56 rounded-2xl p-3.5 shadow-lg md:block lg:-right-10">
+      <motion.div aria-hidden initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: [0, -6, 0] }} transition={{ opacity: { delay: 1.6 }, y: { duration: 5, repeat: Infinity, ease: 'easeInOut' } }} className="absolute border border-border bg-bg-elevated/95 backdrop-blur-xl -right-2 bottom-[12%] hidden w-56 rounded-2xl p-3.5 shadow-lg md:block lg:-right-10">
         <div className="flex items-center gap-2 text-xs text-fg-muted"><PiggyBank className="size-4 text-emerald-500" /> Economia do mês</div>
         <div className="tabular mt-1 font-display text-lg font-semibold text-emerald-500">+R$ 3.260</div>
         <div className="flex items-center gap-1 text-[10px] text-fg-subtle"><TrendingUp className="size-3" /> 38% da renda guardada</div>
       </motion.div>
-      <motion.div aria-hidden initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: [0, 8, 0] }} transition={{ opacity: { delay: 1.8 }, y: { duration: 6.5, repeat: Infinity, ease: 'easeInOut' } }} className="glass absolute bottom-[4%] -left-2 hidden w-48 rounded-2xl p-3.5 shadow-lg md:block lg:-left-10">
+      <motion.div aria-hidden initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: [0, 8, 0] }} transition={{ opacity: { delay: 1.8 }, y: { duration: 6.5, repeat: Infinity, ease: 'easeInOut' } }} className="absolute border border-border bg-bg-elevated/95 backdrop-blur-xl bottom-[4%] -left-2 hidden w-48 rounded-2xl p-3.5 shadow-lg md:block lg:-left-10">
         <div className="flex items-center gap-2 text-xs text-fg-muted"><CreditCard className="size-4 text-[#9085e9]" /> Limite disponível</div>
         <div className="tabular mt-1 font-display text-lg font-semibold">R$ 10.240</div>
       </motion.div>

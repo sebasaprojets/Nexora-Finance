@@ -16,7 +16,11 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: false,
       includeAssets: ['icons/*.png', 'icons/*.svg'],
-      injectManifest: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Bibliotecas de exportação (PDF) são carregadas sob demanda; não entram no precache.
+        globIgnores: ['**/jspdf*', '**/html2canvas*', '**/purify*'],
+      },
       devOptions: { enabled: false, type: 'module' },
       manifest: {
         name: 'Nexora Finance',

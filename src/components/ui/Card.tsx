@@ -16,7 +16,7 @@ export interface CardHeaderProps {
 
 export function CardHeader({ title, description, action, icon, className, as: H = 'h2' }: CardHeaderProps) {
   return (
-    <div className={cn('flex items-start justify-between gap-3 p-5 pb-0', className)}>
+    <div className={cn('flex flex-wrap items-start justify-between gap-3 p-5 pb-0', className)}>
       <div className="flex min-w-0 items-start gap-3">
         {icon && <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary [&>svg]:size-4">{icon}</span>}
         <div className="min-w-0">
@@ -24,7 +24,7 @@ export function CardHeader({ title, description, action, icon, className, as: H 
           {description && <p className="mt-0.5 text-[13px] text-fg-subtle">{description}</p>}
         </div>
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="max-w-full min-w-0">{action}</div>}
     </div>
   );
 }
