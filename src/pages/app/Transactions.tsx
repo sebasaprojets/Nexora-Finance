@@ -17,6 +17,7 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/Modal';
 import { useFinance } from '@/store/finance';
+import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { useUI } from '@/store/ui';
 import { toast } from '@/store/toast';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -61,6 +62,7 @@ export default function Transactions() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<string[] | null>(null);
   const debounced = useDebounce(query, 200);
+  usePageTour('transactions');
 
   // Atalhos de URL: ?nova=expense (atalho do PWA) e ?busca=
   useEffect(() => {
@@ -219,6 +221,7 @@ export default function Transactions() {
         description="Receitas, despesas e transferências em um só lugar."
         actions={
           <>
+            <TourButton id="transactions" />
             <ExportMenu getTables={exportTables} title="Transações" />
             <Button leftIcon={<Plus className="size-4" />} onClick={() => openTx({ type: 'expense' })}>
               Nova transação
@@ -229,10 +232,10 @@ export default function Transactions() {
 
       <Card className="mb-4 p-3 sm:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="flex-1">
+          <div className="flex-1" data-tour="tx-search">
             <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por descrição, categoria ou tag…" leftIcon={<Search />} aria-label="Buscar transações" />
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto">
+          <div data-tour="tx-filters" className="flex items-center gap-2 overflow-x-auto">
             <Segmented
               label="Tipo"
               value={type}
@@ -303,7 +306,7 @@ export default function Transactions() {
         )}
       </Card>
 
-      <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
+      <div data-tour="tx-summary" className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
         {[
           { label: 'Receitas', value: totals.income, cls: 'text-income' },
           { label: 'Despesas', value: totals.expense, cls: 'text-fg' },
@@ -343,7 +346,7 @@ export default function Transactions() {
         </div>
       )}
 
-      <Card>
+      <Card data-tour="tx-list">
         {transactions.length === 0 ? (
           <EmptyState
             icon={<Plus />}

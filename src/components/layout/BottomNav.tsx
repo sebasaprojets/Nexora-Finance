@@ -78,6 +78,7 @@ export function BottomNav() {
                   onClick={() => setOpen(!open)}
                   aria-expanded={open}
                   aria-label={open ? 'Fechar menu de adição' : 'Adicionar transação'}
+                  data-tour="add-transaction"
                   className="grid size-12 -translate-y-3 place-items-center rounded-2xl bg-primary text-primary-fg shadow-[0_10px_30px_-8px_var(--primary)] transition-transform active:scale-95"
                 >
                   <Plus className={cn('size-6 transition-transform duration-200', open && 'rotate-45')} aria-hidden />

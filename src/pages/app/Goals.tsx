@@ -13,6 +13,7 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { axisProps, ChartTooltipBox } from '@/components/charts/ChartTooltip';
 import { useFinance } from '@/store/finance';
+import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { toast } from '@/store/toast';
 import { useMoney } from '@/hooks/useMoney';
 import { goalProgress } from '@/lib/finance';
@@ -135,6 +136,7 @@ export default function Goals() {
   const [confirm, setConfirm] = useState<Goal | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
+  usePageTour('goals');
   const progress = useMemo(() => goals.map((g) => goalProgress(g)), [goals]);
   const total = progress.reduce((s, p) => ({ current: s.current + p.current, target: s.target + p.goal.target }), { current: 0, target: 0 });
   const sel = progress.find((p) => p.goal.id === (selected ?? progress[0]?.goal.id));
@@ -163,7 +165,7 @@ export default function Goals() {
 
   return (
     <div>
-      <PageHeader title="Metas Financeiras" description="Acompanhe progresso, prazo e quanto guardar por mês." actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Nova meta</Button>} />
+      <PageHeader title="Metas Financeiras" description="Acompanhe progresso, prazo e quanto guardar por mês." actions={<><TourButton id="goals" /><Button data-tour="goal-new" leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Nova meta</Button></>} />
 
       {goals.length === 0 ? (
         <Card>
@@ -179,7 +181,7 @@ export default function Goals() {
             <Progress value={total.target ? (total.current / total.target) * 100 : 0} className="mt-3" label="Progresso total das metas" />
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div data-tour="goal-list" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {progress.map((p) => (
               <Card key={p.goal.id} className={cn('cursor-pointer p-5 transition-colors hover:border-border-strong', sel?.goal.id === p.goal.id && 'border-primary')} onClick={() => setSelected(p.goal.id)}>
                 <div className="flex items-start gap-3">

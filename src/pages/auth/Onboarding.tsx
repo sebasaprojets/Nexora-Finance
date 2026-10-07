@@ -54,7 +54,9 @@ export default function Onboarding() {
   const finance = useFinance();
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
-  const [objective, setObjective] = useState<FinancialObjective | null>(null);
+  const [objectives, setObjectives] = useState<FinancialObjective[]>([]);
+  const toggleObjective = (v: FinancialObjective) => setObjectives((l) => (l.includes(v) ? l.filter((x) => x !== v) : [...l, v]));
+  const wantsDebtFree = objectives.includes('debt_free');
   const [income, setIncome] = useState('');
   const [expenses, setExpenses] = useState('');
   const [accounts, setAccounts] = useState<Record<string, string>>({});
@@ -70,14 +72,14 @@ export default function Onboarding() {
       { label: 'Capacidade de poupança', value: Math.max(0, Math.min(100, (rate / 30) * 100)), weight: 0.35, text: inc > 0 ? `Sobra ${Math.max(0, rate).toFixed(0)}% da sua renda` : 'Informe sua renda' },
       { label: 'Equilíbrio do orçamento', value: inc >= exp && inc > 0 ? 100 : 0, weight: 0.15, text: exp <= inc ? 'Gastos dentro da renda' : 'Gastos acima da renda' },
       { label: 'Organização', value: Object.keys(accounts).length ? 100 : 30, weight: 0.15, text: `${Object.keys(accounts).length} conta(s) mapeada(s)` },
-      { label: 'Dívidas', value: objective === 'debt_free' ? 40 : 80, weight: 0.2, text: objective === 'debt_free' ? 'Prioridade: quitar dívidas' : 'Sem dívidas declaradas como prioridade' },
+      { label: 'Dívidas', value: wantsDebtFree ? 40 : 80, weight: 0.2, text: wantsDebtFree ? 'Prioridade: quitar dívidas' : 'Sem dívidas declaradas como prioridade' },
       { label: 'Planejamento', value: goals.length ? 100 : 30, weight: 0.15, text: goals.length ? `${goals.length} meta(s) definida(s)` : 'Nenhuma meta definida' },
     ];
     const score = Math.round(factors.reduce((s, f) => s + f.value * f.weight, 0) * 10);
     return { score, factors, rate, band: scoreBand(score), leftover: inc - exp };
-  }, [inc, exp, accounts, objective, goals]);
+  }, [inc, exp, accounts, wantsDebtFree, goals]);
 
-  const canNext = [!!objective, inc > 0 && exp >= 0 && expenses !== '', true, true, true][step];
+  const canNext = [objectives.length > 0, inc > 0 && exp >= 0 && expenses !== '', true, true, true][step];
 
   const go = (delta: number) => {
     setDir(delta);
@@ -98,7 +100,7 @@ export default function Onboarding() {
         finance.upsert('goals', { id: uid('goal'), name: g, target, deadline: addMonths(today(), 12), icon: o.icon, color: o.color, initialAmount: 0, contributions: [], createdAt: now });
       }
     }
-    finance.setOnboarding({ objective: objective!, monthlyIncome: inc, monthlyExpenses: exp, accountsCount: Object.keys(accounts).length, cardsCount: cards, goals, completedAt: new Date().toISOString() });
+    finance.setOnboarding({ objective: objectives[0], objectives, monthlyIncome: inc, monthlyExpenses: exp, accountsCount: Object.keys(accounts).length, cardsCount: cards, goals, completedAt: new Date().toISOString() });
     updateUser({ onboarded: true });
     toast.success('Tudo pronto!', { description: withDemo ? 'Carregamos dados de exemplo para você explorar.' : 'Sua Nexora está configurada.' });
     navigate('/app', { replace: true });
@@ -129,31 +131,39 @@ export default function Onboarding() {
               {step === 0 && (
                 <section aria-labelledby="ob-0">
                   <h1 id="ob-0" className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-                    Olá, {user?.name.split(' ')[0]}! Qual é seu principal objetivo financeiro?
+                    Olá, {user?.name.split(' ')[0]}! Quais são seus objetivos financeiros?
                   </h1>
-                  <p className="mt-2 text-sm text-fg-subtle">Vamos personalizar a Nexora para você.</p>
-                  <div role="radiogroup" className="mt-8 grid gap-3 sm:grid-cols-2">
+                  <p className="mt-2 text-sm text-fg-subtle">Selecione uma ou mais opções — vamos personalizar a Nexora para você.</p>
+                  <div role="group" aria-labelledby="ob-0" className="mt-8 grid gap-3 sm:grid-cols-2">
                     {OBJECTIVES.map((o) => (
                       <button
                         key={o.value}
-                        role="radio"
-                        aria-checked={objective === o.value}
-                        onClick={() => setObjective(o.value)}
+                        role="checkbox"
+                        aria-checked={objectives.includes(o.value)}
+                        onClick={() => toggleObjective(o.value)}
                         className={cn(
                           'flex items-center gap-3 rounded-2xl border p-4 text-left transition-all',
-                          objective === o.value ? 'border-primary bg-primary-soft shadow-[var(--ring)]' : 'border-border bg-surface hover:border-border-strong',
+                          objectives.includes(o.value) ? 'border-primary bg-primary-soft shadow-[var(--ring)]' : 'border-border bg-surface hover:border-border-strong',
                         )}
                       >
-                        <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', objective === o.value ? 'bg-primary text-primary-fg' : 'bg-surface-2 text-fg-muted')}>
+                        <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', objectives.includes(o.value) ? 'bg-primary text-primary-fg' : 'bg-surface-2 text-fg-muted')}>
                           <o.icon className="size-5" aria-hidden />
                         </span>
                         <span className="min-w-0">
                           <span className="block text-sm font-medium">{o.label}</span>
                           <span className="block text-xs text-fg-subtle">{o.desc}</span>
                         </span>
+                        <span aria-hidden className={cn('ml-auto grid size-5 shrink-0 place-items-center rounded-md border transition-colors', objectives.includes(o.value) ? 'border-primary bg-primary text-primary-fg' : 'border-border-strong')}>
+                          {objectives.includes(o.value) && <Check className="size-3.5" />}
+                        </span>
                       </button>
                     ))}
                   </div>
+                {objectives.length > 0 && (
+                    <p className="mt-4 text-sm text-fg-muted" aria-live="polite">
+                      {objectives.length} {objectives.length === 1 ? 'objetivo selecionado' : 'objetivos selecionados'}
+                    </p>
+                  )}
                 </section>
               )}
 

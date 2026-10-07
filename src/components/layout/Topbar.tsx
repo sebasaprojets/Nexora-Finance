@@ -31,6 +31,7 @@ export function Topbar() {
           onClick={() => setCommandOpen(true)}
           className="ml-1 hidden h-10 w-full max-w-sm items-center gap-2.5 rounded-xl border border-border bg-surface-2/60 px-3 text-sm text-fg-subtle transition-colors hover:border-border-strong sm:flex"
           aria-label="Abrir busca e comandos"
+          data-tour="search"
         >
           <Search className="size-4" aria-hidden />
           <span className="flex-1 text-left">Buscar ou executar comando…</span>
@@ -40,7 +41,7 @@ export function Topbar() {
           <Button variant="ghost" size="icon" className="sm:hidden" aria-label="Buscar" onClick={() => setCommandOpen(true)}>
             <Search className="size-[18px]" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label={hide ? 'Mostrar valores' : 'Ocultar valores'} aria-pressed={hide} onClick={toggleHide}>
+          <Button data-tour="hide-values" variant="ghost" size="icon" aria-label={hide ? 'Mostrar valores' : 'Ocultar valores'} aria-pressed={hide} onClick={toggleHide}>
             {hide ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
           </Button>
           <ThemeToggle />
@@ -52,7 +53,7 @@ export function Topbar() {
             <Bell className="size-[18px]" aria-hidden />
             {unread > 0 && <span className="absolute top-2 right-2 size-2 rounded-full bg-danger ring-2 ring-bg" aria-hidden />}
           </Link>
-          <Button className="ml-1 hidden lg:inline-flex" leftIcon={<Plus className="size-4" />} onClick={() => openTx({ type: 'expense' })}>
+          <Button data-tour="add-transaction" className="ml-1 hidden lg:inline-flex" leftIcon={<Plus className="size-4" />} onClick={() => openTx({ type: 'expense' })}>
             Nova transação
           </Button>
           <Dropdown

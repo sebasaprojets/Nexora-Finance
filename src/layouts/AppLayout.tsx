@@ -7,6 +7,7 @@ import { Topbar } from '@/components/layout/Topbar';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { InstallPrompt } from '@/components/layout/InstallPrompt';
+import { TourOverlay } from '@/components/tour/Tour';
 import { TransactionModal } from '@/components/transactions/TransactionModal';
 import { PageSkeleton } from '@/components/ui/Skeleton';
 import { useShortcuts } from '@/hooks/useShortcuts';
@@ -82,6 +83,7 @@ export function AppLayout() {
       <CommandPalette />
       <TransactionModal />
       <InstallPrompt />
+      <TourOverlay />
     </div>
   );
 }

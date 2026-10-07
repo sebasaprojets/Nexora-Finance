@@ -22,6 +22,7 @@ import { useMoney } from '@/hooks/useMoney';
 import { usePeriod } from '@/hooks/usePeriod';
 import { useLookups } from '@/hooks/useLookups';
 import { useAuth } from '@/store/auth';
+import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { useUI } from '@/store/ui';
 import {
   accountBalances, autoGranularity, balanceHistory, budgetUsage, cardSummary, goalProgress, netWorth, portfolioSummary, subscriptionsSummary, summarize, timeSeries, totalsByCategory, type Granularity,
@@ -77,6 +78,7 @@ export default function Dashboard() {
   }, [data]);
 
   const firstName = user?.name.split(' ')[0] ?? '';
+  usePageTour('dashboard');
   const hasData = data.transactions.length > 0;
   const balanceSpark = m.history.filter((_, i, arr) => i % Math.max(1, Math.floor(arr.length / 30)) === 0 || i === arr.length - 1).map((h) => h.balance);
   const nwDelta = pctChange(m.nw.total, m.nw.total - (m.history.at(-1)?.balance ?? 0) + m.prevBalance);
@@ -91,7 +93,10 @@ export default function Dashboard() {
           </p>
           <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-[28px]">Olá, {firstName} 👋</h1>
         </div>
-        <PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />
+        <div className="flex flex-wrap items-center gap-2">
+          <TourButton id="dashboard" />
+          <PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />
+        </div>
       </div>
 
       {!hasData ? (
@@ -110,7 +115,7 @@ export default function Dashboard() {
       ) : (
         <>
           {/* 1–2. Saldo, entradas/saídas e KPIs */}
-          <section aria-label="Resumo financeiro" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+          <section data-tour="kpis" aria-label="Resumo financeiro" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
             <StatCard
               emphasis
               className="col-span-2 lg:col-span-1"
@@ -132,7 +137,7 @@ export default function Dashboard() {
 
           {/* 3. Fluxo financeiro + categorias */}
           <div className="grid gap-4 lg:grid-cols-3">
-            <Card className="lg:col-span-2">
+            <Card data-tour="flow-chart" className="lg:col-span-2">
               <CardHeader
                 title="Fluxo financeiro"
                 description="Receitas, despesas e resultado no período"
@@ -197,7 +202,7 @@ export default function Dashboard() {
           </div>
 
           {/* 4. Ações rápidas */}
-          <section aria-label="Ações rápidas" className="grid grid-cols-4 gap-2 sm:gap-3">
+          <section data-tour="quick-actions" aria-label="Ações rápidas" className="grid grid-cols-4 gap-2 sm:gap-3">
             {[
               { label: 'Receita', icon: TrendingUp, color: 'var(--series-income)', onClick: () => openTx({ type: 'income' }) },
               { label: 'Despesa', icon: TrendingDown, color: 'var(--series-expense)', onClick: () => openTx({ type: 'expense' }) },
@@ -320,7 +325,7 @@ export default function Dashboard() {
                 )}
               </CardBody>
             </Card>
-            <Card>
+            <Card data-tour="insights">
               <CardHeader title="Nexora Insights" icon={<Sparkles />} />
               <CardBody className="px-3 pt-3">
                 <InsightList insights={insights} limit={4} />

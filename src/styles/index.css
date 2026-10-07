@@ -224,6 +224,18 @@
   }
 }
 
+/*
+ * iOS/Safari aplica zoom automático ao focar campos com fonte < 16px.
+ * No celular, todos os campos usam 16px (o zoom manual continua permitido — acessibilidade).
+ */
+@media (max-width: 639.98px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(.text-lg):not(.text-3xl),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

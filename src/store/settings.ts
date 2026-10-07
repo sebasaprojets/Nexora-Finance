@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   language: 'pt-BR',
   hideValues: false,
   reducedMotion: 'system',
+  tutorials: { enabled: true, seen: [] },
   notifications: {
     push: false,
     email: true,
@@ -24,6 +25,9 @@ interface SettingsState extends Settings {
   set: (patch: Partial<Settings>) => void;
   setNotifications: (patch: Partial<NotificationPreferences>) => void;
   toggleHideValues: () => void;
+  markTutorialSeen: (id: string) => void;
+  setTutorialsEnabled: (enabled: boolean) => void;
+  resetTutorials: () => void;
   reset: () => void;
 }
 
@@ -34,12 +38,15 @@ export const useSettings = create<SettingsState>()(
       set: (patch) => set(patch),
       setNotifications: (patch) => set((s) => ({ notifications: { ...s.notifications, ...patch } })),
       toggleHideValues: () => set((s) => ({ hideValues: !s.hideValues })),
+      markTutorialSeen: (id) => set((s) => ({ tutorials: { ...s.tutorials, seen: [...new Set([...s.tutorials.seen, id])] } })),
+      setTutorialsEnabled: (enabled) => set((s) => ({ tutorials: { ...s.tutorials, enabled } })),
+      resetTutorials: () => set({ tutorials: { enabled: true, seen: [] } }),
       reset: () => set(DEFAULT_SETTINGS),
     }),
     {
       name: 'nexora:settings',
       storage: createJSONStorage(() => localStorage),
-      partialize: ({ set: _a, setNotifications: _b, toggleHideValues: _c, reset: _d, ...s }) => s,
+      partialize: ({ set: _a, setNotifications: _b, toggleHideValues: _c, reset: _d, markTutorialSeen: _e, setTutorialsEnabled: _f, resetTutorials: _g, ...s }) => s,
     },
   ),
 );

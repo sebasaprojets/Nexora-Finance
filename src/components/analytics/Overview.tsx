@@ -227,7 +227,7 @@ function DRETable({ data, period, previous }: { data: FinanceData; period: Perio
   const Icon = ({ k }: { k: 'current' | 'variation' }) => (sort.key === k ? sort.dir === 1 ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" /> : <ChevronsUpDown className="size-3 opacity-50" />);
 
   return (
-    <Card>
+    <Card data-tour="dre">
       <CardHeader
         title="Demonstrativo de Resultados"
         description="DRE simplificada — custos = categorias fixas; despesas = variáveis"

@@ -98,7 +98,7 @@ export default function Profile() {
             <Field label="Nome">{(p) => <Input {...p} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />}</Field>
             <Field label="E-mail" hint="Para alterar o e-mail, contate o suporte.">{(p) => <Input {...p} value={user.email} readOnly disabled />}</Field>
             {onboarding && (
-              <Field label="Objetivo principal">{(p) => <Input {...p} value={OBJECTIVES[onboarding.objective]} readOnly disabled />}</Field>
+              <Field label="Objetivos financeiros">{(p) => <Input {...p} value={(onboarding.objectives ?? [onboarding.objective]).map((o) => OBJECTIVES[o]).join(', ')} readOnly disabled />}</Field>
             )}
             <div className="flex items-end sm:col-span-2">
               <Button type="submit" disabled={name === user.name}>Salvar alterações</Button>

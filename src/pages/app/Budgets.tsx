@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/Progress';
 import { Badge, type Tone } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useFinance } from '@/store/finance';
+import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { toast } from '@/store/toast';
 import { useMoney } from '@/hooks/useMoney';
 import { budgetUsage, totalsByCategory, type BudgetLevel } from '@/lib/finance';
@@ -90,6 +91,7 @@ export default function Budgets() {
   const [month, setMonth] = useState(monthKey(today()));
   const [modal, setModal] = useState<{ open: boolean; budget?: Budget; suggestion?: { categoryId: string; amount: number } }>({ open: false });
 
+  usePageTour('budgets');
   const usage = useMemo(() => budgetUsage(budgets, categories, transactions, month), [budgets, categories, transactions, month]);
   const totals = usage.reduce((s, u) => ({ budget: s.budget + u.budget.amount, spent: s.spent + u.spent }), { budget: 0, spent: 0 });
   const isCurrent = month === monthKey(today());
@@ -110,7 +112,7 @@ export default function Budgets() {
       <PageHeader
         title="Orçamentos"
         description="Defina limites por categoria e acompanhe em tempo real."
-        actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo orçamento</Button>}
+        actions={<><TourButton id="budgets" /><Button data-tour="budget-new" leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo orçamento</Button></>}
       />
 
       <div className="mb-6 flex items-center justify-between gap-3">
@@ -146,7 +148,7 @@ export default function Budgets() {
             <Progress value={totals.budget ? (totals.spent / totals.budget) * 100 : 0} className="mt-4" label="Uso total do orçamento" />
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div data-tour="budget-list" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {usage.map((u) => {
               const L = LEVEL[u.level];
               return (

@@ -16,6 +16,7 @@ import { Segmented } from '@/components/ui/Segmented';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useFinance } from '@/store/finance';
+import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { useUI } from '@/store/ui';
 import { toast } from '@/store/toast';
 import { useMoney } from '@/hooks/useMoney';
@@ -223,6 +224,7 @@ export default function Cards() {
   const [pay, setPay] = useState<{ summary: CardSummary; invoice: Invoice } | null>(null);
   const [confirm, setConfirm] = useState<CreditCard | null>(null);
 
+  usePageTour('cards', cards.length > 0);
   const summaries = useMemo(() => cards.map((c) => cardSummary(c, transactions)), [cards, transactions]);
   const selected = summaries.find((s) => s.card.id === (selectedId ?? summaries[0]?.card.id));
   const totalLimit = summaries.reduce((s, c) => s + c.card.limit, 0);
@@ -232,7 +234,7 @@ export default function Cards() {
 
   return (
     <div>
-      <PageHeader title="Cartões" description="Limites, faturas, vencimentos e compras." actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo cartão</Button>} />
+      <PageHeader title="Cartões" description="Limites, faturas, vencimentos e compras." actions={<><TourButton id="cards" /><Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo cartão</Button></>} />
 
       {cards.length === 0 ? (
         <Card>
@@ -253,7 +255,7 @@ export default function Cards() {
             ))}
           </div>
 
-          <div className="no-scrollbar -mx-4 mb-6 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
+          <div data-tour="cards-list" className="no-scrollbar -mx-4 mb-6 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-3">
             {summaries.map((s) => (
               <button
                 key={s.card.id}
@@ -317,7 +319,7 @@ export default function Cards() {
                       </p>
                     </div>
                   )}
-                  <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div data-tour="card-actions" className="mt-4 grid grid-cols-2 gap-2">
                     <Button variant="secondary" leftIcon={<ShoppingCart className="size-4" />} onClick={() => openTx({ type: 'expense', defaults: { cardId: selected.card.id, method: 'credit' } })}>
                       Adicionar compra
                     </Button>
@@ -335,7 +337,7 @@ export default function Cards() {
                 </CardBody>
               </Card>
 
-              <Card className="lg:col-span-2">
+              <Card data-tour="invoice" className="lg:col-span-2">
                 <CardHeader
                   title="Fatura"
                   icon={<Receipt />}

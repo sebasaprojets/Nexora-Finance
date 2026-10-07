@@ -268,6 +268,8 @@ export interface Settings {
   hideValues: boolean;
   notifications: NotificationPreferences;
   reducedMotion: 'system' | 'on' | 'off';
+  /** Tutoriais guiados: ativos e quais já foram vistos/pulados. */
+  tutorials: { enabled: boolean; seen: string[] };
 }
 
 export type FinancialObjective =
@@ -280,7 +282,10 @@ export type FinancialObjective =
   | 'business';
 
 export interface OnboardingProfile {
+  /** Objetivo principal (o primeiro selecionado). */
   objective: FinancialObjective;
+  /** Todos os objetivos selecionados no onboarding. */
+  objectives?: FinancialObjective[];
   monthlyIncome: number;
   monthlyExpenses: number;
   accountsCount: number;

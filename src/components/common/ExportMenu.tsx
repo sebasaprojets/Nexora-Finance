@@ -28,7 +28,7 @@ export function ExportMenu({ getTables, title, label = 'Exportar', size = 'md' }
     <Dropdown
       label="Formatos de exportação"
       trigger={(p) => (
-        <Button variant="secondary" size={size} loading={busy} leftIcon={<Download className="size-4" />} {...p}>
+        <Button data-tour="export" variant="secondary" size={size} loading={busy} leftIcon={<Download className="size-4" />} {...p}>
           {label}
         </Button>
       )}

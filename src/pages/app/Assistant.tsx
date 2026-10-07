@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUp, Bot, ShieldCheck, Sparkles, Trash2 } from 'lucide-
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/common/Avatar';
 import { useFinanceData } from '@/hooks/useFinanceData';
+import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { useMoney } from '@/hooks/useMoney';
 import { useAuth } from '@/store/auth';
 import { answer, SUGGESTIONS, type AssistantAnswer } from '@/lib/assistant';
@@ -39,6 +40,7 @@ export default function Assistant() {
   const [thinking, setThinking] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  usePageTour('assistant');
 
   useEffect(() => {
     chatCache = messages;
@@ -72,7 +74,10 @@ export default function Assistant() {
             <p className="flex items-center gap-1 text-xs text-fg-subtle"><ShieldCheck className="size-3" aria-hidden /> Respostas calculadas com seus dados, no seu dispositivo</p>
           </div>
         </div>
-        {messages.length > 0 && <Button variant="ghost" size="sm" leftIcon={<Trash2 className="size-3.5" />} onClick={() => setMessages([])}>Limpar</Button>}
+        <div className="flex items-center gap-1">
+          <TourButton id="assistant" />
+          {messages.length > 0 && <Button variant="ghost" size="sm" leftIcon={<Trash2 className="size-3.5" />} onClick={() => setMessages([])}>Limpar</Button>}
+        </div>
       </div>
 
       <div className="flex-1 space-y-4" aria-live="polite" aria-busy={thinking}>
@@ -139,6 +144,7 @@ export default function Assistant() {
       </div>
 
       <form
+        data-tour="ai-input"
         onSubmit={(e) => {
           e.preventDefault();
           ask(input);

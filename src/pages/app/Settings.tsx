@@ -1,4 +1,4 @@
-import { Database, Eye, Globe, Monitor, Moon, Palette, Sparkles, Sun, Wallet } from 'lucide-react';
+import { Database, Eye, Globe, GraduationCap, Monitor, Moon, Palette, RotateCcw, Sparkles, Sun, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { NotificationSettings } from '@/components/common/NotificationSettings';
 import { Button } from '@/components/ui/Button';
@@ -81,6 +81,27 @@ export default function SettingsPage() {
             </Select>
             <span className="text-xs font-normal text-fg-subtle">Datas no formato DD/MM/AAAA.</span>
           </label>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader title="Tutoriais" icon={<GraduationCap />} description="Guias passo a passo nas telas principais (Dashboard, Transações, Análises, Cartões, Orçamentos, Metas e Nexora AI)." />
+        <CardBody className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">Mostrar tutoriais automaticamente</p>
+              <p className="text-xs text-fg-subtle">Aparecem na primeira visita a cada tela. Você sempre pode abrir pelo botão “Como usar”.</p>
+            </div>
+            <Switch checked={s.tutorials.enabled} onChange={(v) => { s.setTutorialsEnabled(v); toast.success(v ? 'Tutoriais ativados' : 'Tutoriais desativados'); }} label="Mostrar tutoriais automaticamente" />
+          </div>
+          <Button
+            variant="secondary"
+            leftIcon={<RotateCcw className="size-4" />}
+            onClick={() => { s.resetTutorials(); toast.success('Tutoriais reiniciados', { description: 'Eles aparecerão novamente ao visitar cada tela.' }); }}
+          >
+            Rever todos os tutoriais
+          </Button>
+          {s.tutorials.seen.length > 0 && <p className="text-xs text-fg-subtle">{s.tutorials.seen.length} tutorial(is) já visto(s) ou pulado(s).</p>}
         </CardBody>
       </Card>
 

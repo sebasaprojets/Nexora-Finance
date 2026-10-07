@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { BarChart3 } from 'lucide-react';
+import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { PageHeader } from '@/components/common/PageHeader';
 import { PeriodFilter } from '@/components/common/PeriodFilter';
 import { Tabs } from '@/components/ui/Tabs';
@@ -22,6 +23,7 @@ export default function Analytics() {
   const tab = (params.get('aba') as Tab) || 'visao';
   const setTab = (t: Tab) => setParams({ aba: t }, { replace: true });
   const { preset, setPreset, custom, setCustom, period, previous } = usePeriod('6m');
+  usePageTour('analytics', data.transactions.length > 0);
   const showPeriod = tab === 'visao' || tab === 'gastos' || tab === 'receitas';
 
   return (
@@ -29,8 +31,14 @@ export default function Analytics() {
       <PageHeader
         title="Análises Financeiras"
         description={showPeriod ? `${formatDate(period.from)} a ${formatDate(period.to)} · comparado com ${formatDate(previous.from)} a ${formatDate(previous.to)}` : 'Gráficos, tabelas e indicadores calculados com seus dados reais.'}
-        actions={showPeriod && <PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />}
+        actions={
+          <>
+            <TourButton id="analytics" />
+            {showPeriod && <PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />}
+          </>
+        }
       />
+      <div data-tour="analytics-tabs">
       <Tabs
         value={tab}
         onChange={setTab}
@@ -43,6 +51,7 @@ export default function Analytics() {
           { value: 'comparar', label: 'Comparar períodos' },
         ]}
       />
+      </div>
       {data.transactions.length === 0 ? (
         <Card>
           <EmptyState icon={<BarChart3 />} title="Sem dados para analisar" description="Registre receitas e despesas para ver gráficos, DRE, fluxo de caixa e insights." />
