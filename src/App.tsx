@@ -9,7 +9,6 @@ import { useApplyTheme } from '@/hooks/useTheme';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useAuth } from '@/store/auth';
 import { useFinance } from '@/store/finance';
-import { useSettings } from '@/store/settings';
 import { IntroSplash, markIntroSeen, REPLAY_INTRO_EVENT, shouldShowIntro } from '@/components/brand/IntroSplash';
 
 // Code splitting por rota.
@@ -87,7 +86,7 @@ export function App() {
   useWorkspaceSync();
   useEffect(() => init(), [init]);
   // Abertura cinematográfica: uma vez por sessão (pode ser revista em Configurações).
-  const [intro, setIntro] = useState(() => shouldShowIntro(useSettings.getState().intro));
+  const [intro, setIntro] = useState(() => shouldShowIntro(true));
   useEffect(() => {
     if (intro) markIntroSeen();
   }, [intro]);

@@ -8,7 +8,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 /**
  * Abertura cinematográfica da Nexora.
  *
- * Linha do tempo (≈ 6,5 s, pulável com toque/tecla):
+ * Linha do tempo (≈ 6,5 s, exibição obrigatória — sem opção de pular):
  *  0,0 s  fundo e partículas surgem
  *  0,2 s  "câmera" faz um dolly lento: sai inclinada, distante e desfocada até o enquadramento
  *  0,4 s  peças do "N" se montam (haste, fita, barras) + reflexo de luz atravessa o símbolo
@@ -70,18 +70,9 @@ export function IntroSplash({ onDone }: { onDone: () => void }) {
   }, []);
 
   useEffect(() => {
+    // Com "reduzir movimento" no sistema, a versão é mais curta (só fade), por acessibilidade.
     const t = setTimeout(exit, reduced ? 1600 : HOLD_MS);
-    const onKey = (e: KeyboardEvent) => {
-      if (['Escape', 'Enter', ' ', 'Spacebar'].includes(e.key)) {
-        e.preventDefault();
-        exit();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => {
-      clearTimeout(t);
-      window.removeEventListener('keydown', onKey);
-    };
+    return () => clearTimeout(t);
   }, [exit, reduced]);
 
   useEffect(() => {
@@ -122,10 +113,9 @@ export function IntroSplash({ onDone }: { onDone: () => void }) {
       {visible && (
         <motion.div
           key="intro"
-          className="fixed inset-0 z-[200] flex cursor-pointer items-center justify-center overflow-hidden bg-[#03050c] select-none"
+          className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-[#03050c] select-none"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: reduced ? 0.3 : 0.6, ease: 'easeOut' } }}
-          onClick={exit}
           role="dialog"
           aria-modal="true"
           aria-label="Nexora Finance — Inteligência financeira em um só lugar"
@@ -289,19 +279,6 @@ export function IntroSplash({ onDone }: { onDone: () => void }) {
             </motion.div>
           </div>
 
-          <motion.button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              exit();
-            }}
-            className="absolute right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1.25rem,env(safe-area-inset-bottom))] rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium tracking-wider text-white/70 uppercase backdrop-blur transition-colors hover:bg-white/10 hover:text-white"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: phase === 'exit' ? 0 : 1 }}
-            transition={{ delay: phase === 'exit' ? 0 : 0.8, duration: 0.4 }}
-          >
-            Pular
-          </motion.button>
         </motion.div>
       )}
     </AnimatePresence>,

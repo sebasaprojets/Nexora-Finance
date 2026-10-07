@@ -270,8 +270,6 @@ export interface Settings {
   reducedMotion: 'system' | 'on' | 'off';
   /** Tutoriais guiados: ativos e quais já foram vistos/pulados. */
   tutorials: { enabled: boolean; seen: string[] };
-  /** Abertura cinematográfica (uma vez por sessão). */
-  intro: boolean;
 }
 
 export type FinancialObjective =
