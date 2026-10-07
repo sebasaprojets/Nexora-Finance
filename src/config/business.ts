@@ -3,6 +3,8 @@
  * Preencha pelas variáveis do GitHub (Settings → Secrets and variables → Actions → Variables)
  * ou no `.env.local` — sem precisar mexer no código. Ver docs/LANCAMENTO.md.
  */
+import { t } from '@/i18n';
+
 const env = import.meta.env;
 
 export const BUSINESS = {
@@ -16,7 +18,7 @@ export const BUSINESS = {
   whatsapp: ((env.VITE_SUPPORT_WHATSAPP as string | undefined) ?? '').replace(/\D/g, ''),
 };
 
-export const whatsappLink = (text = 'Olá! Preciso de ajuda com a Nexora.') =>
+export const whatsappLink = (text = t('Olá! Preciso de ajuda com a Nexora.')) =>
   BUSINESS.whatsapp ? `https://wa.me/${BUSINESS.whatsapp}?text=${encodeURIComponent(text)}` : null;
 
 export const hasSupport = () => !!(BUSINESS.supportEmail || BUSINESS.whatsapp);

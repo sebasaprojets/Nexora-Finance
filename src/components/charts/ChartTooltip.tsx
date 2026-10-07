@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { t } from '@/i18n';
 
 export interface TooltipRow {
   label: string;
@@ -27,7 +28,7 @@ export function ChartTooltipBox({ title, rows, footer }: { title: ReactNode; row
 
 export function Legend({ items }: { items: { label: string; color: string; dashed?: boolean }[] }) {
   return (
-    <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-fg-muted" aria-label="Legenda">
+    <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-fg-muted" aria-label={t('Legenda')}>
       {items.map((i) => (
         <li key={i.label} className="flex items-center gap-1.5">
           <span

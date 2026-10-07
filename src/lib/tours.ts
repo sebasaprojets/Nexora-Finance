@@ -20,7 +20,10 @@ export interface Tour {
   steps: TourStep[];
 }
 
-export const TOURS: Record<string, Tour> = {
+import { t } from '@/i18n';
+
+/** Textos em português (chaves de tradução). Use `TOURS`, que entrega tudo no idioma atual. */
+const RAW_TOURS: Record<string, Tour> = {
   // ---------------------------------------------------------------------------
   // Primeiro acesso (sem dados)
   // ---------------------------------------------------------------------------
@@ -174,3 +177,31 @@ export const TOURS: Record<string, Tour> = {
     ],
   },
 };
+
+/** Envolve um passo para que `title`/`body` sejam traduzidos no momento da leitura. */
+const localizedStep = (step: TourStep): TourStep => ({
+  target: step.target,
+  get title() {
+    return t(step.title);
+  },
+  get body() {
+    return t(step.body);
+  },
+});
+
+/**
+ * Tutoriais no idioma atual. Os textos são traduzidos sob demanda (getters),
+ * então funciona como um objeto comum e sempre reflete o idioma escolhido.
+ */
+export const TOURS: Record<string, Tour> = Object.fromEntries(
+  Object.entries(RAW_TOURS).map(([id, tour]) => [
+    id,
+    {
+      id: tour.id,
+      get title() {
+        return t(tour.title);
+      },
+      steps: tour.steps.map(localizedStep),
+    },
+  ]),
+);

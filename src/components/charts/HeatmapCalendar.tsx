@@ -4,13 +4,14 @@ import { dailyActivity, quantileThresholds, type DayActivity } from '@/lib/finan
 import { WEEKDAYS_SHORT, daysInMonth, today } from '@/lib/dates';
 import type { Transaction } from '@/types';
 import { useMoney } from '@/hooks/useMoney';
+import { t } from '@/i18n';
 
 export const HEAT_LEVELS = [
   { label: 'Sem gastos', color: 'var(--heat-0)' },
-  { label: 'Baixa', color: 'var(--heat-1)' },
-  { label: 'Média', color: 'var(--heat-2)' },
-  { label: 'Alta', color: 'var(--heat-3)' },
-  { label: 'Muito alta', color: 'var(--heat-4)' },
+  { label: 'Gasto baixo', color: 'var(--heat-1)' },
+  { label: 'Gasto médio', color: 'var(--heat-2)' },
+  { label: 'Gasto alto', color: 'var(--heat-3)' },
+  { label: 'Gasto muito alto', color: 'var(--heat-4)' },
 ];
 
 /** Calendário-heatmap de gastos diários (escala sequencial azul, níveis por quartil). */
@@ -41,10 +42,10 @@ export function HeatmapCalendar({
     <div>
       <div className="grid grid-cols-7 gap-1.5 text-center text-[11px] font-medium text-fg-subtle" aria-hidden>
         {WEEKDAYS_SHORT.map((d) => (
-          <span key={d}>{d}</span>
+          <span key={d}>{t(d)}</span>
         ))}
       </div>
-      <div className="mt-1.5 grid grid-cols-7 gap-1.5" role="grid" aria-label="Calendário de gastos">
+      <div className="mt-1.5 grid grid-cols-7 gap-1.5" role="grid" aria-label={t('Calendário de gastos')}>
         {Array.from({ length: offset }, (_, i) => (
           <span key={`e${i}`} aria-hidden />
         ))}
@@ -60,7 +61,7 @@ export function HeatmapCalendar({
               role="gridcell"
               disabled={future}
               aria-selected={selected === date}
-              aria-label={`${i + 1}: ${a ? `despesas ${money(a.expense)}, receitas ${money(a.income)}` : 'sem movimentação'} — ${HEAT_LEVELS[lv].label}`}
+              aria-label={a ? t('{dia}: despesas {despesas}, receitas {receitas} — {nivel}', { dia: i + 1, despesas: money(a.expense), receitas: money(a.income), nivel: t(HEAT_LEVELS[lv].label) }) : t('{dia}: sem movimentação — {nivel}', { dia: i + 1, nivel: t(HEAT_LEVELS[lv].label) })}
               onClick={() => onSelect(date, a)}
               className={cn(
                 'relative aspect-square rounded-lg text-[11px] font-medium transition-transform hover:scale-105 disabled:opacity-30 disabled:hover:scale-100',
@@ -78,11 +79,11 @@ export function HeatmapCalendar({
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-fg-subtle">
         {HEAT_LEVELS.slice(1).map((l) => (
           <span key={l.label} className="flex items-center gap-1">
-            <span className="size-2.5 rounded" style={{ background: l.color }} aria-hidden /> {l.label}
+            <span className="size-2.5 rounded" style={{ background: l.color }} aria-hidden /> {t(l.label)}
           </span>
         ))}
         <span className="flex items-center gap-1">
-          <span className="size-1.5 rounded-full bg-[var(--series-income)]" aria-hidden /> Dia com receita
+          <span className="size-1.5 rounded-full bg-[var(--series-income)]" aria-hidden /> {t('Dia com receita')}
         </span>
       </div>
     </div>

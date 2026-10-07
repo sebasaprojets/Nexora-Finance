@@ -1,4 +1,5 @@
 import type { ISODate } from '@/types';
+import { currentLang, t, type Lang } from '@/i18n';
 
 /** Utilitários de data trabalhando em horário local com strings `YYYY-MM-DD`. */
 
@@ -82,63 +83,92 @@ export function isBetween(s: ISODate, from: ISODate, to: ISODate): boolean {
   return s >= from && s <= to;
 }
 
-const MONTHS_SHORT = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-const MONTHS_LONG = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
-export const WEEKDAYS_SHORT = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+const MONTHS_SHORT: Record<Lang, string[]> = {
+  pt: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'],
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  es: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+};
+const MONTHS_LONG: Record<Lang, string[]> = {
+  pt: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  es: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+};
+const WEEKDAYS: Record<Lang, string[]> = {
+  pt: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  es: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+};
 
-/** `DD/MM/YYYY` */
+/** Dias da semana abreviados (segunda a domingo) no idioma atual. */
+export function weekdaysShort(): string[] {
+  return WEEKDAYS[currentLang()];
+}
+
+/**
+ * Dias da semana abreviados (segunda a domingo). Lido sob demanda, então
+ * sempre reflete o idioma atual (pode ser usado como um array comum).
+ */
+export const WEEKDAYS_SHORT: readonly string[] = new Proxy([] as string[], {
+  get: (_, prop) => Reflect.get(weekdaysShort(), prop),
+  has: (_, prop) => Reflect.has(weekdaysShort(), prop),
+  ownKeys: () => Reflect.ownKeys(weekdaysShort()),
+  getOwnPropertyDescriptor: (_, prop) => Reflect.getOwnPropertyDescriptor(weekdaysShort(), prop),
+});
+
+/** `DD/MM/YYYY` (em inglês, `MM/DD/YYYY`). */
 export function formatDate(s: ISODate): string {
   const [y, m, d] = s.slice(0, 10).split('-');
-  return `${d}/${m}/${y}`;
+  return currentLang() === 'en' ? `${m}/${d}/${y}` : `${d}/${m}/${y}`;
 }
 
-/** `DD/MM` */
+/** `DD/MM` (em inglês, `MM/DD`). */
 export function formatDayMonth(s: ISODate): string {
   const [, m, d] = s.slice(0, 10).split('-');
-  return `${d}/${m}`;
+  return currentLang() === 'en' ? `${m}/${d}` : `${d}/${m}`;
 }
 
-/** `out/26` */
+/** `out/26` · `Oct '26` · `oct/26` */
 export function formatMonthShort(key: string): string {
   const [y, m] = key.split('-').map(Number);
-  return `${MONTHS_SHORT[m - 1]}/${String(y).slice(2)}`;
+  const lang = currentLang();
+  const name = MONTHS_SHORT[lang][m - 1];
+  return lang === 'en' ? `${name} '${String(y).slice(2)}` : `${name}/${String(y).slice(2)}`;
 }
 
-/** `Outubro de 2026` */
+/** `Outubro de 2026` · `October 2026` · `Octubre de 2026` */
 export function formatMonthLong(key: string): string {
   const [y, m] = key.split('-').map(Number);
-  return `${MONTHS_LONG[m - 1]} de ${y}`;
+  const lang = currentLang();
+  const name = MONTHS_LONG[lang][m - 1];
+  return lang === 'en' ? `${name} ${y}` : `${name} de ${y}`;
 }
 
 export function monthName(key: string): string {
-  return MONTHS_LONG[Number(key.split('-')[1]) - 1];
+  return MONTHS_LONG[currentLang()][Number(key.split('-')[1]) - 1];
 }
 
-/** "Hoje", "Ontem" ou `DD/MM/YYYY`. */
+/** "Hoje", "Ontem", "Amanhã" ou a data. */
 export function formatRelativeDay(s: ISODate, ref: ISODate = today()): string {
   const diff = diffDays(s, ref);
-  if (diff === 0) return 'Hoje';
-  if (diff === 1) return 'Ontem';
-  if (diff === -1) return 'Amanhã';
+  if (diff === 0) return t('Hoje');
+  if (diff === 1) return t('Ontem');
+  if (diff === -1) return t('Amanhã');
   return formatDate(s);
 }
 
 export function formatDateTime(iso: string): string {
   const d = new Date(iso);
-  return `${formatDate(toISODate(d))} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return t('{date} às {time}', { date: formatDate(toISODate(d)), time: `${pad(d.getHours())}:${pad(d.getMinutes())}` });
 }
 
 export function timeAgo(iso: string, now = Date.now()): string {
   const s = Math.max(0, Math.round((now - new Date(iso).getTime()) / 1000));
-  if (s < 60) return 'agora';
+  if (s < 60) return t('agora');
   const m = Math.round(s / 60);
-  if (m < 60) return `há ${m} min`;
+  if (m < 60) return t('há {n} min', { n: m });
   const h = Math.round(m / 60);
-  if (h < 24) return `há ${h} h`;
+  if (h < 24) return t('há {n} h', { n: h });
   const d = Math.round(h / 24);
-  if (d < 30) return `há ${d} ${d === 1 ? 'dia' : 'dias'}`;
+  if (d < 30) return d === 1 ? t('há {n} dia', { n: d }) : t('há {n} dias', { n: d });
   return formatDate(toISODate(new Date(iso)));
 }

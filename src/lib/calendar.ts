@@ -1,6 +1,7 @@
 import type { FinanceData, ISODate } from '@/types';
 import { cardSummary } from './finance';
 import { dateInMonth, daysInMonth, today } from './dates';
+import { t } from '@/i18n';
 
 export type EventKind = 'bill' | 'invoice' | 'income' | 'goal' | 'reminder' | 'subscription' | 'debt';
 
@@ -18,14 +19,15 @@ export interface CalendarEvent {
   refId?: string;
 }
 
+/** `label` é traduzido no idioma atual a cada leitura. */
 export const EVENT_META: Record<EventKind, { label: string; color: string }> = {
-  bill: { label: 'Conta', color: 'var(--series-2)' },
-  invoice: { label: 'Fatura', color: 'var(--series-7)' },
-  income: { label: 'Receita', color: 'var(--series-3)' },
-  goal: { label: 'Meta', color: 'var(--series-1)' },
-  reminder: { label: 'Lembrete', color: 'var(--series-4)' },
-  subscription: { label: 'Assinatura', color: 'var(--series-5)' },
-  debt: { label: 'Dívida', color: 'var(--series-8)' },
+  bill: { get label() { return t('Conta'); }, color: 'var(--series-2)' },
+  invoice: { get label() { return t('Fatura'); }, color: 'var(--series-7)' },
+  income: { get label() { return t('Receita'); }, color: 'var(--series-3)' },
+  goal: { get label() { return t('Meta'); }, color: 'var(--series-1)' },
+  reminder: { get label() { return t('Lembrete'); }, color: 'var(--series-4)' },
+  subscription: { get label() { return t('Assinatura'); }, color: 'var(--series-5)' },
+  debt: { get label() { return t('Dívida'); }, color: 'var(--series-8)' },
 };
 
 /**
@@ -43,32 +45,32 @@ export function monthEvents(data: FinanceData, month: string, ref: ISODate = tod
   // Lançamentos recorrentes (receitas e contas). Realizados no mês aparecem como concluídos;
   // os que ainda não ocorreram são projetados a partir do último lançamento.
   const recurring = new Map<string, (typeof data.transactions)[number]>();
-  for (const t of data.transactions) {
-    if (t.recurrence !== 'monthly' || t.type === 'transfer' || t.cardId) continue;
-    if (subNames.has(t.description.toLowerCase())) continue;
-    const key = `${t.type}:${t.description.toLowerCase()}`;
+  for (const tx of data.transactions) {
+    if (tx.recurrence !== 'monthly' || tx.type === 'transfer' || tx.cardId) continue;
+    if (subNames.has(tx.description.toLowerCase())) continue;
+    const key = `${tx.type}:${tx.description.toLowerCase()}`;
     const prev = recurring.get(key);
-    if (!prev || t.date > prev.date) recurring.set(key, t);
+    if (!prev || tx.date > prev.date) recurring.set(key, tx);
   }
-  for (const t of data.transactions) {
-    if (!inMonth(t.date) || t.type === 'transfer') continue;
-    const isRecurringBill = t.recurrence !== 'none' && t.type === 'expense' && !t.cardId && !subNames.has(t.description.toLowerCase());
-    if (t.type === 'income' || isRecurringBill)
-      events.push({ id: `tx-${t.id}`, kind: t.type === 'income' ? 'income' : 'bill', date: t.date, title: t.description, amount: t.amount, done: t.date <= ref && t.status !== 'scheduled', href: '/app/transacoes', refId: t.id });
+  for (const tx of data.transactions) {
+    if (!inMonth(tx.date) || tx.type === 'transfer') continue;
+    const isRecurringBill = tx.recurrence !== 'none' && tx.type === 'expense' && !tx.cardId && !subNames.has(tx.description.toLowerCase());
+    if (tx.type === 'income' || isRecurringBill)
+      events.push({ id: `tx-${tx.id}`, kind: tx.type === 'income' ? 'income' : 'bill', date: tx.date, title: tx.description, amount: tx.amount, done: tx.date <= ref && tx.status !== 'scheduled', href: '/app/transacoes', refId: tx.id });
   }
-  for (const [key, t] of recurring) {
-    const day = Number(t.date.slice(8, 10));
+  for (const [key, tx] of recurring) {
+    const day = Number(tx.date.slice(8, 10));
     const date = dateInMonth(y, m, day);
-    if (date <= t.date) continue;
-    const already = events.some((e) => e.title.toLowerCase() === t.description.toLowerCase() && e.date.slice(0, 7) === month);
+    if (date <= tx.date) continue;
+    const already = events.some((e) => e.title.toLowerCase() === tx.description.toLowerCase() && e.date.slice(0, 7) === month);
     if (already) continue;
-    events.push({ id: `proj-${key}-${month}`, kind: t.type === 'income' ? 'income' : 'bill', date, title: t.description, amount: t.amount, done: false, projected: true, href: '/app/transacoes' });
+    events.push({ id: `proj-${key}-${month}`, kind: tx.type === 'income' ? 'income' : 'bill', date, title: tx.description, amount: tx.amount, done: false, projected: true, href: '/app/transacoes' });
   }
 
   for (const c of data.cards) {
     for (const inv of cardSummary(c, data.transactions, ref).invoices) {
       if (!inMonth(inv.dueDate) || inv.total <= 0) continue;
-      events.push({ id: `inv-${inv.id}`, kind: 'invoice', date: inv.dueDate, title: `Fatura ${c.name}`, amount: inv.total - inv.paid > 0 ? inv.total - inv.paid : inv.total, done: inv.status === 'paid', href: '/app/cartoes', refId: inv.id });
+      events.push({ id: `inv-${inv.id}`, kind: 'invoice', date: inv.dueDate, title: t('Fatura {name}', { name: c.name }), amount: inv.total - inv.paid > 0 ? inv.total - inv.paid : inv.total, done: inv.status === 'paid', href: '/app/cartoes', refId: inv.id });
     }
   }
 
@@ -80,10 +82,10 @@ export function monthEvents(data: FinanceData, month: string, ref: ISODate = tod
 
   for (const d of data.debts.filter((x) => x.status !== 'paid')) {
     const date = dateInMonth(y, m, d.dueDay);
-    events.push({ id: `debt-${d.id}-${month}`, kind: 'debt', date, title: `Parcela ${d.name}`, amount: d.installmentAmount, done: false, href: '/app/dividas', refId: d.id });
+    events.push({ id: `debt-${d.id}-${month}`, kind: 'debt', date, title: t('Parcela {name}', { name: d.name }), amount: d.installmentAmount, done: false, href: '/app/dividas', refId: d.id });
   }
 
-  for (const g of data.goals) if (g.deadline && inMonth(g.deadline)) events.push({ id: `goal-${g.id}`, kind: 'goal', date: g.deadline, title: `Prazo da meta: ${g.name}`, amount: g.target, done: false, href: '/app/metas', refId: g.id });
+  for (const g of data.goals) if (g.deadline && inMonth(g.deadline)) events.push({ id: `goal-${g.id}`, kind: 'goal', date: g.deadline, title: t('Prazo da meta: {name}', { name: g.name }), amount: g.target, done: false, href: '/app/metas', refId: g.id });
 
   for (const r of data.reminders) if (inMonth(r.date)) events.push({ id: `rem-${r.id}`, kind: 'reminder', date: r.date, title: r.title, amount: r.amount, done: r.done, refId: r.id });
 

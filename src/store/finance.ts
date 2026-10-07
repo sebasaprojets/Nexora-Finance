@@ -15,6 +15,7 @@ import { describeDevice } from '@/lib/device';
 import { readJSON, removeKey, writeJSON } from '@/services/storage';
 import { authService } from '@/services/auth';
 import { cloudEnabled, pullWorkspace, pushWorkspace, useSyncStatus } from '@/services/cloud';
+import { t } from '@/i18n';
 
 /**
  * Store do "workspace" do usuário: dados financeiros + notificações + sessões.
@@ -40,7 +41,7 @@ function initialSessions(): DeviceSession[] {
   const d = describeDevice();
   const now = new Date();
   return [
-    { id: 'ses_current', device: d.device, browser: d.browser, os: d.os, location: 'Localização aproximada indisponível', ip: '—', lastActive: now.toISOString(), current: true },
+    { id: 'ses_current', device: d.device, browser: d.browser, os: d.os, location: t('Localização aproximada indisponível'), ip: '—', lastActive: now.toISOString(), current: true },
   ];
 }
 
@@ -50,12 +51,12 @@ function demoExtras(): Pick<Workspace, 'notifications' | 'sessions'> {
   return {
     sessions: [
       ...initialSessions(),
-      { id: 'ses_phone', device: 'Celular', browser: 'Safari', os: 'iOS', location: 'São Paulo, SP', ip: '177.38.xxx.xxx', lastActive: iso(3 * 3600_000), current: false },
-      { id: 'ses_office', device: 'Computador', browser: 'Chrome', os: 'Windows', location: 'Campinas, SP', ip: '189.12.xxx.xxx', lastActive: iso(4 * 86_400_000), current: false },
+      { id: 'ses_phone', device: t('Celular'), browser: 'Safari', os: 'iOS', location: 'São Paulo, SP', ip: '177.38.xxx.xxx', lastActive: iso(3 * 3600_000), current: false },
+      { id: 'ses_office', device: t('Computador'), browser: 'Chrome', os: 'Windows', location: 'Campinas, SP', ip: '189.12.xxx.xxx', lastActive: iso(4 * 86_400_000), current: false },
     ],
     notifications: [
-      { id: 'ntf_login', kind: 'new_login', title: 'Novo acesso detectado', body: 'Login em Safari · iOS (São Paulo, SP). Se não foi você, encerre a sessão.', createdAt: iso(3 * 3600_000), read: false, href: '/app/seguranca' },
-      { id: 'ntf_welcome', kind: 'system', title: 'Bem-vindo à Nexora', body: 'Seus dados de demonstração estão prontos. Explore o dashboard e as análises.', createdAt: iso(2 * 86_400_000), read: true, href: '/app' },
+      { id: 'ntf_login', kind: 'new_login', title: t('Novo acesso detectado'), body: t('Login em {where}. Se não foi você, encerre a sessão.', { where: 'Safari · iOS (São Paulo, SP)' }), createdAt: iso(3 * 3600_000), read: false, href: '/app/seguranca' },
+      { id: 'ntf_welcome', kind: 'system', title: t('Bem-vindo à Nexora'), body: t('Seus dados de demonstração estão prontos. Explore o dashboard e as análises.'), createdAt: iso(2 * 86_400_000), read: true, href: '/app' },
     ],
   };
 }
@@ -245,7 +246,7 @@ export const useFinance = create<FinanceState>((set, get) => {
       const created: Transaction[] = Array.from({ length: n }, (_, i) => ({
         ...base,
         id: uid('tx'),
-        description: sanitizeText(base.description || 'Sem descrição', 120),
+        description: sanitizeText(base.description || t('Sem descrição'), 120),
         notes: base.notes ? sanitizeText(base.notes, 500) : undefined,
         tags: sanitizeTags(base.tags ?? []),
         // Ajusta centavos na última parcela para fechar o total.
@@ -286,7 +287,7 @@ export const useFinance = create<FinanceState>((set, get) => {
         id: uid('tx'),
         type: 'transfer',
         amount: round2(amount),
-        description: `Pagamento fatura ${card?.name ?? ''}`.trim(),
+        description: t('Pagamento fatura {card}', { card: card?.name ?? '' }).trim(),
         date: date ?? today(),
         accountId,
         toCardId: cardId,
@@ -321,7 +322,7 @@ export const useFinance = create<FinanceState>((set, get) => {
         get().addTransaction({
           type: 'expense',
           amount,
-          description: `Parcela ${debt.name}`,
+          description: t('Parcela {name}', { name: debt.name }),
           categoryId: 'cat_other_exp',
           date: today(),
           accountId,

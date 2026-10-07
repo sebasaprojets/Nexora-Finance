@@ -17,6 +17,7 @@ import { parseMoneyInput } from '@/lib/format';
 import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n';
 
 export default function CalendarPage() {
   const data = useFinanceData();
@@ -51,9 +52,9 @@ export default function CalendarPage() {
   };
 
   const saveReminder = () => {
-    if (!rem.title.trim()) return toast.error('Informe um título');
+    if (!rem.title.trim()) return toast.error(t('Informe um título'));
     upsert('reminders', { id: uid('rem'), title: sanitizeText(rem.title, 80), date: rem.date, amount: rem.amount ? parseMoneyInput(rem.amount) : undefined, done: false });
-    toast.success('Lembrete criado', { description: `Você será avisado perto de ${formatDate(rem.date)}.` });
+    toast.success(t('Lembrete criado'), { description: t('Você será avisado perto de {data}.', { data: formatDate(rem.date) }) });
     setReminderOpen(false);
     setRem({ title: '', date: day, amount: '' });
   };
@@ -61,12 +62,12 @@ export default function CalendarPage() {
   return (
     <div>
       <PageHeader
-        title="Calendário financeiro"
-        description="Contas, faturas, receitas, metas e lembretes em um só lugar."
-        actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => { setRem({ title: '', date: day, amount: '' }); setReminderOpen(true); }}>Novo lembrete</Button>}
+        title={t('Calendário financeiro')}
+        description={t('Contas, faturas, receitas, metas e lembretes em um só lugar.')}
+        actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => { setRem({ title: '', date: day, amount: '' }); setReminderOpen(true); }}>{t('Novo lembrete')}</Button>}
       />
 
-      <div className="mb-4 flex flex-wrap gap-1.5" role="group" aria-label="Filtrar tipos de evento">
+      <div className="mb-4 flex flex-wrap gap-1.5" role="group" aria-label={t('Filtrar tipos de evento')}>
         {(Object.keys(EVENT_META) as EventKind[]).map((k) => {
           const off = hidden.has(k);
           return (
@@ -77,7 +78,7 @@ export default function CalendarPage() {
               className={cn('flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-opacity', off ? 'border-border opacity-50' : 'border-border-strong')}
             >
               <span className="size-2 rounded-full" style={{ background: EVENT_META[k].color }} aria-hidden />
-              {EVENT_META[k].label}
+              {t(EVENT_META[k].label)}
             </button>
           );
         })}
@@ -86,18 +87,18 @@ export default function CalendarPage() {
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
         <Card>
           <div className="flex items-center justify-between p-4 sm:p-5">
-            <Button variant="ghost" size="icon-sm" aria-label="Mês anterior" onClick={() => go(-1)}><ChevronLeft className="size-4" /></Button>
+            <Button variant="ghost" size="icon-sm" aria-label={t('Mês anterior')} onClick={() => go(-1)}><ChevronLeft className="size-4" /></Button>
             <div className="text-center">
               <h2 className="font-display text-lg font-semibold">{formatMonthLong(month)}</h2>
-              <p className="text-xs text-fg-subtle">A pagar: <span className="tabular font-medium text-fg">{money(pendingOut)}</span> · A receber: <span className="tabular font-medium text-income">{money(pendingIn)}</span></p>
+              <p className="text-xs text-fg-subtle">{t('A pagar:')} <span className="tabular font-medium text-fg">{money(pendingOut)}</span> · {t('A receber:')} <span className="tabular font-medium text-income">{money(pendingIn)}</span></p>
             </div>
-            <Button variant="ghost" size="icon-sm" aria-label="Próximo mês" onClick={() => go(1)}><ChevronRight className="size-4" /></Button>
+            <Button variant="ghost" size="icon-sm" aria-label={t('Próximo mês')} onClick={() => go(1)}><ChevronRight className="size-4" /></Button>
           </div>
           <div className="px-2 pb-4 sm:px-5">
             <div className="grid grid-cols-7 text-center text-[11px] font-medium text-fg-subtle" aria-hidden>
-              {WEEKDAYS_SHORT.map((d) => <span key={d} className="pb-2">{d}</span>)}
+              {WEEKDAYS_SHORT.map((d) => <span key={d} className="pb-2">{t(d)}</span>)}
             </div>
-            <div className="grid grid-cols-7 gap-1" role="grid" aria-label={`Calendário de ${formatMonthLong(month)}`}>
+            <div className="grid grid-cols-7 gap-1" role="grid" aria-label={t('Calendário de {mes}', { mes: formatMonthLong(month) })}>
               {Array.from({ length: offset }, (_, i) => <span key={`e${i}`} aria-hidden />)}
               {Array.from({ length: total }, (_, i) => {
                 const date = `${month}-${String(i + 1).padStart(2, '0')}`;
@@ -108,7 +109,7 @@ export default function CalendarPage() {
                     key={date}
                     role="gridcell"
                     aria-selected={day === date}
-                    aria-label={`${i + 1}: ${evs.length} evento(s)`}
+                    aria-label={`${i + 1}: ${t(evs.length === 1 ? '{n} evento' : '{n} eventos', { n: evs.length })}`}
                     onClick={() => setDay(date)}
                     className={cn('flex min-h-16 flex-col items-stretch rounded-xl border p-1.5 text-left transition-colors sm:min-h-24', day === date ? 'border-primary bg-primary-soft' : 'border-transparent hover:bg-surface-2', date < ref && 'opacity-80')}
                   >
@@ -132,20 +133,20 @@ export default function CalendarPage() {
         </Card>
 
         <Card className="h-fit">
-          <CardHeader title={formatDate(day)} description={`${dayEvents.length} evento(s)`} />
+          <CardHeader title={formatDate(day)} description={t(dayEvents.length === 1 ? '{n} evento' : '{n} eventos', { n: dayEvents.length })} />
           <CardBody className="space-y-2 pt-3">
             {dayEvents.map((e) => (
               <button key={e.id} onClick={() => setEvent(e)} className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left transition-colors hover:border-border-strong">
                 <span className="h-9 w-1 shrink-0 rounded-full" style={{ background: EVENT_META[e.kind].color }} aria-hidden />
                 <div className="min-w-0 flex-1">
                   <p className={cn('truncate text-sm font-medium', e.done && 'line-through opacity-70')}>{e.title}</p>
-                  <p className="text-xs text-fg-subtle">{EVENT_META[e.kind].label}{e.projected ? ' · previsto' : ''}{e.done ? ' · concluído' : ''}</p>
+                  <p className="text-xs text-fg-subtle">{t(EVENT_META[e.kind].label)}{e.projected ? ` · ${t('previsto')}` : ''}{e.done ? ` · ${t('concluído')}` : ''}</p>
                 </div>
                 {e.amount !== undefined && <span className={cn('tabular text-sm font-semibold', e.kind === 'income' && 'text-income')}>{money(e.amount)}</span>}
               </button>
             ))}
-            {!dayEvents.length && <p className="py-6 text-center text-sm text-fg-subtle">Nada programado para este dia.</p>}
-            <h3 className="pt-4 text-xs font-medium text-fg-subtle">Próximos no mês</h3>
+            {!dayEvents.length && <p className="py-6 text-center text-sm text-fg-subtle">{t('Nada programado para este dia.')}</p>}
+            <h3 className="pt-4 text-xs font-medium text-fg-subtle">{t('Próximos no mês')}</h3>
             {events.filter((e) => e.date > day && !e.done).slice(0, 6).map((e) => (
               <button key={e.id} onClick={() => { setDay(e.date); setEvent(e); }} className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-surface-2">
                 <span className="flex min-w-0 items-center gap-2"><span className="size-2 shrink-0 rounded-full" style={{ background: EVENT_META[e.kind].color }} aria-hidden /><span className="tabular text-xs text-fg-subtle">{e.date.slice(8)}</span><span className="truncate">{e.title}</span></span>
@@ -156,31 +157,31 @@ export default function CalendarPage() {
         </Card>
       </div>
 
-      <Modal open={!!event} onClose={() => setEvent(null)} title={event?.title ?? ''} description={event ? `${EVENT_META[event.kind].label} · ${formatDate(event.date)}` : undefined} size="sm">
+      <Modal open={!!event} onClose={() => setEvent(null)} title={event?.title ?? ''} description={event ? `${t(EVENT_META[event.kind].label)} · ${formatDate(event.date)}` : undefined} size="sm">
         {event && (
           <div className="space-y-4">
             {event.amount !== undefined && <p className="tabular font-display text-3xl font-semibold">{money(event.amount)}</p>}
             <div className="flex flex-wrap gap-2">
-              {event.done ? <Badge tone="success">Concluído</Badge> : <Badge tone="warning">Pendente</Badge>}
-              {event.projected && <Badge>Previsão baseada na recorrência</Badge>}
+              {event.done ? <Badge tone="success">{t('Concluído')}</Badge> : <Badge tone="warning">{t('Pendente')}</Badge>}
+              {event.projected && <Badge>{t('Previsão baseada na recorrência')}</Badge>}
             </div>
             <div className="flex flex-wrap gap-2 pt-2">
               {event.kind === 'reminder' && event.refId && (
                 <>
-                  <Button size="sm" leftIcon={<Check className="size-3.5" />} onClick={() => { const r = data.reminders.find((x) => x.id === event.refId); if (r) upsert('reminders', { ...r, done: !r.done }); setEvent(null); toast.success(event.done ? 'Lembrete reaberto' : 'Lembrete concluído'); }}>
-                    {event.done ? 'Reabrir' : 'Marcar como feito'}
+                  <Button size="sm" leftIcon={<Check className="size-3.5" />} onClick={() => { const r = data.reminders.find((x) => x.id === event.refId); if (r) upsert('reminders', { ...r, done: !r.done }); setEvent(null); toast.success(event.done ? t('Lembrete reaberto') : t('Lembrete concluído')); }}>
+                    {event.done ? t('Reabrir') : t('Marcar como feito')}
                   </Button>
-                  <Button size="sm" variant="danger" leftIcon={<Trash2 className="size-3.5" />} onClick={() => { remove('reminders', event.refId!); setEvent(null); toast.success('Lembrete removido'); }}>Excluir</Button>
+                  <Button size="sm" variant="danger" leftIcon={<Trash2 className="size-3.5" />} onClick={() => { remove('reminders', event.refId!); setEvent(null); toast.success(t('Lembrete removido')); }}>{t('Excluir')}</Button>
                 </>
               )}
               {event.href && (
                 <Link to={event.href} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium hover:bg-surface-2">
-                  <ExternalLink className="size-3.5" /> {event.kind === 'invoice' ? 'Ver fatura / pagar' : 'Abrir'}
+                  <ExternalLink className="size-3.5" /> {event.kind === 'invoice' ? t('Ver fatura / pagar') : t('Abrir')}
                 </Link>
               )}
               {!event.done && event.kind !== 'reminder' && (
-                <Button size="sm" variant="ghost" leftIcon={<Bell className="size-3.5" />} onClick={() => { upsert('reminders', { id: uid('rem'), title: event.title, date: event.date, amount: event.amount, done: false }); setEvent(null); toast.success('Lembrete criado'); }}>
-                  Lembrar-me
+                <Button size="sm" variant="ghost" leftIcon={<Bell className="size-3.5" />} onClick={() => { upsert('reminders', { id: uid('rem'), title: event.title, date: event.date, amount: event.amount, done: false }); setEvent(null); toast.success(t('Lembrete criado')); }}>
+                  {t('Lembrar-me')}
                 </Button>
               )}
             </div>
@@ -188,11 +189,11 @@ export default function CalendarPage() {
         )}
       </Modal>
 
-      <Modal open={reminderOpen} onClose={() => setReminderOpen(false)} title="Novo lembrete" size="sm" footer={<><Button variant="ghost" onClick={() => setReminderOpen(false)}>Cancelar</Button><Button onClick={saveReminder}>Salvar</Button></>}>
+      <Modal open={reminderOpen} onClose={() => setReminderOpen(false)} title={t('Novo lembrete')} size="sm" footer={<><Button variant="ghost" onClick={() => setReminderOpen(false)}>{t('Cancelar')}</Button><Button onClick={saveReminder}>{t('Salvar')}</Button></>}>
         <div className="space-y-4">
-          <Field label="Título">{(p) => <Input {...p} value={rem.title} onChange={(e) => setRem({ ...rem, title: e.target.value })} placeholder="Ex.: Pagar IPVA" data-autofocus />}</Field>
-          <Field label="Data">{(p) => <Input {...p} type="date" value={rem.date} onChange={(e) => setRem({ ...rem, date: e.target.value })} />}</Field>
-          <Field label="Valor (opcional)">{(p) => <Input {...p} value={rem.amount} onChange={(e) => setRem({ ...rem, amount: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
+          <Field label={t('Título')}>{(p) => <Input {...p} value={rem.title} onChange={(e) => setRem({ ...rem, title: e.target.value })} placeholder={t('Ex.: Pagar IPVA')} data-autofocus />}</Field>
+          <Field label={t('Data')}>{(p) => <Input {...p} type="date" value={rem.date} onChange={(e) => setRem({ ...rem, date: e.target.value })} />}</Field>
+          <Field label={t('Valor (opcional)')}>{(p) => <Input {...p} value={rem.amount} onChange={(e) => setRem({ ...rem, amount: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
         </div>
       </Modal>
     </div>

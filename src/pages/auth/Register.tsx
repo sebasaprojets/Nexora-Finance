@@ -13,6 +13,7 @@ import { Divider, SocialButtons } from '@/components/common/SocialButtons';
 import { authService, AuthError } from '@/services/auth';
 import { useAuth } from '@/store/auth';
 import { toast } from '@/store/toast';
+import { t } from '@/i18n';
 
 const schema = z
   .object({
@@ -44,81 +45,81 @@ export default function Register() {
     try {
       const r = await authService.signUp(v.name, v.email, v.password);
       setAuth(r);
-      toast.success('Conta criada com sucesso!', { description: 'Vamos personalizar sua experiência.' });
+      toast.success(t('Conta criada com sucesso!'), { description: t('Vamos personalizar sua experiência.') });
       navigate('/onboarding', { replace: true });
     } catch (e) {
       if (e instanceof AuthError && e.code === 'confirm_email') return setSentTo(v.email.trim().toLowerCase());
-      setError(e instanceof AuthError ? e.message : 'Não foi possível criar a conta.');
+      setError(e instanceof AuthError ? e.message : t('Não foi possível criar a conta.'));
     }
   };
 
   if (sentTo)
     return (
-      <AuthLayout title="Confirme seu e-mail" subtitle="Falta só um passo para ativar sua conta.">
+      <AuthLayout title={t('Confirme seu e-mail')} subtitle={t('Falta só um passo para ativar sua conta.')}>
         <div className="space-y-4 text-center">
           <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
             <MailCheck className="size-7" aria-hidden />
           </span>
           <p className="text-sm text-fg-muted">
-            Enviamos um link de confirmação para <strong className="text-fg">{sentTo}</strong>. Abra o e-mail neste aparelho e toque no link — você entra direto na Nexora.
+            {t('Enviamos um link de confirmação para')} <strong className="text-fg">{sentTo}</strong>. {t('Abra o e-mail neste aparelho e toque no link — você entra direto na Nexora.')}
           </p>
-          <p className="text-xs text-fg-subtle">Não chegou? Confira a caixa de spam ou promoções.</p>
-          <Link to="/entrar" className="inline-block text-sm font-medium text-primary hover:underline">Já confirmei — entrar</Link>
+          <p className="text-xs text-fg-subtle">{t('Não chegou? Confira a caixa de spam ou promoções.')}</p>
+          <Link to="/entrar" className="inline-block text-sm font-medium text-primary hover:underline">{t('Já confirmei — entrar')}</Link>
         </div>
       </AuthLayout>
     );
 
   return (
     <AuthLayout
-      title="Crie sua conta"
-      subtitle="Comece grátis. Leva menos de um minuto."
+      title={t('Crie sua conta')}
+      subtitle={t('Comece grátis. Leva menos de um minuto.')}
       footer={
         <>
-          Já tem conta?{' '}
+          {t('Já tem conta?')}{' '}
           <Link to="/entrar" className="font-medium text-primary hover:underline">
-            Entrar
+            {t('Entrar')}
           </Link>
         </>
       }
     >
       <SocialButtons />
-      <Divider label="ou cadastre-se com e-mail" />
+      <Divider label={t('ou cadastre-se com e-mail')} />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {error && (
           <div role="alert" className="flex items-start gap-2 rounded-xl border border-danger/30 bg-danger-soft px-3 py-2.5 text-sm text-danger">
             <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden /> {error}
           </div>
         )}
-        <Field label="Nome" error={formState.errors.name?.message}>
-          {(p) => <Input {...p} {...register('name')} autoComplete="name" leftIcon={<User />} placeholder="Seu nome" />}
+        <Field label={t('Nome')} error={formState.errors.name?.message}>
+          {(p) => <Input {...p} {...register('name')} autoComplete="name" leftIcon={<User />} placeholder={t('Seu nome')} />}
         </Field>
-        <Field label="E-mail" error={formState.errors.email?.message}>
-          {(p) => <Input {...p} {...register('email')} type="email" autoComplete="email" leftIcon={<Mail />} placeholder="voce@email.com" />}
+        <Field label={t('E-mail')} error={formState.errors.email?.message}>
+          {(p) => <Input {...p} {...register('email')} type="email" autoComplete="email" leftIcon={<Mail />} placeholder={t('voce@email.com')} />}
         </Field>
-        <Field label="Senha" error={formState.errors.password?.message}>
+        <Field label={t('Senha')} error={formState.errors.password?.message}>
           {(p) => (
             <div>
-              <PasswordInput {...p} {...register('password')} autoComplete="new-password" placeholder="Mínimo de 8 caracteres" />
+              <PasswordInput {...p} {...register('password')} autoComplete="new-password" placeholder={t('Mínimo de 8 caracteres')} />
               <StrengthMeter value={watch('password')} />
             </div>
           )}
         </Field>
-        <Field label="Confirmar senha" error={formState.errors.confirm?.message}>
-          {(p) => <PasswordInput {...p} {...register('confirm')} autoComplete="new-password" placeholder="Repita a senha" />}
+        <Field label={t('Confirmar senha')} error={formState.errors.confirm?.message}>
+          {(p) => <PasswordInput {...p} {...register('confirm')} autoComplete="new-password" placeholder={t('Repita a senha')} />}
         </Field>
         <div>
           <label className="flex cursor-pointer items-start gap-2 text-sm text-fg-muted">
             <input type="checkbox" {...register('terms')} className="mt-0.5 size-4 rounded accent-[var(--primary)]" aria-invalid={!!formState.errors.terms} />
             <span>
-              Li e aceito os{' '}
-              <Link to="/termos" target="_blank" className="text-primary hover:underline">Termos de uso</Link> e a{' '}
-              <Link to="/privacidade" target="_blank" className="text-primary hover:underline">Política de privacidade</Link>.
+              {t('Li e aceito os')}{' '}
+              <Link to="/termos" target="_blank" className="text-primary hover:underline">{t('Termos de uso')}</Link> {t('e a')}{' '}
+              <Link to="/privacidade" target="_blank" className="text-primary hover:underline">{t('Política de privacidade')}</Link>.
             </span>
           </label>
-          {formState.errors.terms && <p role="alert" className="mt-1 text-xs text-danger">{formState.errors.terms.message}</p>}
+          {formState.errors.terms && <p role="alert" className="mt-1 text-xs text-danger">{t(formState.errors.terms.message ?? '')}</p>}
         </div>
         <Button type="submit" size="lg" className="w-full" loading={formState.isSubmitting}>
-          Criar conta
+          {t('Criar conta')}
         </Button>
       </form>
     </AuthLayout>

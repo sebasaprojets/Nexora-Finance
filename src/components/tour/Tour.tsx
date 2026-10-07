@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { t } from '@/i18n';
 import { createPortal } from 'react-dom';
 import { create } from 'zustand';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -33,16 +34,16 @@ export function usePageTour(id: string, ready = true) {
     if (!ready || !enabled || seen || !TOURS[id]) return;
     // Espera a página assentar e qualquer diálogo/abertura animada sair da tela
     // (tenta de novo a cada 700 ms) antes de destacar os elementos.
-    let t: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout>;
     const tryStart = (wait: number) => {
-      t = setTimeout(() => {
+      timer = setTimeout(() => {
         if (useTourStore.getState().active) return;
         if (document.querySelector('[role="dialog"][aria-modal="true"]') || document.body.dataset.biometricPending) return tryStart(700);
         start(id);
       }, wait);
     };
     tryStart(900);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [id, ready, enabled, seen, start]);
   return useCallback(() => start(id), [id, start]);
 }
@@ -100,8 +101,8 @@ export function TourOverlay() {
     const update = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const t = findTarget(step.target);
-        setRect(t ? t.getBoundingClientRect() : null);
+        const target = findTarget(step.target);
+        setRect(target ? target.getBoundingClientRect() : null);
         setVw(window.innerWidth);
         setVh(window.innerHeight);
       });
@@ -191,15 +192,15 @@ export function TourOverlay() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-medium tracking-wider text-fg-subtle uppercase">
-                Tutorial · {tour.title} · {index + 1} de {steps.length}
+                {t('Tutorial')} · {t(tour.title)} · {t('{n} de {total}', { n: index + 1, total: steps.length })}
               </p>
-              <h2 id="tour-title" className="mt-0.5 font-display text-base font-semibold">{step.title}</h2>
+              <h2 id="tour-title" className="mt-0.5 font-display text-base font-semibold">{t(step.title)}</h2>
             </div>
-            <button onClick={finish} className="-mt-1 -mr-1 rounded-lg p-1.5 text-fg-subtle hover:bg-surface-2 hover:text-fg" aria-label="Pular tutorial">
+            <button onClick={finish} className="-mt-1 -mr-1 rounded-lg p-1.5 text-fg-subtle hover:bg-surface-2 hover:text-fg" aria-label={t('Pular tutorial')}>
               <X className="size-4" />
             </button>
           </div>
-          <p id="tour-body" className="mt-3 text-sm leading-relaxed text-fg-muted">{step.body}</p>
+          <p id="tour-body" className="mt-3 text-sm leading-relaxed text-fg-muted">{t(step.body)}</p>
           <div className="mt-4 flex gap-1" aria-hidden>
             {steps.map((_, i) => (
               <span key={i} className={cn('h-1 flex-1 rounded-full transition-colors', i <= index ? 'bg-primary' : 'bg-surface-3')} />
@@ -207,18 +208,18 @@ export function TourOverlay() {
           </div>
           <label className="mt-4 flex cursor-pointer items-center gap-2 text-xs text-fg-subtle">
             <input type="checkbox" checked={dontShow} onChange={(e) => setDontShow(e.target.checked)} className="size-3.5 accent-[var(--primary)]" />
-            Não mostrar mais tutoriais
+            {t('Não mostrar mais tutoriais')}
           </label>
           <div className="mt-4 flex items-center justify-between gap-2">
-            <Button variant="ghost" size="sm" onClick={finish}>Pular</Button>
+            <Button variant="ghost" size="sm" onClick={finish}>{t('Pular')}</Button>
             <div className="flex gap-2">
               {index > 0 && (
                 <Button variant="secondary" size="sm" leftIcon={<ArrowLeft className="size-3.5" />} onClick={() => setIndex(index - 1)}>
-                  Voltar
+                  {t('Voltar')}
                 </Button>
               )}
               <Button size="sm" rightIcon={!last ? <ArrowRight className="size-3.5" /> : undefined} onClick={() => (last ? finish() : setIndex(index + 1))}>
-                {last ? 'Concluir' : 'Próximo'}
+                {last ? t('Concluir') : t('Próximo')}
               </Button>
             </div>
           </div>
@@ -234,8 +235,8 @@ export function TourButton({ id, className }: { id: string; className?: string }
   const start = useTourStore((s) => s.start);
   if (!TOURS[id]) return null;
   return (
-    <Button data-tour="help" variant="ghost" size="sm" className={className} leftIcon={<GraduationCap className="size-3.5" />} onClick={() => start(id)} aria-label={`Ver tutorial: ${TOURS[id].title}`}>
-      <span className="hidden sm:inline">Como usar</span>
+    <Button data-tour="help" variant="ghost" size="sm" className={className} leftIcon={<GraduationCap className="size-3.5" />} onClick={() => start(id)} aria-label={t('Ver tutorial: {nome}', { nome: t(TOURS[id].title) })}>
+      <span className="hidden sm:inline">{t('Como usar')}</span>
     </Button>
   );
 }

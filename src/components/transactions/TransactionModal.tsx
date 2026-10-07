@@ -19,7 +19,9 @@ import { useFinance } from '@/store/finance';
 import { useSettings } from '@/store/settings';
 import { toast } from '@/store/toast';
 import { notifyUser } from '@/services/notifications';
+import { METHOD_LABELS } from '@/lib/labels';
 import type { Attachment, PaymentMethod, TransactionType } from '@/types';
+import { t } from '@/i18n';
 
 const schema = z
   .object({
@@ -54,15 +56,7 @@ const TYPE_OPTIONS = [
   { value: 'transfer' as const, label: 'Transferência', icon: <Repeat2 /> },
 ];
 
-const METHODS: { value: PaymentMethod; label: string }[] = [
-  { value: 'pix', label: 'Pix' },
-  { value: 'debit', label: 'Débito' },
-  { value: 'credit', label: 'Crédito' },
-  { value: 'cash', label: 'Dinheiro' },
-  { value: 'boleto', label: 'Boleto' },
-  { value: 'transfer', label: 'Transferência' },
-  { value: 'auto_debit', label: 'Débito automático' },
-];
+const METHODS = (Object.keys(METHOD_LABELS) as PaymentMethod[]).map((value) => ({ value, label: METHOD_LABELS[value] }));
 
 const MAX_ATTACHMENT = 1.5 * 1024 * 1024;
 
@@ -81,23 +75,23 @@ export function TransactionModal() {
   const activeAccounts = useMemo(() => accounts.filter((a) => !a.archived), [accounts]);
 
   const defaults = useMemo<FormValues>(() => {
-    const t = editing ?? draft?.defaults;
+    const d = editing ?? draft?.defaults;
     const type = (editing?.type ?? draft?.type ?? 'expense') as TransactionType;
-    const source = t?.cardId ? `card:${t.cardId}` : t?.accountId ? `acc:${t.accountId}` : activeAccounts[0] ? `acc:${activeAccounts[0].id}` : '';
+    const source = d?.cardId ? `card:${d.cardId}` : d?.accountId ? `acc:${d.accountId}` : activeAccounts[0] ? `acc:${activeAccounts[0].id}` : '';
     return {
       type,
-      amount: t?.amount ? formatMoney(t.amount, { currency }).replace(/[^\d,.]/g, '') : '',
-      description: t?.description ?? '',
-      categoryId: t?.categoryId,
-      date: t?.date ?? today(),
+      amount: d?.amount ? formatMoney(d.amount, { currency }).replace(/[^\d,.]/g, '') : '',
+      description: d?.description ?? '',
+      categoryId: d?.categoryId,
+      date: d?.date ?? today(),
       source,
-      toAccountId: t?.toAccountId ?? activeAccounts.find((a) => `acc:${a.id}` !== source)?.id,
-      method: t?.method ?? (source.startsWith('card:') ? 'credit' : 'pix'),
-      status: t?.status ?? 'paid',
-      recurrence: t?.recurrence ?? 'none',
+      toAccountId: d?.toAccountId ?? activeAccounts.find((a) => `acc:${a.id}` !== source)?.id,
+      method: d?.method ?? (source.startsWith('card:') ? 'credit' : 'pix'),
+      status: d?.status ?? 'paid',
+      recurrence: d?.recurrence ?? 'none',
       installments: 1,
-      tags: t?.tags?.join(', ') ?? '',
-      notes: t?.notes ?? '',
+      tags: d?.tags?.join(', ') ?? '',
+      notes: d?.notes ?? '',
     };
   }, [draft, editing, activeAccounts, currency]);
 
@@ -148,11 +142,11 @@ export function TransactionModal() {
   const onFile = (file?: File) => {
     if (!file) return;
     if (file.size > MAX_ATTACHMENT) {
-      toast.error('Arquivo muito grande', { description: 'O limite é 1,5 MB no modo local.' });
+      toast.error(t('Arquivo muito grande'), { description: t('O limite é 1,5 MB no modo local.') });
       return;
     }
     if (!/^(image\/|application\/pdf)/.test(file.type)) {
-      toast.error('Formato não suportado', { description: 'Envie uma imagem ou PDF.' });
+      toast.error(t('Formato não suportado'), { description: t('Envie uma imagem ou PDF.') });
       return;
     }
     const reader = new FileReader();
@@ -167,7 +161,7 @@ export function TransactionModal() {
     const base = {
       type: v.type,
       amount,
-      description: v.description.trim() || cat?.name || (v.type === 'transfer' ? 'Transferência' : 'Sem descrição'),
+      description: v.description.trim() || (cat ? t(cat.name) : '') || (v.type === 'transfer' ? t('Transferência') : t('Sem descrição')),
       categoryId: v.type === 'transfer' ? undefined : v.categoryId,
       date: v.date,
       accountId: kind === 'acc' ? id : undefined,
@@ -176,22 +170,22 @@ export function TransactionModal() {
       method: v.method as PaymentMethod,
       status: v.status,
       recurrence: v.recurrence,
-      tags: v.tags.split(',').map((t) => t.trim()).filter(Boolean),
+      tags: v.tags.split(',').map((s) => s.trim()).filter(Boolean),
       notes: v.notes || undefined,
       attachment,
     };
     if (editing) {
       updateTransaction(editing.id, base);
-      toast.success('Transação atualizada');
+      toast.success(t('Transação atualizada'));
     } else {
       const created = addTransaction({ ...base, installments: kind === 'card' ? v.installments : 1 });
-      toast.success(v.type === 'income' ? 'Receita adicionada' : v.type === 'expense' ? 'Despesa adicionada' : 'Transferência realizada', {
+      toast.success(v.type === 'income' ? t('Receita adicionada') : v.type === 'expense' ? t('Despesa adicionada') : t('Transferência realizada'), {
         description: `${formatMoney(amount, { currency })} · ${base.description}${created.length > 1 ? ` · ${created.length}x` : ''}`,
-        action: { label: 'Desfazer', onClick: () => deleteTransactions(created.map((t) => t.id)) },
+        action: { label: t('Desfazer'), onClick: () => deleteTransactions(created.map((x) => x.id)) },
       });
       notifyUser({
         kind: 'new_transaction',
-        title: v.type === 'income' ? 'Nova receita registrada' : v.type === 'expense' ? 'Nova despesa registrada' : 'Transferência registrada',
+        title: v.type === 'income' ? t('Nova receita registrada') : v.type === 'expense' ? t('Nova despesa registrada') : t('Transferência registrada'),
         body: `${base.description} · ${formatMoney(amount, { currency })}`,
         href: '/app/transacoes',
       });
@@ -200,9 +194,9 @@ export function TransactionModal() {
   };
 
   const createWallet = () =>
-    upsert('accounts', { id: uid('acc'), name: 'Carteira', institution: 'Dinheiro físico', type: 'cash', initialBalance: 0, color: '#1baf7a', createdAt: new Date().toISOString() });
+    upsert('accounts', { id: uid('acc'), name: t('Carteira'), institution: t('Dinheiro físico'), type: 'cash', initialBalance: 0, color: '#1baf7a', createdAt: new Date().toISOString() });
 
-  const title = editing ? 'Editar transação' : type === 'income' ? 'Nova receita' : type === 'transfer' ? 'Nova transferência' : 'Nova despesa';
+  const title = editing ? t('Editar transação') : type === 'income' ? t('Nova receita') : type === 'transfer' ? t('Nova transferência') : t('Nova despesa');
   const preview = parseMoneyInput(amountRaw ?? '');
 
   return (
@@ -215,10 +209,10 @@ export function TransactionModal() {
         activeAccounts.length > 0 && (
           <>
             <Button variant="ghost" onClick={close}>
-              Cancelar
+              {t('Cancelar')}
             </Button>
             <Button type="submit" form="tx-form" className="min-w-28">
-              Salvar
+              {t('Salvar')}
             </Button>
           </>
         )
@@ -226,9 +220,9 @@ export function TransactionModal() {
     >
       {activeAccounts.length === 0 ? (
         <div className="py-6 text-center">
-          <p className="text-sm text-fg-muted">Para lançar transações, você precisa de ao menos uma conta.</p>
+          <p className="text-sm text-fg-muted">{t('Para lançar transações, você precisa de ao menos uma conta.')}</p>
           <Button className="mt-4" onClick={createWallet}>
-            Criar conta “Carteira”
+            {t('Criar conta “{name}”', { name: t('Carteira') })}
           </Button>
         </div>
       ) : (
@@ -237,7 +231,7 @@ export function TransactionModal() {
             <Controller
               control={control}
               name="type"
-              render={({ field }) => <Segmented label="Tipo de transação" value={field.value} onChange={field.onChange} options={TYPE_OPTIONS} className="w-full [&>button]:flex-1 [&>button]:justify-center" />}
+              render={({ field }) => <Segmented label={t('Tipo de transação')} value={field.value} onChange={field.onChange} options={TYPE_OPTIONS.map((o) => ({ ...o, label: t(o.label) }))} className="w-full [&>button]:flex-1 [&>button]:justify-center" />}
             />
           )}
 
@@ -247,18 +241,20 @@ export function TransactionModal() {
               <p className="text-fg-muted">
                 {type === 'income' ? (
                   <>
-                    <strong className="text-fg">Sua primeira receita.</strong> Comece pelo salário: informe o valor, escolha “Salário”, a data do pagamento e a conta onde cai. Em <em>Mais detalhes</em>, marque “Mensal” para lembrar todo mês.
+                    <strong className="text-fg">{t('Sua primeira receita.')}</strong>{' '}
+                    {t('Comece pelo salário: informe o valor, escolha “{salario}”, a data do pagamento e a conta onde cai. Em “{detalhes}”, marque “{mensal}” para lembrar todo mês.', { salario: t('Salário'), detalhes: t('Mais detalhes'), mensal: t('Mensal') })}
                   </>
                 ) : (
                   <>
-                    <strong className="text-fg">Sua primeira despesa.</strong> Comece pelas contas fixas (aluguel, luz, internet). Informe o valor, a categoria e de onde saiu o dinheiro — conta ou cartão.
+                    <strong className="text-fg">{t('Sua primeira despesa.')}</strong>{' '}
+                    {t('Comece pelas contas fixas (aluguel, luz, internet). Informe o valor, a categoria e de onde saiu o dinheiro — conta ou cartão.')}
                   </>
                 )}
               </p>
             </div>
           )}
 
-          <Field label="Valor" error={formState.errors.amount?.message} required>
+          <Field label={t('Valor')} error={formState.errors.amount?.message} required>
             {(p) => (
               <div className="relative">
                 <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 font-display text-xl text-fg-subtle">
@@ -270,7 +266,7 @@ export function TransactionModal() {
                   data-autofocus
                   inputMode="decimal"
                   autoComplete="off"
-                  placeholder="0,00"
+                  placeholder={t('0,00')}
                   className={cn(
                     'tabular h-16 w-full rounded-2xl border border-border bg-surface-2/60 pr-4 pl-14 font-display text-3xl font-semibold outline-none focus:border-primary focus:shadow-[var(--ring)]',
                     type === 'income' ? 'text-income' : type === 'expense' ? 'text-fg' : 'text-net',
@@ -283,8 +279,8 @@ export function TransactionModal() {
           {type !== 'transfer' && (
             <fieldset>
               <legend className="mb-2 text-[13px] font-medium text-fg-muted">
-                Categoria<span className="ml-0.5 text-danger" aria-hidden>*</span>
-                {autoCategory && <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary"><Sparkles className="size-3" aria-hidden /> Sugerida pela descrição</span>}
+                {t('Categoria')}<span className="ml-0.5 text-danger" aria-hidden>*</span>
+                {autoCategory && <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary"><Sparkles className="size-3" aria-hidden /> {t('Sugerida pela descrição')}</span>}
               </legend>
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {typeCategories.map((c) => (
@@ -303,7 +299,7 @@ export function TransactionModal() {
                     )}
                   >
                     <CategoryIcon icon={c.icon} color={c.color} size="sm" />
-                    <span className="w-full truncate">{c.name}</span>
+                    <span className="w-full truncate">{t(c.name)}</span>
                   </button>
                 ))}
               </div>
@@ -316,14 +312,14 @@ export function TransactionModal() {
           )}
 
           <div>
-            <p className="mb-2 text-[13px] font-medium text-fg-muted">Data</p>
+            <p className="mb-2 text-[13px] font-medium text-fg-muted">{t('Data')}</p>
             <div className="flex flex-wrap items-center gap-2">
               {[
-                { label: 'Hoje', value: today() },
-                { label: 'Ontem', value: addDays(today(), -1) },
+                { key: 'today', label: t('Hoje'), value: today() },
+                { key: 'yesterday', label: t('Ontem'), value: addDays(today(), -1) },
               ].map((d) => (
                 <button
-                  key={d.label}
+                  key={d.key}
                   type="button"
                   aria-pressed={date === d.value}
                   onClick={() => setValue('date', d.value)}
@@ -335,15 +331,15 @@ export function TransactionModal() {
                   {d.label}
                 </button>
               ))}
-              <input type="date" aria-label="Escolher data" {...register('date')} className="h-9 rounded-lg border border-border bg-surface-2/60 px-3 text-sm text-fg outline-none focus:border-primary" />
+              <input type="date" aria-label={t('Escolher data')} {...register('date')} className="h-9 rounded-lg border border-border bg-surface-2/60 px-3 text-sm text-fg outline-none focus:border-primary" />
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={type === 'income' ? 'Recebido em' : type === 'transfer' ? 'De' : 'Pago com'} error={formState.errors.source?.message}>
+            <Field label={type === 'income' ? t('Recebido em') : type === 'transfer' ? t('De') : t('Pago com')} error={formState.errors.source?.message}>
               {(p) => (
                 <Select {...p} {...register('source')}>
-                  <optgroup label="Contas">
+                  <optgroup label={t('Contas')}>
                     {activeAccounts.map((a) => (
                       <option key={a.id} value={`acc:${a.id}`}>
                         {a.name}
@@ -351,7 +347,7 @@ export function TransactionModal() {
                     ))}
                   </optgroup>
                   {type === 'expense' && cards.length > 0 && (
-                    <optgroup label="Cartões de crédito">
+                    <optgroup label={t('Cartões de crédito')}>
                       {cards.map((c) => (
                         <option key={c.id} value={`card:${c.id}`}>
                           {c.name} •••• {c.last4}
@@ -363,7 +359,7 @@ export function TransactionModal() {
               )}
             </Field>
             {type === 'transfer' ? (
-              <Field label="Para" error={formState.errors.toAccountId?.message}>
+              <Field label={t('Para')} error={formState.errors.toAccountId?.message}>
                 {(p) => (
                   <Select {...p} {...register('toAccountId')}>
                     {activeAccounts.map((a) => (
@@ -375,24 +371,24 @@ export function TransactionModal() {
                 )}
               </Field>
             ) : isCard && !editing ? (
-              <Field label="Parcelas">
+              <Field label={t('Parcelas')}>
                 {(p) => (
                   <Select {...p} {...register('installments', { valueAsNumber: true })}>
                     {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => (
                       <option key={n} value={n}>
-                        {n === 1 ? 'À vista' : `${n}x de ${formatMoney((preview || 0) / n, { currency })}`}
+                        {n === 1 ? t('À vista') : t('{n}x de {valor}', { n, valor: formatMoney((preview || 0) / n, { currency }) })}
                       </option>
                     ))}
                   </Select>
                 )}
               </Field>
             ) : (
-              <Field label="Método">
+              <Field label={t('Método')}>
                 {(p) => (
                   <Select {...p} {...register('method')}>
                     {METHODS.filter((m) => m.value !== 'credit').map((m) => (
                       <option key={m.value} value={m.value}>
-                        {m.label}
+                        {t(m.label)}
                       </option>
                     ))}
                   </Select>
@@ -401,57 +397,57 @@ export function TransactionModal() {
             )}
           </div>
 
-          <Field label="Descrição" error={formState.errors.description?.message}>
-            {(p) => <Input {...p} {...register('description')} placeholder="Ex.: Mercado, Uber, Salário…" autoComplete="off" />}
+          <Field label={t('Descrição')} error={formState.errors.description?.message}>
+            {(p) => <Input {...p} {...register('description')} placeholder={t('Ex.: Mercado, Uber, Salário…')} autoComplete="off" />}
           </Field>
 
           <button type="button" onClick={() => setMore((m) => !m)} className="flex items-center gap-1.5 text-sm font-medium text-primary" aria-expanded={more}>
             <ChevronDown className={cn('size-4 transition-transform', more && 'rotate-180')} aria-hidden />
-            {more ? 'Menos detalhes' : 'Mais detalhes'}
+            {more ? t('Menos detalhes') : t('Mais detalhes')}
           </button>
 
           <AnimatePresence initial={false}>
             {more && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                 <div className="grid gap-4 pt-1 sm:grid-cols-2">
-                  <Field label="Recorrência">
+                  <Field label={t('Recorrência')}>
                     {(p) => (
                       <Select {...p} {...register('recurrence')}>
-                        <option value="none">Não se repete</option>
-                        <option value="weekly">Semanal</option>
-                        <option value="monthly">Mensal</option>
-                        <option value="yearly">Anual</option>
+                        <option value="none">{t('Não se repete')}</option>
+                        <option value="weekly">{t('Semanal')}</option>
+                        <option value="monthly">{t('Mensal')}</option>
+                        <option value="yearly">{t('Anual')}</option>
                       </Select>
                     )}
                   </Field>
-                  <Field label="Status">
+                  <Field label={t('Status')}>
                     {(p) => (
                       <Select {...p} {...register('status')}>
-                        <option value="paid">{type === 'income' ? 'Recebido' : 'Pago'}</option>
-                        <option value="pending">Pendente</option>
-                        <option value="scheduled">Agendado</option>
+                        <option value="paid">{type === 'income' ? t('Recebido') : t('Pago')}</option>
+                        <option value="pending">{t('Pendente')}</option>
+                        <option value="scheduled">{t('Agendado')}</option>
                       </Select>
                     )}
                   </Field>
-                  <Field label="Tags" hint="Separe por vírgula" className="sm:col-span-2">
-                    {(p) => <Input {...p} {...register('tags')} placeholder="viagem, trabalho" />}
+                  <Field label={t('Tags')} hint={t('Separe por vírgula')} className="sm:col-span-2">
+                    {(p) => <Input {...p} {...register('tags')} placeholder={t('viagem, trabalho')} />}
                   </Field>
-                  <Field label="Observações" className="sm:col-span-2">
+                  <Field label={t('Observações')} className="sm:col-span-2">
                     {(p) => <Textarea {...p} {...register('notes')} rows={2} />}
                   </Field>
                   <div className="sm:col-span-2">
-                    <p className="mb-2 text-[13px] font-medium text-fg-muted">Anexo (comprovante)</p>
+                    <p className="mb-2 text-[13px] font-medium text-fg-muted">{t('Anexo (comprovante)')}</p>
                     {attachment ? (
                       <div className="flex items-center gap-2 rounded-xl border border-border bg-surface-2/60 px-3 py-2 text-sm">
                         <Paperclip className="size-4 text-fg-subtle" aria-hidden />
                         <span className="flex-1 truncate">{attachment.name}</span>
-                        <button type="button" onClick={() => setAttachment(undefined)} aria-label="Remover anexo" className="text-fg-subtle hover:text-danger">
+                        <button type="button" onClick={() => setAttachment(undefined)} aria-label={t('Remover anexo')} className="text-fg-subtle hover:text-danger">
                           <X className="size-4" />
                         </button>
                       </div>
                     ) : (
                       <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong px-3 py-4 text-sm text-fg-subtle hover:bg-surface-2">
-                        <Paperclip className="size-4" aria-hidden /> Adicionar imagem ou PDF
+                        <Paperclip className="size-4" aria-hidden /> {t('Adicionar imagem ou PDF')}
                         <input type="file" accept="image/*,application/pdf" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
                       </label>
                     )}

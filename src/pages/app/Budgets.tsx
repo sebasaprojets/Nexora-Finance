@@ -21,6 +21,7 @@ import { formatMoney, parseMoneyInput, round2 } from '@/lib/format';
 import { uid } from '@/lib/id';
 import { cn } from '@/lib/cn';
 import type { Budget } from '@/types';
+import { t } from '@/i18n';
 
 export const LEVEL: Record<BudgetLevel, { label: string; tone: Tone; color: string; icon: typeof CheckCircle2 }> = {
   ok: { label: 'Dentro do limite', tone: 'success', color: 'var(--success)', icon: CheckCircle2 },
@@ -48,40 +49,40 @@ function BudgetModal({ open, onClose, budget, month, suggestion }: { open: boole
   }
   const save = () => {
     const v = parseMoneyInput(amount);
-    if (!(v > 0)) return setError('Informe um valor maior que zero');
+    if (!(v > 0)) return setError(t('Informe um valor maior que zero'));
     const dup = budgets.find((b) => b.categoryId === categoryId && b.id !== budget?.id && (b.period === 'recurring' || b.period === month));
-    if (dup && !budget) return setError('Já existe um orçamento para esta categoria');
+    if (dup && !budget) return setError(t('Já existe um orçamento para esta categoria'));
     upsert('budgets', { id: budget?.id ?? uid('bud'), categoryId, amount: v, period: recurring ? 'recurring' : month });
-    toast.success(budget ? 'Orçamento atualizado' : 'Orçamento criado');
+    toast.success(budget ? t('Orçamento atualizado') : t('Orçamento criado'));
     onClose();
   };
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={budget ? 'Editar orçamento' : 'Novo orçamento'}
+      title={budget ? t('Editar orçamento') : t('Novo orçamento')}
       size="sm"
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-          <Button onClick={save}>Salvar</Button>
+          <Button variant="ghost" onClick={onClose}>{t('Cancelar')}</Button>
+          <Button onClick={save}>{t('Salvar')}</Button>
         </>
       }
     >
       <div className="space-y-4">
-        <Field label="Categoria">
+        <Field label={t('Categoria')}>
           {(p) => (
             <Select {...p} value={categoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={!!budget}>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {categories.map((c) => <option key={c.id} value={c.id}>{t(c.name)}</option>)}
             </Select>
           )}
         </Field>
-        <Field label="Limite mensal" error={error}>{(p) => <Input {...p} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="R$ 0,00" data-autofocus />}</Field>
+        <Field label={t('Limite mensal')} error={error}>{(p) => <Input {...p} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder={formatMoney(0)} data-autofocus />}</Field>
         <label className="flex items-center gap-2 text-sm text-fg-muted">
           <input type="checkbox" checked={recurring} onChange={(e) => setRecurring(e.target.checked)} className="size-4 accent-[var(--primary)]" />
-          Repetir todos os meses
+          {t('Repetir todos os meses')}
         </label>
-        <p className="text-xs text-fg-subtle">Você será alertado ao atingir 70%, 90% e 100% do limite.</p>
+        <p className="text-xs text-fg-subtle">{t('Você será alertado ao atingir 70%, 90% e 100% do limite.')}</p>
       </div>
     </Modal>
   );
@@ -116,42 +117,42 @@ export default function Budgets() {
   return (
     <div>
       <PageHeader
-        title="Orçamentos"
-        description="Defina limites por categoria e acompanhe em tempo real."
-        actions={<><TourButton id={tourId} /><Button data-tour="budget-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>Novo orçamento</Button></>}
+        title={t('Orçamentos')}
+        description={t('Defina limites por categoria e acompanhe em tempo real.')}
+        actions={<><TourButton id={tourId} /><Button data-tour="budget-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Novo orçamento')}</Button></>}
       />
 
       <div className="mb-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon-sm" aria-label="Mês anterior" onClick={() => setMonth(monthKey(addMonths(`${month}-01`, -1)))}><ChevronLeft className="size-4" /></Button>
+          <Button variant="ghost" size="icon-sm" aria-label={t('Mês anterior')} onClick={() => setMonth(monthKey(addMonths(`${month}-01`, -1)))}><ChevronLeft className="size-4" /></Button>
           <h2 className="min-w-44 text-center font-display font-semibold">{formatMonthLong(month)}</h2>
-          <Button variant="ghost" size="icon-sm" aria-label="Próximo mês" disabled={isCurrent} onClick={() => setMonth(monthKey(addMonths(`${month}-01`, 1)))}><ChevronRight className="size-4" /></Button>
+          <Button variant="ghost" size="icon-sm" aria-label={t('Próximo mês')} disabled={isCurrent} onClick={() => setMonth(monthKey(addMonths(`${month}-01`, 1)))}><ChevronRight className="size-4" /></Button>
         </div>
-        {!isCurrent && <Button variant="ghost" size="sm" onClick={() => setMonth(monthKey(today()))}>Mês atual</Button>}
+        {!isCurrent && <Button variant="ghost" size="sm" onClick={() => setMonth(monthKey(today()))}>{t('Mês atual')}</Button>}
       </div>
 
       {usage.length === 0 ? (
         <Card>
-          <EmptyState icon={<Wallet />} title="Nenhum orçamento definido" description="Crie limites para as categorias em que você mais gasta e receba alertas antes de estourar." action={<Button onClick={() => setModal({ open: true })}>+ Criar orçamento</Button>} />
+          <EmptyState icon={<Wallet />} title={t('Nenhum orçamento definido')} description={t('Crie limites para as categorias em que você mais gasta e receba alertas antes de estourar.')} action={<Button onClick={() => setModal({ open: true })}>{t('+ Criar orçamento')}</Button>} />
         </Card>
       ) : (
         <>
           <Card className="mb-6 p-5">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-sm text-fg-muted">Total utilizado</p>
+                <p className="text-sm text-fg-muted">{t('Total utilizado')}</p>
                 <p className="tabular font-display text-3xl font-semibold tracking-tight">
-                  {money(totals.spent)} <span className="text-base font-normal text-fg-subtle">de {money(totals.budget)}</span>
+                  {money(totals.spent)} <span className="text-base font-normal text-fg-subtle">{t('de {valor}', { valor: money(totals.budget) })}</span>
                 </p>
               </div>
               <div className="flex gap-2">
                 {(['ok', 'attention', 'alert', 'exceeded'] as BudgetLevel[]).map((l) => {
                   const n = usage.filter((u) => u.level === l).length;
-                  return n ? <Badge key={l} tone={LEVEL[l].tone}>{n} {LEVEL[l].label.toLowerCase()}</Badge> : null;
+                  return n ? <Badge key={l} tone={LEVEL[l].tone}>{n} {t(LEVEL[l].label).toLowerCase()}</Badge> : null;
                 })}
               </div>
             </div>
-            <Progress value={totals.budget ? (totals.spent / totals.budget) * 100 : 0} className="mt-4" label="Uso total do orçamento" />
+            <Progress value={totals.budget ? (totals.spent / totals.budget) * 100 : 0} className="mt-4" label={t('Uso total do orçamento')} />
           </Card>
 
           <div data-tour="budget-list" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -162,25 +163,25 @@ export default function Budgets() {
                   <div className="flex items-center gap-3">
                     <CategoryIcon icon={u.category?.icon} color={u.category?.color} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{u.category?.name ?? 'Categoria removida'}</p>
-                      <p className="text-xs text-fg-subtle">{u.budget.period === 'recurring' ? 'Mensal recorrente' : 'Somente este mês'}</p>
+                      <p className="truncate font-medium">{u.category ? t(u.category.name) : t('Categoria removida')}</p>
+                      <p className="text-xs text-fg-subtle">{u.budget.period === 'recurring' ? t('Mensal recorrente') : t('Somente este mês')}</p>
                     </div>
-                    <Button variant="ghost" size="icon-sm" aria-label="Editar orçamento" onClick={() => setModal({ open: true, budget: u.budget })}><Pencil className="size-4" /></Button>
-                    <Button variant="ghost" size="icon-sm" aria-label="Excluir orçamento" onClick={() => { remove('budgets', u.budget.id); toast.success('Orçamento removido'); }}><Trash2 className="size-4" /></Button>
+                    <Button variant="ghost" size="icon-sm" aria-label={t('Editar orçamento')} onClick={() => setModal({ open: true, budget: u.budget })}><Pencil className="size-4" /></Button>
+                    <Button variant="ghost" size="icon-sm" aria-label={t('Excluir orçamento')} onClick={() => { remove('budgets', u.budget.id); toast.success(t('Orçamento removido')); }}><Trash2 className="size-4" /></Button>
                   </div>
                   <div className="mt-4 flex items-baseline justify-between">
                     <span className="tabular text-xl font-semibold">{money(u.spent)}</span>
-                    <span className="tabular text-sm text-fg-subtle">de {money(u.budget.amount)}</span>
+                    <span className="tabular text-sm text-fg-subtle">{t('de {valor}', { valor: money(u.budget.amount) })}</span>
                   </div>
-                  <Progress value={u.pct} className="mt-2" color={L.color} label={`Uso do orçamento de ${u.category?.name}`} />
+                  <Progress value={u.pct} className="mt-2" color={L.color} label={t('Uso do orçamento de {categoria}', { categoria: u.category ? t(u.category.name) : '' })} />
                   <div className="mt-3 flex items-center justify-between gap-2 text-xs">
-                    <Badge tone={L.tone}><L.icon aria-hidden /> {Math.round(u.pct)}% · {L.label}</Badge>
+                    <Badge tone={L.tone}><L.icon aria-hidden /> {Math.round(u.pct)}% · {t(L.label)}</Badge>
                     <span className={cn('tabular', u.remaining < 0 ? 'text-danger' : 'text-fg-subtle')}>
-                      {u.remaining >= 0 ? `Restam ${money(u.remaining)}` : `Excedeu ${money(-u.remaining)}`}
+                      {u.remaining >= 0 ? t('Restam {valor}', { valor: money(u.remaining) }) : t('Excedeu {valor}', { valor: money(-u.remaining) })}
                     </span>
                   </div>
                   {isCurrent && u.projected > u.budget.amount && u.level !== 'exceeded' && (
-                    <p className="mt-3 rounded-lg bg-warning-soft px-3 py-2 text-xs text-warning">No ritmo atual, você deve gastar {money(u.projected)} até o fim do mês.</p>
+                    <p className="mt-3 rounded-lg bg-warning-soft px-3 py-2 text-xs text-warning">{t('No ritmo atual, você deve gastar {valor} até o fim do mês.', { valor: money(u.projected) })}</p>
                   )}
                 </Card>
               );
@@ -191,16 +192,16 @@ export default function Budgets() {
 
       {suggestions.length > 0 && (
         <Card className="mt-6">
-          <CardHeader title="Sugestões de orçamento" description="Baseadas na sua média dos últimos 3 meses" icon={<Lightbulb />} />
+          <CardHeader title={t('Sugestões de orçamento')} description={t('Baseadas na sua média dos últimos 3 meses')} icon={<Lightbulb />} />
           <CardBody className="grid gap-3 sm:grid-cols-3">
             {suggestions.map((s) => (
               <div key={s.category.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
                 <CategoryIcon icon={s.category.icon} color={s.category.color} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{s.category.name}</p>
-                  <p className="text-xs text-fg-subtle">Média {money(s.avg)}/mês</p>
+                  <p className="truncate text-sm font-medium">{t(s.category.name)}</p>
+                  <p className="text-xs text-fg-subtle">{t('Média {valor}/mês', { valor: money(s.avg) })}</p>
                 </div>
-                <Button size="sm" variant="soft" onClick={() => setModal({ open: true, suggestion: { categoryId: s.category.id, amount: Math.ceil(s.avg / 10) * 10 } })}>Criar</Button>
+                <Button size="sm" variant="soft" onClick={() => setModal({ open: true, suggestion: { categoryId: s.category.id, amount: Math.ceil(s.avg / 10) * 10 } })}>{t('Criar')}</Button>
               </div>
             ))}
           </CardBody>

@@ -12,6 +12,7 @@ import { cloudEnabled } from '@/services/cloud';
 import { AuthError } from '@/services/auth';
 import { useAuth } from '@/store/auth';
 import { toast } from '@/store/toast';
+import { t } from '@/i18n';
 
 const schema = z
   .object({
@@ -31,26 +32,26 @@ export default function ResetPassword() {
 
   // O Supabase valida o link ao carregar; damos um instante antes de dizer que expirou.
   useEffect(() => {
-    const t = setTimeout(() => setWaited(true), 2500);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setWaited(true), 2500);
+    return () => clearTimeout(timer);
   }, []);
 
   const invalid = !cloudEnabled || (waited && status !== 'authenticated');
 
   return (
     <AuthLayout
-      title="Criar nova senha"
-      subtitle="Escolha uma senha forte que você não usa em outros sites."
+      title={t('Criar nova senha')}
+      subtitle={t('Escolha uma senha forte que você não usa em outros sites.')}
       footer={
         <Link to="/entrar" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
-          <ArrowLeft className="size-4" /> Voltar para o login
+          <ArrowLeft className="size-4" /> {t('Voltar para o login')}
         </Link>
       }
     >
       {invalid ? (
         <div role="alert" className="card p-6 text-center text-sm text-fg-muted">
-          Este link expirou ou já foi usado.{' '}
-          <Link to="/recuperar-senha" className="font-medium text-primary hover:underline">Pedir um novo link</Link>
+          {t('Este link expirou ou já foi usado.')}{' '}
+          <Link to="/recuperar-senha" className="font-medium text-primary hover:underline">{t('Pedir um novo link')}</Link>
         </div>
       ) : (
         <form
@@ -61,10 +62,10 @@ export default function ResetPassword() {
             try {
               const { cloudAuth } = await import('@/services/cloudAuth');
               await cloudAuth.setPassword(v.password);
-              toast.success('Senha alterada!', { description: 'Use a nova senha nos próximos acessos.' });
+              toast.success(t('Senha alterada!'), { description: t('Use a nova senha nos próximos acessos.') });
               navigate('/app', { replace: true });
             } catch (e) {
-              setError(e instanceof AuthError ? e.message : 'Não foi possível alterar a senha.');
+              setError(e instanceof AuthError ? e.message : t('Não foi possível alterar a senha.'));
             }
           })}
         >
@@ -73,7 +74,7 @@ export default function ResetPassword() {
               <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden /> {error}
             </div>
           )}
-          <Field label="Nova senha" error={formState.errors.password?.message}>
+          <Field label={t('Nova senha')} error={formState.errors.password?.message}>
             {(p) => (
               <div>
                 <PasswordInput {...p} {...register('password')} autoComplete="new-password" />
@@ -81,11 +82,11 @@ export default function ResetPassword() {
               </div>
             )}
           </Field>
-          <Field label="Confirmar nova senha" error={formState.errors.confirm?.message}>
+          <Field label={t('Confirmar nova senha')} error={formState.errors.confirm?.message}>
             {(p) => <PasswordInput {...p} {...register('confirm')} autoComplete="new-password" />}
           </Field>
           <Button type="submit" size="lg" className="w-full" loading={formState.isSubmitting || status === 'loading'}>
-            Salvar nova senha
+            {t('Salvar nova senha')}
           </Button>
         </form>
       )}

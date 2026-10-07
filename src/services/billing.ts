@@ -1,4 +1,5 @@
 import { supabase } from './cloud';
+import { t } from '@/i18n';
 
 /**
  * Cobrança via Mercado Pago. Toda a parte sensível (token do Mercado Pago,
@@ -8,8 +9,8 @@ import { supabase } from './cloud';
 async function call<T>(body: Record<string, unknown>): Promise<T> {
   const sb = await supabase();
   const { data, error } = await sb.functions.invoke('billing', { body });
-  if (error) throw new Error('Não foi possível falar com o servidor de pagamentos. Tente novamente em instantes.');
-  if (data?.error) throw new Error(String(data.error));
+  if (error) throw new Error(t('Não foi possível falar com o servidor de pagamentos. Tente novamente em instantes.'));
+  if (data?.error) throw new Error(t(String(data.error)));
   return data as T;
 }
 

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { t } from '@/i18n';
 
 /** Medidor semicircular do score (0–1000). */
 export function ScoreGauge({ score, label, size = 240 }: { score: number; label: string; size?: number }) {
@@ -8,7 +9,7 @@ export function ScoreGauge({ score, label, size = 240 }: { score: number; label:
   const c = Math.PI * r;
   const color = score >= 800 ? 'var(--success)' : score >= 650 ? 'var(--primary)' : score >= 450 ? 'var(--warning)' : 'var(--danger)';
   return (
-    <div className="relative" style={{ width: size, height: size * 0.62 }} role="img" aria-label={`Score ${score} de 1000, ${label}`}>
+    <div className="relative" style={{ width: size, height: size * 0.62 }} role="img" aria-label={t('Score {score} de 1000, {label}', { score, label })}>
       <svg viewBox="0 0 220 130" className="h-full w-full" aria-hidden>
         <defs>
           <linearGradient id="gauge-g" x1="0" x2="1">

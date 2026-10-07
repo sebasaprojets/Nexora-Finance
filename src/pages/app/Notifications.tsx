@@ -13,6 +13,7 @@ import { useFinance } from '@/store/finance';
 import { timeAgo } from '@/lib/dates';
 import { cn } from '@/lib/cn';
 import type { NotificationKind } from '@/types';
+import { t } from '@/i18n';
 
 const KIND: Record<NotificationKind, { icon: typeof Bell; color: string }> = {
   bill_due: { icon: CalendarClock, color: 'var(--series-4)' },
@@ -39,19 +40,19 @@ export default function Notifications() {
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeader
-        title="Notificações"
-        description={unread ? `${unread} não lida(s)` : 'Tudo em dia'}
+        title={t('Notificações')}
+        description={unread ? t(unread === 1 ? '{n} não lida' : '{n} não lidas', { n: unread }) : t('Tudo em dia')}
         actions={
           <>
-            <Button variant="secondary" leftIcon={<CheckCheck className="size-4" />} onClick={markAllRead} disabled={!unread}>Marcar todas</Button>
-            <Button variant="ghost" size="icon" aria-label="Configurações de notificação" onClick={() => setSettings(true)}><Settings2 className="size-[18px]" /></Button>
+            <Button variant="secondary" leftIcon={<CheckCheck className="size-4" />} onClick={markAllRead} disabled={!unread}>{t('Marcar todas')}</Button>
+            <Button variant="ghost" size="icon" aria-label={t('Configurações de notificação')} onClick={() => setSettings(true)}><Settings2 className="size-[18px]" /></Button>
           </>
         }
       />
-      <Tabs value={tab} onChange={setTab} className="mb-4" tabs={[{ value: 'all', label: 'Todas', count: notifications.length }, { value: 'unread', label: 'Não lidas', count: unread }]} />
+      <Tabs value={tab} onChange={setTab} className="mb-4" tabs={[{ value: 'all', label: t('Todas'), count: notifications.length }, { value: 'unread', label: t('Não lidas'), count: unread }]} />
       <Card>
         {list.length === 0 ? (
-          <EmptyState icon={<BellOff />} title={tab === 'unread' ? 'Nenhuma notificação não lida' : 'Sem notificações'} description="Avisaremos sobre vencimentos, faturas, orçamentos, metas e segurança." />
+          <EmptyState icon={<BellOff />} title={tab === 'unread' ? t('Nenhuma notificação não lida') : t('Sem notificações')} description={t('Avisaremos sobre vencimentos, faturas, orçamentos, metas e segurança.')} />
         ) : (
           <ul className="divide-y divide-border">
             <AnimatePresence initial={false}>
@@ -70,15 +71,15 @@ export default function Notifications() {
                       }}
                     >
                       <p className="flex items-center gap-2 text-sm font-medium">
-                        {!n.read && <span className="size-2 shrink-0 rounded-full bg-primary" aria-label="Não lida" />}
-                        {n.title}
+                        {!n.read && <span className="size-2 shrink-0 rounded-full bg-primary" aria-label={t('Não lida')} />}
+                        {t(n.title)}
                       </p>
-                      <p className="mt-0.5 text-sm text-fg-muted">{n.body}</p>
+                      <p className="mt-0.5 text-sm text-fg-muted">{t(n.body)}</p>
                       <p className="mt-1 text-xs text-fg-subtle">{timeAgo(n.createdAt)}</p>
                     </button>
                     <div className="flex shrink-0 items-start gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
-                      <Button variant="ghost" size="icon-sm" aria-label={n.read ? 'Marcar como não lida' : 'Marcar como lida'} onClick={() => markRead(n.id, !n.read)}><CheckCheck className="size-4" /></Button>
-                      <Button variant="ghost" size="icon-sm" aria-label="Excluir notificação" onClick={() => removeNotification(n.id)}><Trash2 className="size-4" /></Button>
+                      <Button variant="ghost" size="icon-sm" aria-label={n.read ? t('Marcar como não lida') : t('Marcar como lida')} onClick={() => markRead(n.id, !n.read)}><CheckCheck className="size-4" /></Button>
+                      <Button variant="ghost" size="icon-sm" aria-label={t('Excluir notificação')} onClick={() => removeNotification(n.id)}><Trash2 className="size-4" /></Button>
                     </div>
                   </motion.li>
                 );
@@ -87,7 +88,7 @@ export default function Notifications() {
           </ul>
         )}
       </Card>
-      <Modal open={settings} onClose={() => setSettings(false)} title="Configurações de notificação" size="md">
+      <Modal open={settings} onClose={() => setSettings(false)} title={t('Configurações de notificação')} size="md">
         <NotificationSettings />
       </Modal>
     </div>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { authService } from '@/services/auth';
 import { useAuth } from '@/store/auth';
 import { toast } from '@/store/toast';
+import { t } from '@/i18n';
 
 function GoogleIcon() {
   return (
@@ -32,7 +33,7 @@ export function SocialButtons() {
       setAuth(r);
       navigate(r.user.onboarded ? '/app' : '/onboarding');
     } catch (e) {
-      toast.error('Não foi possível entrar', { description: e instanceof Error ? e.message : undefined });
+      toast.error(t('Não foi possível entrar'), { description: e instanceof Error ? e.message : undefined });
     } finally {
       setLoading(null);
     }
@@ -46,28 +47,28 @@ export function SocialButtons() {
         <div className={google && apple ? 'grid grid-cols-2 gap-3' : 'grid'}>
           {google && (
             <Button variant="secondary" loading={loading === 'google'} leftIcon={<GoogleIcon />} onClick={() => go('google')}>
-              {apple ? 'Google' : 'Continuar com Google'}
+              {apple ? 'Google' : t('Continuar com {provider}', { provider: 'Google' })}
             </Button>
           )}
           {apple && (
             <Button variant="secondary" loading={loading === 'apple'} leftIcon={<AppleIcon />} onClick={() => go('apple')}>
-              {google ? 'Apple' : 'Continuar com Apple'}
+              {google ? 'Apple' : t('Continuar com {provider}', { provider: 'Apple' })}
             </Button>
           )}
         </div>
       )}
       <Button variant="soft" className="w-full" loading={loading === 'demo'} onClick={() => go('demo')}>
-        Explorar com conta demonstração
+        {t('Explorar com conta demonstração')}
       </Button>
     </div>
   );
 }
 
-export function Divider({ label = 'ou' }: { label?: string }) {
+export function Divider({ label }: { label?: string }) {
   return (
     <div className="my-6 flex items-center gap-3 text-xs text-fg-subtle">
       <span className="h-px flex-1 bg-border" />
-      {label}
+      {label ?? t('ou')}
       <span className="h-px flex-1 bg-border" />
     </div>
   );

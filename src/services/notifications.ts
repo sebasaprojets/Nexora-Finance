@@ -3,7 +3,8 @@ import { useFinance } from '@/store/finance';
 import { useSettings } from '@/store/settings';
 import { budgetUsage, cardSummary, goalProgress, nextCharge, unusualExpenses } from '@/lib/finance';
 import { addDays, dateInMonth, diffDays, formatDate, monthKey, parseISODate, today } from '@/lib/dates';
-import { formatMoney } from '@/lib/format';
+import { formatMoney, formatNumber } from '@/lib/format';
+import { t } from '@/i18n';
 
 /**
  * Notificações da Nexora.
@@ -74,9 +75,9 @@ function urlBase64ToUint8Array(base64: string) {
 
 /** Pede permissão e, se houver chave VAPID, inscreve o dispositivo no Web Push. */
 export async function enablePush(): Promise<{ ok: boolean; reason?: string; subscription?: PushSubscriptionJSON }> {
-  if (!pushSupported()) return { ok: false, reason: 'Seu navegador não suporta notificações. No iPhone, instale a Nexora na tela de início.' };
+  if (!pushSupported()) return { ok: false, reason: t('Seu navegador não suporta notificações. No iPhone, instale a Nexora na tela de início.') };
   const perm = await Notification.requestPermission();
-  if (perm !== 'granted') return { ok: false, reason: 'Permissão negada. Você pode liberar nas configurações do navegador.' };
+  if (perm !== 'granted') return { ok: false, reason: t('Permissão negada. Você pode liberar nas configurações do navegador.') };
   const vapid = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
   if (vapid && 'serviceWorker' in navigator) {
     try {
@@ -87,14 +88,14 @@ export async function enablePush(): Promise<{ ok: boolean; reason?: string; subs
       // TODO(backend): POST sub.toJSON() para /api/push/subscribe (tabela push_subscriptions).
       return { ok: true, subscription: sub.toJSON() };
     } catch {
-      return { ok: true, reason: 'Notificações locais ativas. Web Push remoto indisponível neste dispositivo.' };
+      return { ok: true, reason: t('Notificações locais ativas. Web Push remoto indisponível neste dispositivo.') };
     }
   }
   return { ok: true };
 }
 
 export async function sendTestNotification() {
-  await showSystemNotification({ id: `test-${Date.now()}`, title: 'Nexora Finance', body: 'Notificações ativadas com sucesso. 🎉', href: '/app/notificacoes' });
+  await showSystemNotification({ id: `test-${Date.now()}`, title: 'Nexora Finance', body: t('Notificações ativadas com sucesso. 🎉'), href: '/app/notificacoes' });
 }
 
 // ---------------------------------------------------------------------------
@@ -114,24 +115,24 @@ export function evaluateAlerts(data: FinanceData, ref = today()): Alert[] {
       const left = inv.total - inv.paid;
       if (left <= 0.01) continue;
       if (inv.status === 'overdue')
-        alerts.push({ kind: 'invoice_overdue', title: `Fatura ${card.name} atrasada`, body: `${brl(left)} venceu em ${formatDate(inv.dueDate)}. Evite juros pagando o quanto antes.`, href: '/app/cartoes', dedupeKey: `inv-overdue:${inv.id}` });
+        alerts.push({ kind: 'invoice_overdue', title: t('Fatura {cartao} atrasada', { cartao: card.name }), body: t('{valor} venceu em {data}. Evite juros pagando o quanto antes.', { valor: brl(left), data: formatDate(inv.dueDate) }), href: '/app/cartoes', dedupeKey: `inv-overdue:${inv.id}` });
       else if (inv.status === 'closed') {
         const days = diffDays(ref, inv.dueDate);
         if (days <= 5)
-          alerts.push({ kind: 'invoice_due', title: `Fatura ${card.name} vence ${days === 0 ? 'hoje' : days === 1 ? 'amanhã' : `em ${days} dias`}`, body: `Valor de ${brl(left)} · vencimento ${formatDate(inv.dueDate)}.`, href: '/app/cartoes', dedupeKey: `inv-due:${inv.id}` });
+          alerts.push({ kind: 'invoice_due', title: days === 0 ? t('Fatura {cartao} vence hoje', { cartao: card.name }) : days === 1 ? t('Fatura {cartao} vence amanhã', { cartao: card.name }) : t('Fatura {cartao} vence em {n} dias', { cartao: card.name, n: days }), body: t('Valor de {valor} · vencimento {data}.', { valor: brl(left), data: formatDate(inv.dueDate) }), href: '/app/cartoes', dedupeKey: `inv-due:${inv.id}` });
       }
     }
   }
 
   for (const b of budgetUsage(data.budgets, data.categories, data.transactions, monthKey(ref))) {
-    const name = b.category?.name ?? 'Categoria';
+    const name = t(b.category?.name ?? 'Categoria');
     const m = monthKey(ref);
     if (b.level === 'exceeded')
-      alerts.push({ kind: 'budget_exceeded', title: `Orçamento de ${name} ultrapassado`, body: `Você gastou ${brl(b.spent)} de ${brl(b.budget.amount)} (${Math.round(b.pct)}%).`, href: '/app/orcamentos', dedupeKey: `bud-100:${b.budget.id}:${m}` });
+      alerts.push({ kind: 'budget_exceeded', title: t('Orçamento de {categoria} ultrapassado', { categoria: name }), body: t('Você gastou {gasto} de {total} ({pct}%).', { gasto: brl(b.spent), total: brl(b.budget.amount), pct: Math.round(b.pct) }), href: '/app/orcamentos', dedupeKey: `bud-100:${b.budget.id}:${m}` });
     else if (b.level === 'alert')
-      alerts.push({ kind: 'budget_warning', title: `${name}: 90% do orçamento usado`, body: `Restam ${brl(b.remaining)} para este mês.`, href: '/app/orcamentos', dedupeKey: `bud-90:${b.budget.id}:${m}` });
+      alerts.push({ kind: 'budget_warning', title: t('{categoria}: 90% do orçamento usado', { categoria: name }), body: t('Restam {valor} para este mês.', { valor: brl(b.remaining) }), href: '/app/orcamentos', dedupeKey: `bud-90:${b.budget.id}:${m}` });
     else if (b.level === 'attention')
-      alerts.push({ kind: 'budget_warning', title: `${name}: 70% do orçamento usado`, body: `Você já gastou ${brl(b.spent)} de ${brl(b.budget.amount)}.`, href: '/app/orcamentos', dedupeKey: `bud-70:${b.budget.id}:${m}` });
+      alerts.push({ kind: 'budget_warning', title: t('{categoria}: 70% do orçamento usado', { categoria: name }), body: t('Você já gastou {gasto} de {total}.', { gasto: brl(b.spent), total: brl(b.budget.amount) }), href: '/app/orcamentos', dedupeKey: `bud-70:${b.budget.id}:${m}` });
   }
 
   // Gasto fora do padrão (como o monitoramento diário de assistentes tipo Pierre):
@@ -139,8 +140,8 @@ export function evaluateAlerts(data: FinanceData, ref = today()): Alert[] {
   for (const u of unusualExpenses(data, ref)) {
     alerts.push({
       kind: 'unusual_spending',
-      title: `Gasto fora do padrão: ${u.tx.description}`,
-      body: `${brl(u.tx.amount)} em ${u.category} — cerca de ${u.ratio.toFixed(1).replace('.', ',')}x o seu gasto médio nessa categoria (${brl(u.avg)}). Foi você?`,
+      title: t('Gasto fora do padrão: {descricao}', { descricao: u.tx.description }),
+      body: t('{valor} em {categoria} — cerca de {vezes}x o seu gasto médio nessa categoria ({media}). Foi você?', { valor: brl(u.tx.amount), categoria: t(u.category), vezes: formatNumber(u.ratio, 1), media: brl(u.avg) }),
       href: '/app/transacoes',
       dedupeKey: `unusual:${u.tx.id}`,
     });
@@ -148,7 +149,7 @@ export function evaluateAlerts(data: FinanceData, ref = today()): Alert[] {
 
   for (const g of data.goals) {
     const p = goalProgress(g, ref);
-    if (p.reached) alerts.push({ kind: 'goal_reached', title: `Meta atingida: ${g.name} 🎉`, body: `Você chegou a ${brl(p.current)}. Parabéns!`, href: '/app/metas', dedupeKey: `goal:${g.id}` });
+    if (p.reached) alerts.push({ kind: 'goal_reached', title: t('Meta atingida: {meta} 🎉', { meta: g.name }), body: t('Você chegou a {valor}. Parabéns!', { valor: brl(p.current) }), href: '/app/metas', dedupeKey: `goal:${g.id}` });
   }
 
   for (const d of data.debts.filter((x) => x.status === 'active' || x.status === 'late')) {
@@ -157,19 +158,19 @@ export function evaluateAlerts(data: FinanceData, ref = today()): Alert[] {
     if (due < ref) due = dateInMonth(r.getMonth() === 11 ? r.getFullYear() + 1 : r.getFullYear(), ((r.getMonth() + 1) % 12) + 1, d.dueDay);
     const days = diffDays(ref, due);
     if (days <= 3)
-      alerts.push({ kind: 'bill_due', title: `Parcela de ${d.name} vence ${days === 0 ? 'hoje' : `em ${days} dia${days > 1 ? 's' : ''}`}`, body: `${brl(d.installmentAmount)} · ${d.creditor}`, href: '/app/dividas', dedupeKey: `debt:${d.id}:${due}` });
+      alerts.push({ kind: 'bill_due', title: days === 0 ? t('Parcela de {divida} vence hoje', { divida: d.name }) : days === 1 ? t('Parcela de {divida} vence em 1 dia', { divida: d.name }) : t('Parcela de {divida} vence em {n} dias', { divida: d.name, n: days }), body: `${brl(d.installmentAmount)} · ${d.creditor}`, href: '/app/dividas', dedupeKey: `debt:${d.id}:${due}` });
   }
 
   for (const s of data.subscriptions.filter((x) => x.active)) {
     const next = nextCharge(s, ref);
     if (next <= addDays(ref, 1))
-      alerts.push({ kind: 'bill_due', title: `${s.name} será cobrado ${next === ref ? 'hoje' : 'amanhã'}`, body: `${brl(s.amount)} na sua assinatura.`, href: '/app/assinaturas', dedupeKey: `sub:${s.id}:${next}` });
+      alerts.push({ kind: 'bill_due', title: next === ref ? t('{assinatura} será cobrado hoje', { assinatura: s.name }) : t('{assinatura} será cobrado amanhã', { assinatura: s.name }), body: t('{valor} na sua assinatura.', { valor: brl(s.amount) }), href: '/app/assinaturas', dedupeKey: `sub:${s.id}:${next}` });
   }
 
   for (const r of data.reminders.filter((x) => !x.done)) {
     const days = diffDays(ref, r.date);
     if (days >= 0 && days <= 2)
-      alerts.push({ kind: 'bill_due', title: `Lembrete: ${r.title}`, body: `${days === 0 ? 'Hoje' : `Em ${days} dia${days > 1 ? 's' : ''}`}${r.amount ? ` · ${brl(r.amount)}` : ''}`, href: '/app/calendario', dedupeKey: `rem:${r.id}` });
+      alerts.push({ kind: 'bill_due', title: t('Lembrete: {titulo}', { titulo: r.title }), body: `${days === 0 ? t('Hoje') : days === 1 ? t('Em 1 dia') : t('Em {n} dias', { n: days })}${r.amount ? ` · ${brl(r.amount)}` : ''}`, href: '/app/calendario', dedupeKey: `rem:${r.id}` });
   }
   return alerts;
 }

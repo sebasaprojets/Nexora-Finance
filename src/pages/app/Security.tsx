@@ -18,6 +18,7 @@ import { toast } from '@/store/toast';
 import { authService, AuthError } from '@/services/auth';
 import { notifyUser } from '@/services/notifications';
 import { formatDateTime, timeAgo } from '@/lib/dates';
+import { t } from '@/i18n';
 
 const schema = z
   .object({
@@ -45,10 +46,10 @@ export default function Security() {
     try {
       await authService.changePassword(user.id, v.current, v.next);
       reset();
-      toast.success('Senha alterada com sucesso');
-      notifyUser({ kind: 'security', title: 'Senha alterada', body: 'Sua senha foi alterada. Se não foi você, contate o suporte imediatamente.', href: '/app/seguranca' });
+      toast.success(t('Senha alterada com sucesso'));
+      notifyUser({ kind: 'security', title: t('Senha alterada'), body: t('Sua senha foi alterada. Se não foi você, contate o suporte imediatamente.'), href: '/app/seguranca' });
     } catch (e) {
-      setError('current', { message: e instanceof AuthError ? e.message : 'Não foi possível alterar a senha' });
+      setError('current', { message: e instanceof AuthError ? e.message : t('Não foi possível alterar a senha') });
     }
   };
 
@@ -56,10 +57,10 @@ export default function Security() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <PageHeader title="Segurança" description="Proteja sua conta e controle onde você está conectado." />
+      <PageHeader title={t('Segurança')} description={t('Proteja sua conta e controle onde você está conectado.')} />
 
       <Card>
-        <CardHeader title="Dispositivos conectados" icon={<ShieldCheck />} description="Sessões ativas na sua conta" action={sessions.length > 1 && <Button size="sm" variant="secondary" onClick={() => setConfirmAll(true)}>Encerrar outras</Button>} />
+        <CardHeader title={t('Dispositivos conectados')} icon={<ShieldCheck />} description={t('Sessões ativas na sua conta')} action={sessions.length > 1 && <Button size="sm" variant="secondary" onClick={() => setConfirmAll(true)}>{t('Encerrar outras')}</Button>} />
         <CardBody>
           <ul className="divide-y divide-border">
             {sessions.map((s) => {
@@ -70,13 +71,13 @@ export default function Security() {
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
                       {s.browser} · {s.os}
-                      {s.current && <Badge tone="success">Este dispositivo</Badge>}
+                      {s.current && <Badge tone="success">{t('Este dispositivo')}</Badge>}
                     </p>
-                    <p className="truncate text-xs text-fg-subtle">{s.location} · IP {s.ip} · {s.current ? 'ativo agora' : `ativo ${timeAgo(s.lastActive)}`}</p>
+                    <p className="truncate text-xs text-fg-subtle">{s.location} · IP {s.ip} · {s.current ? t('ativo agora') : t('ativo {quando}', { quando: timeAgo(s.lastActive) })}</p>
                   </div>
                   {!s.current && (
-                    <Button size="sm" variant="ghost" className="text-danger" onClick={() => { endSession(s.id); toast.success('Sessão encerrada', { description: `${s.browser} · ${s.os}` }); }}>
-                      Encerrar
+                    <Button size="sm" variant="ghost" className="text-danger" onClick={() => { endSession(s.id); toast.success(t('Sessão encerrada'), { description: `${s.browser} · ${s.os}` }); }}>
+                      {t('Encerrar')}
                     </Button>
                   )}
                 </li>
@@ -85,7 +86,7 @@ export default function Security() {
           </ul>
           {session && (
             <p className="mt-3 rounded-lg bg-surface-2/70 px-3 py-2 text-xs text-fg-subtle">
-              Sessão atual iniciada em {formatDateTime(session.createdAt)} · expira em {formatDateTime(session.expiresAt)} {session.remember ? '(lembrar acesso ativo)' : '(encerra ao fechar o navegador)'}.
+              {t('Sessão atual iniciada em {inicio} · expira em {fim}', { inicio: formatDateTime(session.createdAt), fim: formatDateTime(session.expiresAt) })} {session.remember ? t('(lembrar acesso ativo)') : t('(encerra ao fechar o navegador)')}.
             </p>
           )}
         </CardBody>
@@ -94,35 +95,35 @@ export default function Security() {
       <BiometricSettings />
 
       <Card>
-        <CardHeader title="Alterar senha" icon={<KeyRound />} />
+        <CardHeader title={t('Alterar senha')} icon={<KeyRound />} />
         <CardBody>
           {canChange ? (
             <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2" noValidate>
-              <Field label="Senha atual" error={formState.errors.current?.message} className="sm:col-span-2">{(p) => <PasswordInput {...p} {...register('current')} autoComplete="current-password" />}</Field>
-              <Field label="Nova senha" error={formState.errors.next?.message}>{(p) => <div><PasswordInput {...p} {...register('next')} autoComplete="new-password" /><StrengthMeter value={watch('next')} /></div>}</Field>
-              <Field label="Confirmar nova senha" error={formState.errors.confirm?.message}>{(p) => <PasswordInput {...p} {...register('confirm')} autoComplete="new-password" />}</Field>
-              <div className="sm:col-span-2"><Button type="submit" loading={formState.isSubmitting}>Atualizar senha</Button></div>
+              <Field label={t('Senha atual')} error={formState.errors.current?.message} className="sm:col-span-2">{(p) => <PasswordInput {...p} {...register('current')} autoComplete="current-password" />}</Field>
+              <Field label={t('Nova senha')} error={formState.errors.next?.message}>{(p) => <div><PasswordInput {...p} {...register('next')} autoComplete="new-password" /><StrengthMeter value={watch('next')} /></div>}</Field>
+              <Field label={t('Confirmar nova senha')} error={formState.errors.confirm?.message}>{(p) => <PasswordInput {...p} {...register('confirm')} autoComplete="new-password" />}</Field>
+              <div className="sm:col-span-2"><Button type="submit" loading={formState.isSubmitting}>{t('Atualizar senha')}</Button></div>
             </form>
           ) : (
-            <p className="text-sm text-fg-subtle">Você entrou com {user.provider === 'demo' ? 'a conta de demonstração' : user.provider === 'google' ? 'Google' : 'Apple'} — a senha é gerenciada pelo provedor.</p>
+            <p className="text-sm text-fg-subtle">{user.provider === 'demo' ? t('Você entrou com a conta de demonstração — a senha é gerenciada pelo provedor.') : t('Você entrou com {provedor} — a senha é gerenciada pelo provedor.', { provedor: user.provider === 'google' ? 'Google' : 'Apple' })}</p>
           )}
         </CardBody>
       </Card>
 
       <Card>
-        <CardHeader title="Boas práticas" />
+        <CardHeader title={t('Boas práticas')} />
         <CardBody>
           <ul className="space-y-2 text-sm text-fg-muted">
-            <li>• A Nexora nunca pede sua senha por e-mail, SMS ou telefone.</li>
-            <li>• Nunca armazenamos número completo de cartão, CVV ou senhas bancárias.</li>
-            <li>• Encerre sessões em dispositivos que você não reconhece.</li>
-            <li>• Use uma senha exclusiva, com 12+ caracteres.</li>
+            <li>• {t('A Nexora nunca pede sua senha por e-mail, SMS ou telefone.')}</li>
+            <li>• {t('Nunca armazenamos número completo de cartão, CVV ou senhas bancárias.')}</li>
+            <li>• {t('Encerre sessões em dispositivos que você não reconhece.')}</li>
+            <li>• {t('Use uma senha exclusiva, com 12+ caracteres.')}</li>
           </ul>
-          <Button variant="danger" className="mt-5" leftIcon={<LogOut className="size-4" />} onClick={() => { signOut(); navigate('/entrar'); }}>Sair deste dispositivo</Button>
+          <Button variant="danger" className="mt-5" leftIcon={<LogOut className="size-4" />} onClick={() => { signOut(); navigate('/entrar'); }}>{t('Sair deste dispositivo')}</Button>
         </CardBody>
       </Card>
 
-      <ConfirmDialog open={confirmAll} onClose={() => setConfirmAll(false)} title="Encerrar outras sessões?" description="Todos os outros dispositivos serão desconectados." confirmLabel="Encerrar" onConfirm={() => { endOthers(); toast.success('Outras sessões encerradas'); }} />
+      <ConfirmDialog open={confirmAll} onClose={() => setConfirmAll(false)} title={t('Encerrar outras sessões?')} description={t('Todos os outros dispositivos serão desconectados.')} confirmLabel={t('Encerrar')} onConfirm={() => { endOthers(); toast.success(t('Outras sessões encerradas')); }} />
     </div>
   );
 }

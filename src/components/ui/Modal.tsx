@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { t } from '@/i18n';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -35,7 +36,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
     const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       const el = panel.current?.querySelector<HTMLElement>('[data-autofocus]') ?? panel.current?.querySelector<HTMLElement>(FOCUSABLE);
       el?.focus();
     }, 30);
@@ -60,7 +61,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
     };
     document.addEventListener('keydown', onKey);
     return () => {
-      clearTimeout(t);
+      clearTimeout(timer);
       document.body.style.overflow = overflow;
       document.removeEventListener('keydown', onKey);
       previous?.focus?.();
@@ -107,7 +108,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
                   </p>
                 )}
               </div>
-              <button onClick={onClose} className="-mr-1 rounded-lg p-1.5 text-fg-subtle hover:bg-surface-2 hover:text-fg" aria-label="Fechar">
+              <button onClick={onClose} className="-mr-1 rounded-lg p-1.5 text-fg-subtle hover:bg-surface-2 hover:text-fg" aria-label={t('Fechar')}>
                 <X className="size-5" />
               </button>
             </div>
@@ -127,7 +128,7 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmLabel = 'Confirmar',
+  confirmLabel,
   tone = 'danger',
 }: {
   open: boolean;
@@ -147,7 +148,7 @@ export function ConfirmDialog({
       footer={
         <>
           <button className="h-10 rounded-xl px-4 text-sm font-medium text-fg-muted hover:bg-surface-2" onClick={onClose}>
-            Cancelar
+            {t('Cancelar')}
           </button>
           <button
             data-autofocus
@@ -157,7 +158,7 @@ export function ConfirmDialog({
               onClose();
             }}
           >
-            {confirmLabel}
+            {confirmLabel ?? t('Confirmar')}
           </button>
         </>
       }

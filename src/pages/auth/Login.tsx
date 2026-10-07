@@ -14,6 +14,7 @@ import { BiometricLogin } from '@/components/common/BiometricLogin';
 import { authService, AuthError } from '@/services/auth';
 import { useAuth } from '@/store/auth';
 import { toast } from '@/store/toast';
+import { t } from '@/i18n';
 
 const schema = z.object({
   email: z.string().trim().min(1, 'Informe seu e-mail').email('E-mail inválido'),
@@ -35,56 +36,56 @@ export default function Login() {
     try {
       const r = await authService.signIn(v.email, v.password, v.remember);
       setAuth(r);
-      toast.success(`Bem-vindo de volta, ${r.user.name.split(' ')[0]}!`);
+      toast.success(t('Bem-vindo de volta, {name}!', { name: r.user.name.split(' ')[0] }));
       navigate(r.user.onboarded ? (from ?? '/app') : '/onboarding', { replace: true });
     } catch (e) {
-      setError(e instanceof AuthError ? e.message : 'Não foi possível entrar. Tente novamente.');
+      setError(e instanceof AuthError ? e.message : t('Não foi possível entrar. Tente novamente.'));
     }
   };
 
   return (
     <AuthLayout
-      title="Entrar na Nexora"
-      subtitle="Acesse seu painel financeiro."
+      title={t('Entrar na Nexora')}
+      subtitle={t('Acesse seu painel financeiro.')}
       footer={
         <>
-          Ainda não tem conta?{' '}
+          {t('Ainda não tem conta?')}{' '}
           <Link to="/cadastro" className="font-medium text-primary hover:underline">
-            Criar conta grátis
+            {t('Criar conta grátis')}
           </Link>
         </>
       }
     >
       <BiometricLogin from={from} />
       <SocialButtons />
-      <Divider label="ou entre com e-mail" />
+      <Divider label={t('ou entre com e-mail')} />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         {error && (
           <div role="alert" className="flex items-start gap-2 rounded-xl border border-danger/30 bg-danger-soft px-3 py-2.5 text-sm text-danger">
             <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden /> {error}
           </div>
         )}
-        <Field label="E-mail" error={formState.errors.email?.message}>
-          {(p) => <Input {...p} {...register('email')} type="email" autoComplete="email" leftIcon={<Mail />} placeholder="voce@email.com" />}
+        <Field label={t('E-mail')} error={formState.errors.email?.message}>
+          {(p) => <Input {...p} {...register('email')} type="email" autoComplete="email" leftIcon={<Mail />} placeholder={t('voce@email.com')} />}
         </Field>
-        <Field label="Senha" error={formState.errors.password?.message}>
+        <Field label={t('Senha')} error={formState.errors.password?.message}>
           {(p) => <PasswordInput {...p} {...register('password')} autoComplete="current-password" placeholder="••••••••" />}
         </Field>
         <div className="flex items-center justify-between text-sm">
           <label className="flex cursor-pointer items-center gap-2 text-fg-muted">
-            <input type="checkbox" {...register('remember')} className="size-4 rounded accent-[var(--primary)]" /> Lembrar acesso
+            <input type="checkbox" {...register('remember')} className="size-4 rounded accent-[var(--primary)]" /> {t('Lembrar acesso')}
           </label>
           <Link to="/recuperar-senha" className="font-medium text-primary hover:underline">
-            Esqueci minha senha
+            {t('Esqueci minha senha')}
           </Link>
         </div>
         <Button type="submit" size="lg" className="w-full" loading={formState.isSubmitting}>
-          Entrar
+          {t('Entrar')}
         </Button>
         {!cloudEnabled && (
           <p className="flex items-start gap-2 rounded-xl bg-surface-2/70 px-3 py-2.5 text-xs text-fg-subtle">
             <Smartphone className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-            Versão atual: sua conta e seus dados ficam salvos neste aparelho e navegador. Se você criou a conta em outro aparelho, entre por lá — a sincronização entre dispositivos chega em breve.
+            {t('Versão atual: sua conta e seus dados ficam salvos neste aparelho e navegador. Se você criou a conta em outro aparelho, entre por lá — a sincronização entre dispositivos chega em breve.')}
           </p>
         )}
       </form>

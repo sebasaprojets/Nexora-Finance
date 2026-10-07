@@ -14,6 +14,7 @@ import { formatDate } from '@/lib/dates';
 import { formatMoney, formatPercent } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { toast } from '@/store/toast';
+import { t } from '@/i18n';
 
 function cell(v: string | number | null | undefined, c: ExportColumn) {
   if (v === null || v === undefined) return '';
@@ -36,16 +37,16 @@ export default function Reports() {
 
   const { canUse } = usePlan();
   const run = async (f: ExportFormat) => {
-    if (!selected.length) return toast.warning('Selecione ao menos um relatório');
-    if (f !== 'csv' && !canUse(`O relatório em ${f === 'pdf' ? 'PDF' : 'Excel'}`)) return;
+    if (!selected.length) return toast.warning(t('Selecione ao menos um relatório'));
+    if (f !== 'csv' && !canUse(t('O relatório em {formato}', { formato: f === 'pdf' ? 'PDF' : 'Excel' }))) return;
     setBusy(f);
     try {
       const tables = selected.map((k) => buildReport(k, data, period));
-      await exportTables(f, tables, selected.length > 1 ? 'Relatório financeiro' : tables[0].title);
-      toast.success(`${selected.length > 1 ? 'Relatórios gerados' : 'Relatório gerado'} em ${f.toUpperCase()}`, { description: f === 'csv' && selected.length > 1 ? 'Um arquivo CSV por relatório.' : undefined });
+      await exportTables(f, tables, selected.length > 1 ? t('Relatório financeiro') : tables[0].title);
+      toast.success(t(selected.length > 1 ? 'Relatórios gerados em {formato}' : 'Relatório gerado em {formato}', { formato: f.toUpperCase() }), { description: f === 'csv' && selected.length > 1 ? t('Um arquivo CSV por relatório.') : undefined });
     } catch (e) {
       console.error(e);
-      toast.error('Não foi possível gerar o arquivo');
+      toast.error(t('Não foi possível gerar o arquivo'));
     } finally {
       setBusy(null);
     }
@@ -53,10 +54,10 @@ export default function Reports() {
 
   return (
     <div>
-      <PageHeader title="Relatórios" description="Relatórios profissionais prontos para exportar em PDF, Excel ou CSV." actions={<PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />} />
+      <PageHeader title={t('Relatórios')} description={t('Relatórios profissionais prontos para exportar em PDF, Excel ou CSV.')} actions={<PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />} />
       <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
         <Card className="h-fit">
-          <CardHeader title="Escolha os relatórios" description={`${formatDate(period.from)} a ${formatDate(period.to)}`} />
+          <CardHeader title={t('Escolha os relatórios')} description={t('{de} a {ate}', { de: formatDate(period.from), ate: formatDate(period.to) })} />
           <CardBody className="space-y-1 pt-3">
             {REPORTS.map((r) => {
               const on = selected.includes(r.kind);
@@ -64,8 +65,8 @@ export default function Reports() {
                 <button key={r.kind} onClick={() => toggle(r.kind)} aria-pressed={on} className={cn('flex w-full items-start gap-3 rounded-xl p-2.5 text-left transition-colors hover:bg-surface-2', preview === r.kind && 'bg-surface-2')}>
                   {on ? <CheckSquare className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden /> : <Square className="mt-0.5 size-4 shrink-0 text-fg-subtle" aria-hidden />}
                   <span>
-                    <span className="block text-sm font-medium">{r.title}</span>
-                    <span className="block text-xs text-fg-subtle">{r.description}</span>
+                    <span className="block text-sm font-medium">{t(r.title)}</span>
+                    <span className="block text-xs text-fg-subtle">{t(r.description)}</span>
                   </span>
                 </button>
               );
@@ -75,11 +76,11 @@ export default function Reports() {
               <Button variant="secondary" size="sm" loading={busy === 'xlsx'} leftIcon={<FileSpreadsheet className="size-3.5" />} onClick={() => run('xlsx')}>Excel</Button>
               <Button variant="secondary" size="sm" loading={busy === 'csv'} leftIcon={<Sheet className="size-3.5" />} onClick={() => run('csv')}>CSV</Button>
             </div>
-            <p className="pt-1 text-center text-xs text-fg-subtle">{selected.length} selecionado(s) · Excel gera uma aba por relatório</p>
+            <p className="pt-1 text-center text-xs text-fg-subtle">{t(selected.length === 1 ? '{n} selecionado' : '{n} selecionados', { n: selected.length })} · {t('Excel gera uma aba por relatório')}</p>
           </CardBody>
         </Card>
         <Card className="min-w-0">
-          <CardHeader title={`Pré-visualização · ${table.title}`} description={table.subtitle} action={<Badge>{table.rows.length} linhas</Badge>} />
+          <CardHeader title={`${t('Pré-visualização')} · ${table.title}`} description={table.subtitle} action={<Badge>{t(table.rows.length === 1 ? '{n} linha' : '{n} linhas', { n: table.rows.length })}</Badge>} />
           <CardBody>
             {table.summary && (
               <dl className="mb-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -109,12 +110,12 @@ export default function Reports() {
                     </tr>
                   ))}
                   {table.rows.length === 0 && (
-                    <tr><td colSpan={table.columns.length} className="px-3 py-10 text-center text-fg-subtle">Sem dados para este relatório no período.</td></tr>
+                    <tr><td colSpan={table.columns.length} className="px-3 py-10 text-center text-fg-subtle">{t('Sem dados para este relatório no período.')}</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
-            {table.rows.length > 300 && <p className="mt-2 text-xs text-fg-subtle">Mostrando 300 de {table.rows.length} linhas. A exportação inclui todas.</p>}
+            {table.rows.length > 300 && <p className="mt-2 text-xs text-fg-subtle">{t('Mostrando 300 de {n} linhas. A exportação inclui todas.', { n: table.rows.length })}</p>}
           </CardBody>
         </Card>
       </div>

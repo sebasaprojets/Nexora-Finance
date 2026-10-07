@@ -23,6 +23,7 @@ import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import { cn } from '@/lib/cn';
 import type { Investment, InvestmentType } from '@/types';
+import { currentLang, t } from '@/i18n';
 
 // Ordem fixa de cores por tipo (a cor segue a entidade, nunca a posição no ranking).
 export const TYPE_COLORS: Record<InvestmentType, string> = {
@@ -34,6 +35,9 @@ export const TYPE_COLORS: Record<InvestmentType, string> = {
   funds: 'var(--series-7)',
   pension: 'var(--series-6)',
 };
+
+/** Nome da classe no idioma atual ("Ações" sozinho colide com o rótulo genérico "Ações" = menu de ações). */
+const typeLabel = (ty: InvestmentType) => (ty === 'stocks' && currentLang() !== 'pt' ? t('Ações (classe de ativo)') : t(INVESTMENT_LABELS[ty]));
 
 function InvestmentModal({ open, onClose, inv }: { open: boolean; onClose: () => void; inv?: Investment }) {
   const upsert = useFinance((s) => s.upsert);
@@ -72,25 +76,25 @@ function InvestmentModal({ open, onClose, inv }: { open: boolean; onClose: () =>
       history: [...history, { month, value: current }].sort((a, b) => a.month.localeCompare(b.month)),
       createdAt: inv?.createdAt ?? new Date().toISOString(),
     });
-    toast.success(inv ? 'Investimento atualizado' : 'Investimento adicionado');
+    toast.success(inv ? t('Investimento atualizado') : t('Investimento adicionado'));
     onClose();
   };
   return (
-    <Modal open={open} onClose={onClose} title={inv ? 'Atualizar investimento' : 'Novo investimento'} size="lg" footer={<><Button variant="ghost" onClick={onClose}>Cancelar</Button><Button onClick={save}>Salvar</Button></>}>
+    <Modal open={open} onClose={onClose} title={inv ? t('Atualizar investimento') : t('Novo investimento')} size="lg" footer={<><Button variant="ghost" onClick={onClose}>{t('Cancelar')}</Button><Button onClick={save}>{t('Salvar')}</Button></>}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Nome do ativo" error={err.name}>{(p) => <Input {...p} value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder="Ex.: Tesouro Selic 2029" data-autofocus />}</Field>
-        <Field label="Ticker (opcional)">{(p) => <Input {...p} value={f.ticker} onChange={(e) => set({ ticker: e.target.value })} placeholder="Ex.: ITSA4" />}</Field>
-        <Field label="Classe">
+        <Field label={t('Nome do ativo')} error={err.name}>{(p) => <Input {...p} value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder={t('Ex.: Tesouro Selic 2029')} data-autofocus />}</Field>
+        <Field label={t('Ticker (opcional)')}>{(p) => <Input {...p} value={f.ticker} onChange={(e) => set({ ticker: e.target.value })} placeholder={t('Ex.: ITSA4')} />}</Field>
+        <Field label={t('Classe')}>
           {(p) => (
             <Select {...p} value={f.type} onChange={(e) => set({ type: e.target.value as InvestmentType })}>
-              {Object.entries(INVESTMENT_LABELS).map(([k2, v]) => <option key={k2} value={k2}>{v}</option>)}
+              {(Object.keys(INVESTMENT_LABELS) as InvestmentType[]).map((k2) => <option key={k2} value={k2}>{typeLabel(k2)}</option>)}
             </Select>
           )}
         </Field>
-        <Field label="Instituição">{(p) => <Input {...p} value={f.institution} onChange={(e) => set({ institution: e.target.value })} placeholder="Corretora ou banco" />}</Field>
-        <Field label="Valor aplicado" error={err.invested}>{(p) => <Input {...p} value={f.invested} onChange={(e) => set({ invested: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
-        <Field label="Valor atual de mercado" error={err.current} hint="Atualize periodicamente">{(p) => <Input {...p} value={f.current} onChange={(e) => set({ current: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
-        <Field label="Dividendos/proventos recebidos">{(p) => <Input {...p} value={f.dividends} onChange={(e) => set({ dividends: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
+        <Field label={t('Instituição')}>{(p) => <Input {...p} value={f.institution} onChange={(e) => set({ institution: e.target.value })} placeholder={t('Corretora ou banco')} />}</Field>
+        <Field label={t('Valor aplicado')} error={err.invested}>{(p) => <Input {...p} value={f.invested} onChange={(e) => set({ invested: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
+        <Field label={t('Valor atual de mercado')} error={err.current} hint={t('Atualize periodicamente')}>{(p) => <Input {...p} value={f.current} onChange={(e) => set({ current: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
+        <Field label={t('Dividendos/proventos recebidos')}>{(p) => <Input {...p} value={f.dividends} onChange={(e) => set({ dividends: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
       </div>
     </Modal>
   );
@@ -113,58 +117,58 @@ export default function Investments() {
   return (
     <div>
       <PageHeader
-        title="Investimentos"
-        description="Patrimônio, rentabilidade, proventos e distribuição da carteira."
+        title={t('Investimentos')}
+        description={t('Patrimônio, rentabilidade, proventos e distribuição da carteira.')}
         actions={
           <>
             <ExportMenu
-              title="Carteira de investimentos"
+              title={t('Carteira de investimentos')}
               getTables={() => [
                 {
-                  title: 'Carteira de investimentos',
+                  title: t('Carteira de investimentos'),
                   columns: [
-                    { header: 'Ativo', key: 'name', width: 28 },
-                    { header: 'Classe', key: 'type' },
-                    { header: 'Instituição', key: 'inst' },
-                    { header: 'Aplicado', key: 'invested', type: 'money' },
-                    { header: 'Atual', key: 'current', type: 'money' },
-                    { header: 'Rentab.', key: 'ret', type: 'percent' },
-                    { header: 'Proventos', key: 'div', type: 'money' },
+                    { header: t('Ativo'), key: 'name', width: 28 },
+                    { header: t('Classe'), key: 'type' },
+                    { header: t('Instituição'), key: 'inst' },
+                    { header: t('Aplicado'), key: 'invested', type: 'money' },
+                    { header: t('Atual'), key: 'current', type: 'money' },
+                    { header: t('Rentab.'), key: 'ret', type: 'percent' },
+                    { header: t('Proventos'), key: 'div', type: 'money' },
                   ],
-                  rows: investments.map((i) => ({ name: i.ticker ? `${i.name} (${i.ticker})` : i.name, type: INVESTMENT_LABELS[i.type], inst: i.institution, invested: i.invested, current: i.currentValue, ret: i.invested ? ((i.currentValue - i.invested) / i.invested) * 100 : 0, div: i.dividends })),
+                  rows: investments.map((i) => ({ name: i.ticker ? `${i.name} (${i.ticker})` : i.name, type: typeLabel(i.type), inst: i.institution, invested: i.invested, current: i.currentValue, ret: i.invested ? ((i.currentValue - i.invested) / i.invested) * 100 : 0, div: i.dividends })),
                   summary: [
-                    { label: 'Patrimônio', value: formatMoney(p.current) },
-                    { label: 'Rentabilidade', value: `${formatMoney(p.profit)} (${formatPercent(p.returnPct)})` },
+                    { label: t('Patrimônio'), value: formatMoney(p.current) },
+                    { label: t('Rentabilidade'), value: `${formatMoney(p.profit)} (${formatPercent(p.returnPct)})` },
                   ],
                 },
               ]}
             />
-            <Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Novo ativo</Button>
+            <Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>{t('Novo ativo')}</Button>
           </>
         }
       />
 
       <div className="mb-6 flex items-start gap-3 rounded-xl border border-border bg-surface-2/60 px-4 py-3 text-xs text-fg-muted" role="note">
         <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-        <p>Conteúdo informativo e educacional. Rentabilidade passada não garante resultados futuros. A Nexora não oferece recomendação de investimento nem garantia de retorno. Valores de mercado são informados por você.</p>
+        <p>{t('Conteúdo informativo e educacional. Rentabilidade passada não garante resultados futuros. A Nexora não oferece recomendação de investimento nem garantia de retorno. Valores de mercado são informados por você.')}</p>
       </div>
 
       {investments.length === 0 ? (
-        <Card><EmptyState icon={<TrendingUp />} title="Nenhum investimento registrado" description="Cadastre seus ativos de renda fixa, ações, FIIs, ETFs, cripto, fundos e previdência." action={<Button onClick={() => setModal({ open: true })}>+ Adicionar investimento</Button>} /></Card>
+        <Card><EmptyState icon={<TrendingUp />} title={t('Nenhum investimento registrado')} description={t('Cadastre seus ativos de renda fixa, ações, FIIs, ETFs, cripto, fundos e previdência.')} action={<Button onClick={() => setModal({ open: true })}>{t('+ Adicionar investimento')}</Button>} /></Card>
       ) : (
         <>
           <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            <StatCard emphasis className="col-span-2 lg:col-span-1" label="Patrimônio investido" value={p.current} format={(v) => money(v)} delta={firstHist ? ((p.current - firstHist) / firstHist) * 100 : null} comparison="em 12 meses" spark={p.history.map((h) => h.value)} sparkColor="var(--series-7)" info="Soma do valor de mercado atual de todos os ativos. A variação inclui novos aportes." />
-            <StatCard label="Total aplicado" value={p.invested} format={(v) => money(v)} info="Soma dos valores efetivamente aportados." />
-            <StatCard label="Rentabilidade" value={p.profit} format={(v) => money(v, { signed: true })} delta={p.returnPct} comparison="sobre o aplicado" info="Valor atual − valor aplicado (não considera proventos)." />
-            <StatCard label="Proventos" value={p.dividends} format={(v) => money(v)} comparison={p.current ? `yield acumulado ${formatPercent((p.dividends / p.invested) * 100)}` : undefined} info="Dividendos, JCP e rendimentos recebidos." />
+            <StatCard emphasis className="col-span-2 lg:col-span-1" label={t('Patrimônio investido')} value={p.current} format={(v) => money(v)} delta={firstHist ? ((p.current - firstHist) / firstHist) * 100 : null} comparison={t('em 12 meses')} spark={p.history.map((h) => h.value)} sparkColor="var(--series-7)" info={t('Soma do valor de mercado atual de todos os ativos. A variação inclui novos aportes.')} />
+            <StatCard label={t('Total aplicado')} value={p.invested} format={(v) => money(v)} info={t('Soma dos valores efetivamente aportados.')} />
+            <StatCard label={t('Rentabilidade')} value={p.profit} format={(v) => money(v, { signed: true })} delta={p.returnPct} comparison={t('sobre o aplicado')} info={t('Valor atual − valor aplicado (não considera proventos).')} />
+            <StatCard label={t('Proventos')} value={p.dividends} format={(v) => money(v)} comparison={p.current ? t('yield acumulado {pct}', { pct: formatPercent((p.dividends / p.invested) * 100) }) : undefined} info={t('Dividendos, JCP e rendimentos recebidos.')} />
           </section>
 
           <div className="mt-4 grid gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
-              <CardHeader title="Evolução do patrimônio" description="Valor de mercado consolidado por mês" />
+              <CardHeader title={t('Evolução do patrimônio')} description={t('Valor de mercado consolidado por mês')} />
               <CardBody>
-                <div className="h-72" role="img" aria-label="Evolução mensal do patrimônio investido">
+                <div className="h-72" role="img" aria-label={t('Evolução mensal do patrimônio investido')}>
                   <ResponsiveContainer>
                     <AreaChart data={p.history.map((h) => ({ ...h, label: formatMonthShort(h.month) }))} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                       <defs>
@@ -176,7 +180,7 @@ export default function Investments() {
                       <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
                       <XAxis dataKey="label" {...axisProps} />
                       <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
-                      <Tooltip content={({ active, payload }) => (active && payload?.length ? <ChartTooltipBox title={formatMonthLong((payload[0].payload as { month: string }).month)} rows={[{ label: 'Patrimônio', value: money(Number(payload[0].value)), color: 'var(--series-7)' }]} /> : null)} />
+                      <Tooltip content={({ active, payload }) => (active && payload?.length ? <ChartTooltipBox title={formatMonthLong((payload[0].payload as { month: string }).month)} rows={[{ label: t('Patrimônio'), value: money(Number(payload[0].value)), color: 'var(--series-7)' }]} /> : null)} />
                       <Area type="monotone" dataKey="value" stroke="var(--series-7)" strokeWidth={2} fill="url(#inv-g)" />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -184,14 +188,14 @@ export default function Investments() {
               </CardBody>
             </Card>
             <Card>
-              <CardHeader title="Distribuição" description="Por classe de ativo" />
+              <CardHeader title={t('Distribuição')} description={t('Por classe de ativo')} />
               <CardBody>
-                <Donut size={180} total={p.current} centerLabel="Carteira" selected={selectedType} onSelect={(id) => { setSelectedType(id); setFilter((id as InvestmentType) ?? 'all'); }} data={p.allocation.map((a) => ({ id: a.type, label: a.label, value: a.value, pct: a.pct, color: TYPE_COLORS[a.type] }))} />
+                <Donut size={180} total={p.current} centerLabel={t('Portfólio')} selected={selectedType} onSelect={(id) => { setSelectedType(id); setFilter((id as InvestmentType) ?? 'all'); }} data={p.allocation.map((a) => ({ id: a.type, label: typeLabel(a.type), value: a.value, pct: a.pct, color: TYPE_COLORS[a.type] }))} />
                 <ul className="mt-4 space-y-2">
                   {p.allocation.map((a) => (
                     <li key={a.type} className="flex items-center gap-2 text-sm">
                       <span className="size-2.5 rounded-full" style={{ background: TYPE_COLORS[a.type] }} aria-hidden />
-                      <span className="flex-1 text-fg-muted">{a.label}</span>
+                      <span className="flex-1 text-fg-muted">{typeLabel(a.type)}</span>
                       <span className="tabular text-xs text-fg-subtle">{formatPercent(a.pct)}</span>
                       <span className="tabular w-24 text-right font-medium">{money(a.value)}</span>
                     </li>
@@ -203,14 +207,14 @@ export default function Investments() {
 
           <Card className="mt-4">
             <CardHeader
-              title="Ativos"
+              title={t('Ativos')}
               action={
                 <Segmented
                   size="sm"
-                  label="Filtrar por classe"
+                  label={t('Filtrar por classe')}
                   value={filter}
                   onChange={(v) => { setFilter(v); setSelectedType(v === 'all' ? null : v); }}
-                  options={[{ value: 'all' as const, label: 'Todos' }, ...types.map((t) => ({ value: t, label: INVESTMENT_LABELS[t] }))]}
+                  options={[{ value: 'all' as const, label: t('Todos') }, ...types.map((ty) => ({ value: ty, label: typeLabel(ty) }))]}
                   className="max-w-[60vw]"
                 />
               }
@@ -219,14 +223,14 @@ export default function Investments() {
               <table className="w-full min-w-[720px] text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-xs text-fg-subtle">
-                    <th className="pb-2 font-medium">Ativo</th>
-                    <th className="pb-2 font-medium">Classe</th>
-                    <th className="pb-2 text-right font-medium">Aplicado</th>
-                    <th className="pb-2 text-right font-medium">Atual</th>
-                    <th className="pb-2 text-right font-medium">Rentabilidade</th>
-                    <th className="pb-2 text-right font-medium">Proventos</th>
-                    <th className="pb-2 text-right font-medium">% carteira</th>
-                    <th className="pb-2"><span className="sr-only">Ações</span></th>
+                    <th className="pb-2 font-medium">{t('Ativo')}</th>
+                    <th className="pb-2 font-medium">{t('Classe')}</th>
+                    <th className="pb-2 text-right font-medium">{t('Aplicado')}</th>
+                    <th className="pb-2 text-right font-medium">{t('Atual')}</th>
+                    <th className="pb-2 text-right font-medium">{t('Rentabilidade')}</th>
+                    <th className="pb-2 text-right font-medium">{t('Proventos')}</th>
+                    <th className="pb-2 text-right font-medium">{t('% carteira')}</th>
+                    <th className="pb-2"><span className="sr-only">{t('Ações')}</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -238,7 +242,7 @@ export default function Investments() {
                           <p className="font-medium">{i.name}</p>
                           <p className="text-xs text-fg-subtle">{i.ticker ? `${i.ticker} · ` : ''}{i.institution}</p>
                         </td>
-                        <td className="py-3"><span className="inline-flex items-center gap-1.5 text-fg-muted"><span className="size-2 rounded-full" style={{ background: TYPE_COLORS[i.type] }} aria-hidden />{INVESTMENT_LABELS[i.type]}</span></td>
+                        <td className="py-3"><span className="inline-flex items-center gap-1.5 text-fg-muted"><span className="size-2 rounded-full" style={{ background: TYPE_COLORS[i.type] }} aria-hidden />{typeLabel(i.type)}</span></td>
                         <td className="tabular py-3 text-right text-fg-muted">{money(i.invested)}</td>
                         <td className="tabular py-3 text-right font-semibold">{money(i.currentValue)}</td>
                         <td className={cn('tabular py-3 text-right font-medium', ret >= 0 ? 'text-success' : 'text-danger')}>
@@ -249,11 +253,11 @@ export default function Investments() {
                         <td className="tabular py-3 text-right text-fg-muted">{formatPercent(p.current ? (i.currentValue / p.current) * 100 : 0)}</td>
                         <td className="py-3 text-right">
                           <Dropdown
-                            label="Ações"
-                            trigger={(pp) => <Button variant="ghost" size="icon-sm" aria-label={`Ações para ${i.name}`} {...pp}><MoreHorizontal className="size-4" /></Button>}
+                            label={t('Ações')}
+                            trigger={(pp) => <Button variant="ghost" size="icon-sm" aria-label={t('Ações para {name}', { name: i.name })} {...pp}><MoreHorizontal className="size-4" /></Button>}
                             items={[
-                              { label: 'Atualizar valores', icon: <Pencil />, onSelect: () => setModal({ open: true, inv: i }) },
-                              { label: 'Excluir', icon: <Trash2 />, danger: true, onSelect: () => setConfirm(i) },
+                              { label: t('Atualizar valores'), icon: <Pencil />, onSelect: () => setModal({ open: true, inv: i }) },
+                              { label: t('Excluir'), icon: <Trash2 />, danger: true, onSelect: () => setConfirm(i) },
                             ]}
                           />
                         </td>
@@ -268,7 +272,7 @@ export default function Investments() {
       )}
 
       <InvestmentModal open={modal.open} inv={modal.inv} onClose={() => setModal({ open: false })} />
-      <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)} title="Excluir ativo?" description="O histórico deste ativo será removido." confirmLabel="Excluir" onConfirm={() => { if (confirm) remove('investments', confirm.id); toast.success('Ativo removido'); }} />
+      <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)} title={t('Excluir ativo?')} description={t('O histórico deste ativo será removido.')} confirmLabel={t('Excluir')} onConfirm={() => { if (confirm) remove('investments', confirm.id); toast.success(t('Ativo removido')); }} />
     </div>
   );
 }

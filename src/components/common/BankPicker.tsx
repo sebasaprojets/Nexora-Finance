@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react';
 import { Check, Search } from 'lucide-react';
 import { SELECTABLE_BANKS, bankLogoUrl, type BankInfo } from '@/lib/banks';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n';
 
 const POPULAR = ['nubank', 'itau', 'bradesco', 'santander', 'bancodobrasil', 'caixa', 'inter', 'c6bank', 'picpay', 'mercadopago', 'btgpactual', 'xp'];
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 /** Seletor visual de banco (com logos). `value` é o slug; vazio = outra instituição. */
-export function BankPicker({ value, onChange, label = 'Banco ou instituição' }: { value?: string; onChange: (bank: BankInfo | null) => void; label?: string }) {
+export function BankPicker({ value, onChange, label: labelProp }: { value?: string; onChange: (bank: BankInfo | null) => void; label?: string }) {
+  const label = labelProp ?? t('Banco ou instituição');
   const [q, setQ] = useState('');
   const list = useMemo(() => {
     const term = norm(q.trim());
@@ -25,8 +27,8 @@ export function BankPicker({ value, onChange, label = 'Banco ou instituição' }
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar banco (ex.: Sicredi, Neon, BTG)…"
-          aria-label="Buscar banco"
+          placeholder={t('Buscar banco (ex.: Sicredi, Neon, BTG)…')}
+          aria-label={t('Buscar banco')}
           className="h-10 w-full rounded-xl border border-border bg-surface-2/60 pr-3 pl-9 text-sm outline-none focus:border-primary"
         />
       </div>
@@ -52,7 +54,7 @@ export function BankPicker({ value, onChange, label = 'Banco ou instituição' }
             </button>
           );
         })}
-        {list.length === 0 && <p className="col-span-full py-3 text-center text-xs text-fg-subtle">Nenhum banco encontrado. Digite o nome no campo “Instituição”.</p>}
+        {list.length === 0 && <p className="col-span-full py-3 text-center text-xs text-fg-subtle">{t('Nenhum banco encontrado. Digite o nome no campo “Instituição”.')}</p>}
       </div>
     </fieldset>
   );

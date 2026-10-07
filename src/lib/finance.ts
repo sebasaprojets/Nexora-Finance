@@ -30,6 +30,7 @@ import {
   startOfWeek,
   today,
 } from './dates';
+import { t } from '@/i18n';
 import { pctChange, round2 } from './format';
 
 /**
@@ -49,7 +50,14 @@ export interface Period {
   to: ISODate;
 }
 
-export const PERIOD_LABELS: Record<PeriodPreset, string> = {
+/** Objeto cujos valores (textos em português) são traduzidos no momento da leitura. */
+function localizedRecord<K extends string>(raw: Record<K, string>): Record<K, string> {
+  const out = {} as Record<K, string>;
+  for (const k of Object.keys(raw) as K[]) Object.defineProperty(out, k, { enumerable: true, get: () => t(raw[k]) });
+  return out;
+}
+
+export const PERIOD_LABELS: Record<PeriodPreset, string> = localizedRecord({
   '7d': '7 dias',
   '30d': '30 dias',
   month: 'Este mês',
@@ -57,7 +65,7 @@ export const PERIOD_LABELS: Record<PeriodPreset, string> = {
   '6m': '6 meses',
   '1y': '1 ano',
   custom: 'Personalizado',
-};
+});
 
 export function periodFromPreset(preset: PeriodPreset, ref: ISODate = today(), custom?: Period): Period {
   switch (preset) {
@@ -243,7 +251,7 @@ export function totalsByCategory(
   }
   const fallback: Category = {
     id: 'uncategorized',
-    name: 'Sem categoria',
+    name: t('Sem categoria'),
     icon: 'circle-help',
     color: 'var(--series-8)',
     kind,
@@ -727,7 +735,7 @@ export function debtTotals(debts: Debt[]) {
 // Investimentos
 // ---------------------------------------------------------------------------
 
-export const INVESTMENT_LABELS: Record<InvestmentType, string> = {
+export const INVESTMENT_LABELS: Record<InvestmentType, string> = localizedRecord({
   fixed_income: 'Renda fixa',
   stocks: 'Ações',
   reits: 'FIIs',
@@ -735,7 +743,7 @@ export const INVESTMENT_LABELS: Record<InvestmentType, string> = {
   crypto: 'Criptomoedas',
   funds: 'Fundos',
   pension: 'Previdência',
-};
+});
 
 export function portfolioSummary(investments: Investment[]) {
   const invested = investments.reduce((s, i) => s + i.invested, 0);

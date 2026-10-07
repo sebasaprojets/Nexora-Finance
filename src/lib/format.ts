@@ -1,4 +1,5 @@
 import type { CurrencyCode } from '@/types';
+import { currentLang, currentLocale, t } from '@/i18n';
 
 const LOCALE_BY_CURRENCY: Record<CurrencyCode, string> = {
   BRL: 'pt-BR',
@@ -7,11 +8,12 @@ const LOCALE_BY_CURRENCY: Record<CurrencyCode, string> = {
   GBP: 'en-GB',
 };
 
+/** `label` é traduzido no idioma atual a cada leitura. */
 export const CURRENCIES: { code: CurrencyCode; label: string; symbol: string }[] = [
-  { code: 'BRL', label: 'Real brasileiro', symbol: 'R$' },
-  { code: 'USD', label: 'Dólar americano', symbol: 'US$' },
-  { code: 'EUR', label: 'Euro', symbol: '€' },
-  { code: 'GBP', label: 'Libra esterlina', symbol: '£' },
+  { code: 'BRL', get label() { return t('Real brasileiro'); }, symbol: 'R$' },
+  { code: 'USD', get label() { return t('Dólar americano'); }, symbol: 'US$' },
+  { code: 'EUR', get label() { return t('Euro'); }, symbol: '€' },
+  { code: 'GBP', get label() { return t('Libra esterlina'); }, symbol: '£' },
 ];
 
 const cache = new Map<string, Intl.NumberFormat>();
@@ -63,15 +65,17 @@ export function formatMoney(value: number, opts: MoneyOptions = {}): string {
 /** `37,9%` */
 export function formatPercent(value: number, digits = 1, signed = false): string {
   if (!Number.isFinite(value)) return '—';
-  const s = nf(`pct-${digits}`, () =>
-    new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }),
+  const locale = currentLocale();
+  const s = nf(`pct-${locale}-${digits}`, () =>
+    new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }),
   ).format(value);
   return `${signed && value > 0 ? '+' : ''}${s}%`;
 }
 
 export function formatNumber(value: number, digits = 0): string {
-  return nf(`num-${digits}`, () =>
-    new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }),
+  const locale = currentLocale();
+  return nf(`num-${locale}-${digits}`, () =>
+    new Intl.NumberFormat(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }),
   ).format(value);
 }
 
@@ -93,7 +97,15 @@ export function parseMoneyInput(raw: string): number {
   const s = raw.replace(/[^\d,.-]/g, '');
   if (!s) return NaN;
   let normalized: string;
-  if (s.includes(',')) {
+  const comma = s.lastIndexOf(',');
+  const dot = s.lastIndexOf('.');
+  if (comma >= 0 && dot > comma) {
+    // "1,250.50" — vírgula como separador de milhar.
+    normalized = s.replace(/,/g, '').replace(/\.(?=[^.]*\.)/g, '');
+  } else if (currentLang() === 'en' && comma >= 0 && dot < 0 && s.split(',').slice(1).every((g) => g.length === 3)) {
+    // Em inglês, "1,250" é mil duzentos e cinquenta.
+    normalized = s.replace(/,/g, '');
+  } else if (s.includes(',')) {
     normalized = s.replace(/\./g, '').replace(/,(?=[^,]*,)/g, '').replace(',', '.');
   } else if (s.includes('.')) {
     const groups = s.split('.').slice(1);

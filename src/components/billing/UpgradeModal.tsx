@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
+import { t } from '@/i18n';
 import { Check, Crown } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useUI } from '@/store/ui';
-import { PRICES, PRO_FEATURES, brl } from '@/lib/plans';
+import { PRICES, brl, proFeatures } from '@/lib/plans';
 
 /** "Seja Pro" — aberto quando o usuário do plano Grátis chega a um limite. */
 export function UpgradeModal() {
@@ -14,10 +15,10 @@ export function UpgradeModal() {
     <Modal
       open={!!reason}
       onClose={close}
-      title="Desbloqueie a Nexora Pro"
+      title={t('Desbloqueie a Nexora Pro')}
       footer={
         <>
-          <Button variant="ghost" onClick={close}>Agora não</Button>
+          <Button variant="ghost" onClick={close}>{t('Agora não')}</Button>
           <Button
             leftIcon={<Crown className="size-4" />}
             onClick={() => {
@@ -25,21 +26,21 @@ export function UpgradeModal() {
               navigate('/app/plano');
             }}
           >
-            Ver planos
+            {t('Ver planos')}
           </Button>
         </>
       }
     >
-      <p className="text-sm text-fg-muted">{reason}</p>
+      <p className="text-sm text-fg-muted">{reason && t(reason)}</p>
       <div className="mt-4 rounded-2xl border border-primary/40 bg-primary-soft/40 p-4">
         <p className="font-display text-lg font-semibold">
           Pro · {brl(PRICES.monthly)}
-          <span className="text-sm font-normal text-fg-subtle">/mês</span>
+          <span className="text-sm font-normal text-fg-subtle">{t('/mês')}</span>
         </p>
-        <p className="text-xs text-fg-subtle">ou {brl(PRICES.yearly)}/ano · cancele quando quiser</p>
+        <p className="text-xs text-fg-subtle">{t('ou {preco}/ano · cancele quando quiser', { preco: brl(PRICES.yearly) })}</p>
         <ul className="mt-3 space-y-1.5 text-sm">
-          {PRO_FEATURES.map((f) => (
-            <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden /> {f}</li>
+          {proFeatures().map((f) => (
+            <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden /> {t(f)}</li>
           ))}
         </ul>
       </div>

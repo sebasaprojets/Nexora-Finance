@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { t } from '@/i18n';
 import { AlertTriangle, CheckCircle2, Info, X, XCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useToasts, type ToastTone } from '@/store/toast';
@@ -19,35 +20,35 @@ export function Toaster() {
       className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+72px)] z-[80] flex flex-col items-center gap-2 px-4 lg:top-auto lg:right-6 lg:bottom-6 lg:left-auto lg:items-end"
     >
       <AnimatePresence initial={false}>
-        {toasts.map((t) => {
-          const Icon = icons[t.tone];
+        {toasts.map((toast) => {
+          const Icon = icons[toast.tone];
           return (
             <motion.div
-              key={t.id}
+              key={toast.id}
               layout
-              role={t.tone === 'error' ? 'alert' : 'status'}
+              role={toast.tone === 'error' ? 'alert' : 'status'}
               initial={{ opacity: 0, y: from, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: from / 2, scale: 0.96 }}
               className="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border border-border-strong bg-bg-elevated p-3.5 shadow-lg"
             >
-              <Icon className={cn('mt-0.5 size-5 shrink-0', colors[t.tone])} aria-hidden />
+              <Icon className={cn('mt-0.5 size-5 shrink-0', colors[toast.tone])} aria-hidden />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{t.title}</p>
-                {t.description && <p className="mt-0.5 text-xs text-fg-subtle">{t.description}</p>}
-                {t.action && (
+                <p className="text-sm font-medium">{toast.title}</p>
+                {toast.description && <p className="mt-0.5 text-xs text-fg-subtle">{toast.description}</p>}
+                {toast.action && (
                   <button
                     className="mt-2 text-xs font-semibold text-primary hover:underline"
                     onClick={() => {
-                      t.action!.onClick();
-                      dismiss(t.id);
+                      toast.action!.onClick();
+                      dismiss(toast.id);
                     }}
                   >
-                    {t.action.label}
+                    {toast.action.label}
                   </button>
                 )}
               </div>
-              <button onClick={() => dismiss(t.id)} className="rounded-md p-0.5 text-fg-subtle hover:text-fg" aria-label="Fechar notificação">
+              <button onClick={() => dismiss(toast.id)} className="rounded-md p-0.5 text-fg-subtle hover:text-fg" aria-label={t('Fechar notificação')}>
                 <X className="size-4" />
               </button>
             </motion.div>

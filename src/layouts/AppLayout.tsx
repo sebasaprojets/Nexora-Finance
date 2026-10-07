@@ -20,6 +20,7 @@ import { useFinanceData } from '@/hooks/useFinanceData';
 import { useUI } from '@/store/ui';
 import { useDebounce } from '@/hooks/useDebounce';
 import { runAlertRules } from '@/services/notifications';
+import { t } from '@/i18n';
 
 /**
  * Mantém o conteúdo da rota em que o elemento foi montado. Sem isso, durante a
@@ -90,7 +91,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-dvh">
       <a href="#conteudo" className="sr-only z-[100] rounded-lg bg-primary px-4 py-2 text-primary-fg focus:not-sr-only focus:fixed focus:top-3 focus:left-3">
-        Pular para o conteúdo
+        {t('Pular para o conteúdo')}
       </a>
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
@@ -98,7 +99,7 @@ export function AppLayout() {
         <DemoBanner />
         {!online && (
           <div role="status" className="flex items-center justify-center gap-2 bg-warning-soft px-4 py-2 text-xs font-medium text-warning">
-            <WifiOff className="size-3.5" aria-hidden /> Você está offline — exibindo dados salvos neste dispositivo.
+            <WifiOff className="size-3.5" aria-hidden /> {t('Você está offline — exibindo dados salvos neste dispositivo.')}
           </div>
         )}
         <main id="conteudo" className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-6 pb-28 sm:px-6 lg:px-8 lg:pb-12">

@@ -1,3 +1,7 @@
+/**
+ * Descreve o aparelho atual. Os valores ficam em português porque são salvos
+ * nas sessões; quem exibe deve usar `t(valor)` (traduções em locales/lib-core.ts).
+ */
 export function describeDevice(ua: string = typeof navigator !== 'undefined' ? navigator.userAgent : '') {
   const browser = /Edg\//.test(ua)
     ? 'Edge'

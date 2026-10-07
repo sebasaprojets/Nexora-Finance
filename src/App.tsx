@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode, Fragment } from 'react';
 import { useLang } from '@/i18n/lang';
+import { t } from '@/i18n';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { Toaster } from '@/components/ui/Toaster';
@@ -77,7 +78,7 @@ function GuestOnly({ children }: { children: ReactNode }) {
 
 function FullScreenLoader() {
   return (
-    <div className="grid min-h-dvh place-items-center" role="status" aria-label="Carregando">
+    <div className="grid min-h-dvh place-items-center" role="status" aria-label={t('Carregando')}>
       <div className="size-8 animate-spin rounded-full border-2 border-border-strong border-t-primary" />
     </div>
   );

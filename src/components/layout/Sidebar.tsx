@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { t } from '@/i18n';
 import { motion } from 'framer-motion';
 import { ChevronsLeft, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -13,7 +14,7 @@ function Item({ item, collapsed, badge }: { item: NavItem; collapsed: boolean; b
     <NavLink
       to={item.to}
       end={item.to === '/app'}
-      title={collapsed ? item.label : undefined}
+      title={collapsed ? t(item.label) : undefined}
       className={({ isActive }) =>
         cn(
           'group relative flex h-9 items-center gap-3 rounded-lg px-2.5 text-[13.5px] font-medium transition-colors',
@@ -32,7 +33,7 @@ function Item({ item, collapsed, badge }: { item: NavItem; collapsed: boolean; b
             />
           )}
           <Icon className={cn('relative size-[18px] shrink-0', isActive && 'text-primary')} aria-hidden />
-          {!collapsed && <span className="relative truncate">{item.label}</span>}
+          {!collapsed && <span className="relative truncate">{t(item.label)}</span>}
           {!!badge && (
             <span className={cn('relative ml-auto rounded-full bg-primary px-1.5 text-[10px] leading-4 font-semibold text-primary-fg', collapsed && 'absolute top-1 right-1 ml-0')}>
               {badge > 9 ? '9+' : badge}
@@ -59,7 +60,7 @@ export function Sidebar() {
         'sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border bg-bg-elevated/60 backdrop-blur-xl transition-[width] duration-300 lg:flex',
         collapsed ? 'w-[72px]' : 'w-64',
       )}
-      aria-label="Navegação principal"
+      aria-label={t('Navegação principal')}
     >
       <div className={cn('flex h-16 items-center px-4', collapsed && 'justify-center px-0')}>
         {collapsed ? <LogoMark /> : <Logo />}
@@ -67,7 +68,7 @@ export function Sidebar() {
       <nav className="scrollbar-thin flex-1 space-y-5 overflow-y-auto px-3 py-2">
         {NAV_GROUPS.map((g) => (
           <div key={g.label}>
-            {!collapsed && <p className="mb-1.5 px-2.5 text-[11px] font-medium tracking-wider text-fg-subtle/80 uppercase">{g.label}</p>}
+            {!collapsed && <p className="mb-1.5 px-2.5 text-[11px] font-medium tracking-wider text-fg-subtle/80 uppercase">{t(g.label)}</p>}
             <div className="space-y-0.5">
               {g.items.map((it) => (
                 <Item key={it.to} item={it} collapsed={collapsed} />
@@ -76,7 +77,7 @@ export function Sidebar() {
           </div>
         ))}
         <div>
-          {!collapsed && <p className="mb-1.5 px-2.5 text-[11px] font-medium tracking-wider text-fg-subtle/80 uppercase">Conta</p>}
+          {!collapsed && <p className="mb-1.5 px-2.5 text-[11px] font-medium tracking-wider text-fg-subtle/80 uppercase">{t('Conta')}</p>}
           <div className="space-y-0.5">
             {ACCOUNT_NAV.map((it) => (
               <Item key={it.to} item={it} collapsed={collapsed} badge={it.to === '/app/notificacoes' ? unread : undefined} />
@@ -90,16 +91,16 @@ export function Sidebar() {
             <div className="flex items-center gap-2 text-[13px] font-semibold">
               <Sparkles className="size-4 text-primary" aria-hidden /> Nexora AI
             </div>
-            <p className="mt-1 text-xs text-fg-subtle">Pergunte sobre seus gastos, metas e saldo.</p>
+            <p className="mt-1 text-xs text-fg-subtle">{t('Pergunte sobre seus gastos, metas e saldo.')}</p>
           </NavLink>
         )}
         <button
           onClick={toggle}
           className={cn('flex h-9 w-full items-center gap-2 rounded-lg px-2.5 text-xs text-fg-subtle hover:bg-surface-2 hover:text-fg', collapsed && 'justify-center')}
-          aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+          aria-label={collapsed ? t('Expandir menu') : t('Recolher menu')}
         >
           <ChevronsLeft className={cn('size-4 transition-transform', collapsed && 'rotate-180')} aria-hidden />
-          {!collapsed && 'Recolher'}
+          {!collapsed && t('Recolher')}
         </button>
       </div>
     </aside>

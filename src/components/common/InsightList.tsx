@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, ArrowRight, Lightbulb, TrendingDown, TrendingUp } from 'lucide-react';
 import type { Insight } from '@/lib/insights';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n';
 
 const toneStyle = {
   positive: { icon: TrendingUp, cls: 'bg-success-soft text-success', label: 'Positivo' },
@@ -13,15 +14,15 @@ const toneStyle = {
 
 export function InsightList({ insights, limit }: { insights: Insight[]; limit?: number }) {
   const list = limit ? insights.slice(0, limit) : insights;
-  if (!list.length) return <p className="py-6 text-center text-sm text-fg-subtle">Adicione transações para receber insights personalizados.</p>;
+  if (!list.length) return <p className="py-6 text-center text-sm text-fg-subtle">{t('Adicione transações para receber insights personalizados.')}</p>;
   return (
     <ul className="space-y-2">
       {list.map((i, idx) => {
-        const t = toneStyle[i.tone];
+        const tone = toneStyle[i.tone];
         const content = (
           <>
-            <span className={cn('mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg', t.cls)}>
-              <t.icon className="size-4" aria-label={t.label} />
+            <span className={cn('mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg', tone.cls)}>
+              <tone.icon className="size-4" aria-label={t(tone.label)} />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-fg-subtle">{i.title}</p>

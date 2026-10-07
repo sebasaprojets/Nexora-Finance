@@ -4,6 +4,7 @@ import { sanitizeText } from '@/lib/sanitize';
 import { appUrl, onAuthEvent, resetClient, setAccessToken, supabase } from './cloud';
 import { readJSON, removeKey, writeJSON } from './storage';
 import { AuthError, type Session } from './authTypes';
+import { t } from '@/i18n';
 
 /**
  * Autenticação real com Supabase Auth (modo nuvem): a conta funciona em
@@ -64,17 +65,17 @@ async function loadProfile(u: SbUser): Promise<User> {
 
 function mapError(message: string): AuthError {
   const m = message.toLowerCase();
-  if (m.includes('invalid login')) return new AuthError('E-mail ou senha incorretos.', 'invalid_credentials');
-  if (m.includes('email not confirmed')) return new AuthError('Confirme seu e-mail pelo link que enviamos antes de entrar.', 'confirm_email');
-  if (m.includes('already registered') || m.includes('already been registered')) return new AuthError('Este e-mail já está cadastrado.', 'email_in_use');
-  if (m.includes('rate limit') || m.includes('too many')) return new AuthError('Muitas tentativas. Aguarde um pouco e tente novamente.', 'rate_limited');
-  if (m.includes('password')) return new AuthError('Senha fraca: use pelo menos 8 caracteres, com letras e números.', 'unknown');
-  if (m.includes('fetch') || m.includes('network')) return new AuthError('Sem conexão com o servidor. Verifique sua internet.', 'unknown');
-  return new AuthError('Não foi possível concluir. Tente novamente.', 'unknown');
+  if (m.includes('invalid login')) return new AuthError(t('E-mail ou senha incorretos.'), 'invalid_credentials');
+  if (m.includes('email not confirmed')) return new AuthError(t('Confirme seu e-mail pelo link que enviamos antes de entrar.'), 'confirm_email');
+  if (m.includes('already registered') || m.includes('already been registered')) return new AuthError(t('Este e-mail já está cadastrado.'), 'email_in_use');
+  if (m.includes('rate limit') || m.includes('too many')) return new AuthError(t('Muitas tentativas. Aguarde um pouco e tente novamente.'), 'rate_limited');
+  if (m.includes('password')) return new AuthError(t('Senha fraca: use pelo menos 8 caracteres, com letras e números.'), 'unknown');
+  if (m.includes('fetch') || m.includes('network')) return new AuthError(t('Sem conexão com o servidor. Verifique sua internet.'), 'unknown');
+  return new AuthError(t('Não foi possível concluir. Tente novamente.'), 'unknown');
 }
 
 async function result(s: SbSession | null) {
-  if (!s) throw new AuthError('Sessão não iniciada.', 'unknown');
+  if (!s) throw new AuthError(t('Sessão não iniciada.'), 'unknown');
   setAccessToken(s.access_token);
   return { session: toSession(s), user: await loadProfile(s.user) };
 }
@@ -110,8 +111,8 @@ export const cloudAuth = {
     });
     if (error) throw mapError(error.message);
     // Supabase devolve usuário sem identidades quando o e-mail já existe (proteção contra enumeração).
-    if (data.user && !data.user.identities?.length) throw new AuthError('Este e-mail já está cadastrado.', 'email_in_use');
-    if (!data.session) throw new AuthError('Enviamos um link de confirmação para o seu e-mail. Abra-o para ativar a conta.', 'confirm_email');
+    if (data.user && !data.user.identities?.length) throw new AuthError(t('Este e-mail já está cadastrado.'), 'email_in_use');
+    if (!data.session) throw new AuthError(t('Enviamos um link de confirmação para o seu e-mail. Abra-o para ativar a conta.'), 'confirm_email');
     return result(data.session);
   },
 
@@ -138,9 +139,9 @@ export const cloudAuth = {
   async changePassword(current: string, next: string) {
     const sb = await supabase();
     const email = (await sb.auth.getUser()).data.user?.email;
-    if (!email) throw new AuthError('Sessão expirada. Entre novamente.', 'unknown');
+    if (!email) throw new AuthError(t('Sessão expirada. Entre novamente.'), 'unknown');
     const check = await sb.auth.signInWithPassword({ email, password: current });
-    if (check.error) throw new AuthError('Senha atual incorreta.', 'invalid_credentials');
+    if (check.error) throw new AuthError(t('Senha atual incorreta.'), 'invalid_credentials');
     await this.setPassword(next);
   },
 
@@ -197,11 +198,11 @@ export const cloudAuth = {
 
   async signInWithBiometric(userId: string) {
     const stash = readJSON<{ access_token: string; refresh_token: string } | null>(STASH(userId), null);
-    if (!stash) throw new AuthError('Entre com e-mail e senha uma vez neste aparelho para reativar o Face ID.', 'not_found');
+    if (!stash) throw new AuthError(t('Entre com e-mail e senha uma vez neste aparelho para reativar o Face ID.'), 'not_found');
     const sb = await supabase();
     const { data, error } = await sb.auth.setSession(stash);
     removeKey(STASH(userId));
-    if (error || !data.session) throw new AuthError('Sua sessão expirou. Entre com e-mail e senha.', 'invalid_credentials');
+    if (error || !data.session) throw new AuthError(t('Sua sessão expirou. Entre com e-mail e senha.'), 'invalid_credentials');
     return result(data.session);
   },
 

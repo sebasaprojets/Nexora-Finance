@@ -1,4 +1,5 @@
 import { Monitor, Moon, Sun } from 'lucide-react';
+import { t } from '@/i18n';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Button } from '@/components/ui/Button';
 import { useSettings } from '@/store/settings';
@@ -9,16 +10,16 @@ export function ThemeToggle() {
   const resolved = useResolvedTheme();
   return (
     <Dropdown
-      label="Tema"
+      label={t('Tema')}
       trigger={(p) => (
-        <Button variant="ghost" size="icon" aria-label="Alterar tema" {...p}>
+        <Button variant="ghost" size="icon" aria-label={t('Alterar tema')} {...p}>
           {resolved === 'dark' ? <Moon className="size-[18px]" /> : <Sun className="size-[18px]" />}
         </Button>
       )}
       items={[
-        { label: 'Escuro', icon: <Moon />, onSelect: () => set({ theme: 'dark' }) },
-        { label: 'Claro', icon: <Sun />, onSelect: () => set({ theme: 'light' }) },
-        { label: 'Sistema', icon: <Monitor />, onSelect: () => set({ theme: 'system' }) },
+        { label: t('Escuro'), icon: <Moon />, onSelect: () => set({ theme: 'dark' }) },
+        { label: t('Claro'), icon: <Sun />, onSelect: () => set({ theme: 'light' }) },
+        { label: t('Sistema'), icon: <Monitor />, onSelect: () => set({ theme: 'system' }) },
       ]}
     />
   );

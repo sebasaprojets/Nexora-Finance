@@ -6,6 +6,7 @@ import { AuthError, type Session } from './authTypes';
 import { cloudEnabled } from './cloud';
 import { cloudAuth, knownName } from './cloudAuth';
 import { biometricEnabledFor } from './biometric';
+import { t } from '@/i18n';
 
 /**
  * Serviço de autenticação.
@@ -60,7 +61,7 @@ function checkRateLimit(email: string) {
   const a = attempts[email];
   if (a?.until && a.until > Date.now()) {
     const s = Math.ceil((a.until - Date.now()) / 1000);
-    throw new AuthError(`Muitas tentativas. Tente novamente em ${s}s.`, 'rate_limited');
+    throw new AuthError(t('Muitas tentativas. Tente novamente em {s}s.', { s }), 'rate_limited');
   }
 }
 
@@ -112,7 +113,7 @@ export const authService = {
     if (!user) return null;
     // A demonstração é sempre genérica (corrige sessões antigas com outro nome).
     const pub = publicUser(user);
-    return { session, user: user.provider === 'demo' ? { ...pub, name: 'Visitante', avatarUrl: undefined } : pub };
+    return { session, user: user.provider === 'demo' ? { ...pub, name: t('Visitante'), avatarUrl: undefined } : pub };
   },
 
   /** Restaura a sessão ao abrir o app (demo local ou conta na nuvem). */
@@ -135,7 +136,7 @@ export const authService = {
     if (!user?.salt || !user.passwordHash || (await hashPassword(password, user.salt)) !== user.passwordHash) {
       registerFailure(normalized);
       // Mensagem genérica: não revela se o e-mail existe.
-      throw new AuthError('E-mail ou senha incorretos.', 'invalid_credentials');
+      throw new AuthError(t('E-mail ou senha incorretos.'), 'invalid_credentials');
     }
     clearFailures(normalized);
     return { session: createSession(user.id, remember), user: publicUser(user) };
@@ -146,7 +147,7 @@ export const authService = {
     const normalized = email.trim().toLowerCase();
     await delay(500);
     const list = users();
-    if (list.some((u) => u.email === normalized)) throw new AuthError('Este e-mail já está cadastrado.', 'email_in_use');
+    if (list.some((u) => u.email === normalized)) throw new AuthError(t('Este e-mail já está cadastrado.'), 'email_in_use');
     const salt = randomToken(16);
     const user: StoredUser = {
       id: uid('usr'),
@@ -173,7 +174,7 @@ export const authService = {
     if (!user) {
       user = {
         id: uid('usr'),
-        name: provider === 'google' ? 'Usuário Google' : 'Usuário Apple',
+        name: provider === 'google' ? t('Usuário Google') : t('Usuário Apple'),
         email,
         plan: 'free',
         createdAt: new Date().toISOString(),
@@ -191,7 +192,7 @@ export const authService = {
     // Conta de demonstração genérica (igual para qualquer visitante, sem dados pessoais).
     const demo: StoredUser = {
       id: 'usr_demo',
-      name: 'Visitante',
+      name: t('Visitante'),
       email: 'demo@nexora.app',
       plan: 'pro',
       createdAt: '2025-01-12T10:00:00.000Z',
@@ -207,7 +208,7 @@ export const authService = {
   async signInWithBiometric(userId: string) {
     if (cloudEnabled && !users().some((u) => u.id === userId)) return cloudAuth.signInWithBiometric(userId);
     const user = users().find((u) => u.id === userId);
-    if (!user) throw new AuthError('Conta não encontrada neste aparelho.', 'not_found');
+    if (!user) throw new AuthError(t('Conta não encontrada neste aparelho.'), 'not_found');
     return { session: createSession(user.id, true), user: publicUser(user) };
   },
 
@@ -237,7 +238,7 @@ export const authService = {
     }
     const list = users();
     const idx = list.findIndex((u) => u.id === id);
-    if (idx < 0) throw new AuthError('Usuário não encontrado.', 'not_found');
+    if (idx < 0) throw new AuthError(t('Usuário não encontrado.'), 'not_found');
     list[idx] = { ...list[idx], ...patch, id: list[idx].id, email: list[idx].email };
     saveUsers(list);
     return publicUser(list[idx]);
@@ -247,8 +248,8 @@ export const authService = {
     if (cloudEnabled && !users().some((u) => u.id === id)) return cloudAuth.changePassword(current, next);
     const list = users();
     const user = list.find((u) => u.id === id);
-    if (!user?.salt || !user.passwordHash) throw new AuthError('Conta sem senha local (login social ou demo).', 'unknown');
-    if ((await hashPassword(current, user.salt)) !== user.passwordHash) throw new AuthError('Senha atual incorreta.', 'invalid_credentials');
+    if (!user?.salt || !user.passwordHash) throw new AuthError(t('Conta sem senha local (login social ou demo).'), 'unknown');
+    if ((await hashPassword(current, user.salt)) !== user.passwordHash) throw new AuthError(t('Senha atual incorreta.'), 'invalid_credentials');
     user.salt = randomToken(16);
     user.passwordHash = await hashPassword(next, user.salt);
     saveUsers(list);

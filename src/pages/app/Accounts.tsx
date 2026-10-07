@@ -31,6 +31,7 @@ import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import { cn } from '@/lib/cn';
 import type { Account, AccountType } from '@/types';
+import { t } from '@/i18n';
 
 export const ACCOUNT_TYPES: Record<AccountType, { label: string; icon: typeof Landmark }> = {
   checking: { label: 'Conta corrente', icon: Landmark },
@@ -72,7 +73,7 @@ function AccountModal({ open, onClose, account }: { open: boolean; onClose: () =
     upsert('accounts', {
       id: account?.id ?? uid('acc'),
       name: sanitizeText(v.name, 40),
-      institution: sanitizeText(v.institution, 40) || ACCOUNT_TYPES[v.type].label,
+      institution: sanitizeText(v.institution, 40) || t(ACCOUNT_TYPES[v.type].label),
       type: v.type,
       bank: v.bank || undefined,
       initialBalance: parseMoneyInput(v.initialBalance) || 0,
@@ -80,7 +81,7 @@ function AccountModal({ open, onClose, account }: { open: boolean; onClose: () =
       archived: account?.archived,
       createdAt: account?.createdAt ?? new Date().toISOString(),
     });
-    toast.success(account ? 'Conta atualizada' : 'Conta criada');
+    toast.success(account ? t('Conta atualizada') : t('Conta criada'));
     reset();
     onClose();
   };
@@ -88,11 +89,11 @@ function AccountModal({ open, onClose, account }: { open: boolean; onClose: () =
     <Modal
       open={open}
       onClose={onClose}
-      title={account ? 'Editar conta' : 'Nova conta'}
+      title={account ? t('Editar conta') : t('Nova conta')}
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-          <Button type="submit" form="account-form">Salvar</Button>
+          <Button variant="ghost" onClick={onClose}>{t('Cancelar')}</Button>
+          <Button type="submit" form="account-form">{t('Salvar')}</Button>
         </>
       }
     >
@@ -108,27 +109,27 @@ function AccountModal({ open, onClose, account }: { open: boolean; onClose: () =
             if (!watch('name') || watch('name') === prev?.name) setValue('name', b.name);
           }}
         />
-        <Field label="Nome" error={formState.errors.name?.message}>{(p) => <Input {...p} {...register('name')} placeholder="Ex.: Nubank" data-autofocus />}</Field>
+        <Field label={t('Nome')} error={formState.errors.name?.message}>{(p) => <Input {...p} {...register('name')} placeholder={t('Ex.: Nubank')} data-autofocus />}</Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Tipo">
+          <Field label={t('Tipo')}>
             {(p) => (
               <Select {...p} {...register('type')}>
                 {Object.entries(ACCOUNT_TYPES).map(([k, v]) => (
-                  <option key={k} value={k}>{v.label}</option>
+                  <option key={k} value={k}>{t(v.label)}</option>
                 ))}
               </Select>
             )}
           </Field>
-          <Field label="Instituição">{(p) => <Input {...p} {...register('institution')} placeholder="Banco ou corretora" />}</Field>
+          <Field label={t('Instituição')}>{(p) => <Input {...p} {...register('institution')} placeholder={t('Banco ou corretora')} />}</Field>
         </div>
-        <Field label="Saldo inicial" hint="Saldo antes do primeiro lançamento registrado." error={formState.errors.initialBalance?.message}>
-          {(p) => <Input {...p} {...register('initialBalance')} inputMode="decimal" placeholder="0,00" />}
+        <Field label={t('Saldo inicial')} hint={t('Saldo antes do primeiro lançamento registrado.')} error={formState.errors.initialBalance?.message}>
+          {(p) => <Input {...p} {...register('initialBalance')} inputMode="decimal" placeholder={t('0,00')} />}
         </Field>
         <fieldset>
-          <legend className="mb-2 text-[13px] font-medium text-fg-muted">Cor</legend>
+          <legend className="mb-2 text-[13px] font-medium text-fg-muted">{t('Cor')}</legend>
           <div className="flex flex-wrap gap-2">
             {COLORS.map((c) => (
-              <button key={c} type="button" aria-label={`Cor ${c}`} aria-pressed={color === c} onClick={() => setValue('color', c)} className={cn('size-8 rounded-full transition-transform', color === c && 'scale-110 ring-2 ring-fg ring-offset-2 ring-offset-bg-elevated')} style={{ background: c }} />
+              <button key={c} type="button" aria-label={t('Cor {color}', { color: c })} aria-pressed={color === c} onClick={() => setValue('color', c)} className={cn('size-8 rounded-full transition-transform', color === c && 'scale-110 ring-2 ring-fg ring-offset-2 ring-offset-bg-elevated')} style={{ background: c }} />
             ))}
           </div>
         </fieldset>
@@ -166,10 +167,10 @@ export default function Accounts() {
     for (const a of accounts) {
       let running = balances.get(a.id) ?? 0;
       const deltas = new Map<string, number>();
-      for (const t of transactions) {
-        if (t.date < from || t.date > today() || t.status === 'scheduled') continue;
-        const e = accountEffect(t, a.id);
-        if (e) deltas.set(t.date, (deltas.get(t.date) ?? 0) + e);
+      for (const tx of transactions) {
+        if (tx.date < from || tx.date > today() || tx.status === 'scheduled') continue;
+        const e = accountEffect(tx, a.id);
+        if (e) deltas.set(tx.date, (deltas.get(tx.date) ?? 0) + e);
       }
       const series: number[] = [];
       for (let i = days.length - 1; i >= 0; i--) {
@@ -183,38 +184,38 @@ export default function Accounts() {
 
   const selectedAccount = accounts.find((a) => a.id === selected);
   const accountTxs = useMemo(
-    () => (selected ? transactions.filter((t) => t.accountId === selected || t.toAccountId === selected).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30) : []),
+    () => (selected ? transactions.filter((tx) => tx.accountId === selected || tx.toAccountId === selected).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30) : []),
     [selected, transactions],
   );
 
-  const hasTxs = (id: string) => transactions.some((t) => t.accountId === id || t.toAccountId === id);
+  const hasTxs = (id: string) => transactions.some((tx) => tx.accountId === id || tx.toAccountId === id);
 
   return (
     <div>
       <PageHeader
-        title="Contas"
-        description="Saldos, entradas, saídas e histórico de cada conta."
+        title={t('Contas')}
+        description={t('Saldos, entradas, saídas e histórico de cada conta.')}
         actions={
           <>
             <Button variant="secondary" leftIcon={<Repeat2 className="size-4" />} onClick={() => openTx({ type: 'transfer' })} disabled={active.length < 2}>
-              Transferir
+              {t('Transferir')}
             </Button>
             <Button leftIcon={<Plus className="size-4" />} onClick={openNew}>
-              Nova conta
+              {t('Nova conta')}
             </Button>
           </>
         }
       />
 
       <Card className="holo mb-6 p-5 sm:p-6">
-        <p className="text-sm text-fg-muted">Saldo consolidado</p>
+        <p className="text-sm text-fg-muted">{t('Saldo consolidado')}</p>
         <AnimatedNumber value={total} format={(v) => money(v)} className="tabular mt-1 block font-display text-3xl font-semibold tracking-tight sm:text-4xl" />
-        <p className="mt-1 text-xs text-fg-subtle">{active.length} contas ativas · contas de investimento não entram no saldo</p>
+        <p className="mt-1 text-xs text-fg-subtle">{active.length === 1 ? t('{n} conta ativa · contas de investimento não entram no saldo', { n: active.length }) : t('{n} contas ativas · contas de investimento não entram no saldo', { n: active.length })}</p>
       </Card>
 
       {active.length === 0 ? (
         <Card>
-          <EmptyState icon={<Landmark />} title="Nenhuma conta cadastrada" description="Adicione suas contas bancárias, carteira e poupança para acompanhar saldos." action={<Button onClick={() => setModal({ open: true })}>+ Adicionar conta</Button>} />
+          <EmptyState icon={<Landmark />} title={t('Nenhuma conta cadastrada')} description={t('Adicione suas contas bancárias, carteira e poupança para acompanhar saldos.')} action={<Button onClick={() => setModal({ open: true })}>{t('+ Adicionar conta')}</Button>} />
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -237,29 +238,29 @@ export default function Accounts() {
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{a.name}</p>
-                    <p className="truncate text-xs text-fg-subtle">{a.institution} · {ACCOUNT_TYPES[a.type].label}</p>
+                    <p className="truncate text-xs text-fg-subtle">{a.institution} · {t(ACCOUNT_TYPES[a.type].label)}</p>
                   </div>
                   <div onClick={(e) => e.stopPropagation()}>
                     <Dropdown
-                      label={`Ações para ${a.name}`}
-                      trigger={(p) => <Button variant="ghost" size="icon-sm" aria-label={`Ações para ${a.name}`} {...p}><MoreHorizontal className="size-4" /></Button>}
+                      label={t('Ações para {name}', { name: a.name })}
+                      trigger={(p) => <Button variant="ghost" size="icon-sm" aria-label={t('Ações para {name}', { name: a.name })} {...p}><MoreHorizontal className="size-4" /></Button>}
                       items={[
-                        { label: 'Editar', icon: <Pencil />, onSelect: () => setModal({ open: true, account: a }) },
-                        { label: 'Arquivar', icon: <Archive />, onSelect: () => { upsert('accounts', { ...a, archived: true }); toast.success('Conta arquivada'); } },
-                        { label: 'Excluir', icon: <Trash2 />, danger: true, onSelect: () => setConfirm(a) },
+                        { label: t('Editar'), icon: <Pencil />, onSelect: () => setModal({ open: true, account: a }) },
+                        { label: t('Arquivar'), icon: <Archive />, onSelect: () => { upsert('accounts', { ...a, archived: true }); toast.success(t('Conta arquivada')); } },
+                        { label: t('Excluir'), icon: <Trash2 />, danger: true, onSelect: () => setConfirm(a) },
                       ]}
                     />
                   </div>
                 </div>
                 <p className={cn('tabular mt-4 font-display text-2xl font-semibold tracking-tight', bal < 0 && 'text-danger')}>{money(bal)}</p>
-                <Sparkline data={histories.get(a.id) ?? []} color={a.color} height={40} className="mt-2" label={`Evolução do saldo de ${a.name} em 90 dias`} />
+                <Sparkline data={histories.get(a.id) ?? []} color={a.color} height={40} className="mt-2" label={t('Evolução do saldo de {name} em 90 dias', { name: a.name })} />
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                   <div className="rounded-lg bg-surface-2/70 px-2.5 py-2">
-                    <p className="text-fg-subtle">Entradas no mês</p>
+                    <p className="text-fg-subtle">{t('Entradas no mês')}</p>
                     <p className="tabular mt-0.5 font-semibold text-income">+{money(flows.inflow)}</p>
                   </div>
                   <div className="rounded-lg bg-surface-2/70 px-2.5 py-2">
-                    <p className="text-fg-subtle">Saídas no mês</p>
+                    <p className="text-fg-subtle">{t('Saídas no mês')}</p>
                     <p className="tabular mt-0.5 font-semibold">−{money(flows.outflow)}</p>
                   </div>
                 </div>
@@ -271,14 +272,14 @@ export default function Accounts() {
 
       {selectedAccount && (
         <Card className="mt-6">
-          <CardHeader title={`Histórico — ${selectedAccount.name}`} description="Últimas 30 movimentações" action={<Button size="sm" variant="ghost" onClick={() => setSelected(null)}>Fechar</Button>} />
+          <CardHeader title={t('Histórico — {name}', { name: selectedAccount.name })} description={t('Últimas 30 movimentações')} action={<Button size="sm" variant="ghost" onClick={() => setSelected(null)}>{t('Fechar')}</Button>} />
           <CardBody className="px-3">
             {accountTxs.length ? (
-              accountTxs.map((t) => (
-                <TransactionRow key={t.id} tx={t} category={t.categoryId ? lookups.category.get(t.categoryId) : undefined} account={t.accountId ? lookups.account.get(t.accountId) : undefined} toAccount={t.toAccountId ? lookups.account.get(t.toAccountId) : undefined} onClick={() => openTx({ type: t.type, editing: t })} />
+              accountTxs.map((tx) => (
+                <TransactionRow key={tx.id} tx={tx} category={tx.categoryId ? lookups.category.get(tx.categoryId) : undefined} account={tx.accountId ? lookups.account.get(tx.accountId) : undefined} toAccount={tx.toAccountId ? lookups.account.get(tx.toAccountId) : undefined} onClick={() => openTx({ type: tx.type, editing: tx })} />
               ))
             ) : (
-              <p className="py-6 text-center text-sm text-fg-subtle">Sem movimentações nesta conta.</p>
+              <p className="py-6 text-center text-sm text-fg-subtle">{t('Sem movimentações nesta conta.')}</p>
             )}
           </CardBody>
         </Card>
@@ -286,13 +287,13 @@ export default function Accounts() {
 
       {archived.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-3 text-sm font-medium text-fg-muted">Arquivadas</h2>
+          <h2 className="mb-3 text-sm font-medium text-fg-muted">{t('Arquivadas')}</h2>
           <div className="flex flex-wrap gap-2">
             {archived.map((a) => (
               <Badge key={a.id} className="gap-2 py-1 pr-1">
                 {a.name}
                 <button className="rounded-full px-2 py-0.5 text-primary hover:bg-primary-soft" onClick={() => upsert('accounts', { ...a, archived: false })}>
-                  Restaurar
+                  {t('Restaurar')}
                 </button>
               </Badge>
             ))}
@@ -304,12 +305,12 @@ export default function Accounts() {
       <ConfirmDialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
-        title="Excluir conta?"
-        description={confirm && hasTxs(confirm.id) ? 'Esta conta possui transações. Recomendamos arquivar para preservar o histórico. Se excluir, as transações continuarão existindo, mas sem conta vinculada.' : 'Esta ação não pode ser desfeita.'}
-        confirmLabel="Excluir conta"
+        title={t('Excluir conta?')}
+        description={confirm && hasTxs(confirm.id) ? t('Esta conta possui transações. Recomendamos arquivar para preservar o histórico. Se excluir, as transações continuarão existindo, mas sem conta vinculada.') : t('Esta ação não pode ser desfeita.')}
+        confirmLabel={t('Excluir conta')}
         onConfirm={() => {
           if (confirm) remove('accounts', confirm.id);
-          toast.success('Conta excluída');
+          toast.success(t('Conta excluída'));
         }}
       />
     </div>

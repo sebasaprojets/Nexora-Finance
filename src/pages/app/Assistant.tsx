@@ -11,9 +11,10 @@ import { toast } from '@/store/toast';
 import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { useMoney } from '@/hooks/useMoney';
 import { useAuth } from '@/store/auth';
-import { answer, SUGGESTIONS, type AssistantAnswer } from '@/lib/assistant';
+import { answer, suggestions, type AssistantAnswer } from '@/lib/assistant';
 import { uid } from '@/lib/id';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n';
 
 interface Message {
   id: string;
@@ -72,7 +73,7 @@ export default function Assistant() {
       recurrence: 'none',
     });
     setMessages((list) => list.map((x) => (x.id === m.id ? { ...x, entry: 'saved' } : x)));
-    toast.success(d.type === 'income' ? 'Receita registrada' : 'Despesa registrada', { description: `${money(d.amount, { ignoreHidden: true })} · ${d.description}` });
+    toast.success(d.type === 'income' ? t('Receita registrada') : t('Despesa registrada'), { description: `${money(d.amount, { ignoreHidden: true })} · ${d.description}` });
   };
 
   const editEntry = (m: Message) => {
@@ -106,12 +107,12 @@ export default function Assistant() {
           </span>
           <div>
             <h1 className="font-display text-xl font-semibold tracking-tight">Nexora AI</h1>
-            <p className="flex items-center gap-1 text-xs text-fg-subtle"><ShieldCheck className="size-3" aria-hidden /> Respostas calculadas com seus dados, no seu dispositivo</p>
+            <p className="flex items-center gap-1 text-xs text-fg-subtle"><ShieldCheck className="size-3" aria-hidden /> {t('Respostas calculadas com seus dados, no seu dispositivo')}</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <TourButton id="assistant" />
-          {messages.length > 0 && <Button variant="ghost" size="sm" leftIcon={<Trash2 className="size-3.5" />} onClick={() => setMessages([])}>Limpar</Button>}
+          {messages.length > 0 && <Button variant="ghost" size="sm" leftIcon={<Trash2 className="size-3.5" />} onClick={() => setMessages([])}>{t('Limpar')}</Button>}
         </div>
       </div>
 
@@ -119,10 +120,10 @@ export default function Assistant() {
         {messages.length === 0 && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card holo p-6 text-center sm:p-10">
             <Bot className="mx-auto size-10 text-primary" aria-hidden />
-            <h2 className="mt-3 font-display text-lg font-semibold">Olá, {user?.name.split(' ')[0]}! Como posso ajudar?</h2>
-            <p className="mx-auto mt-1 max-w-md text-sm text-fg-subtle">Pergunte sobre gastos, saldo, metas e faturas — ou registre conversando: “gastei 35 no mercado”, “recebi 5000 de salário”. Eu nunca invento números.</p>
+            <h2 className="mt-3 font-display text-lg font-semibold">{t('Olá, {name}! Como posso ajudar?', { name: user?.name.split(' ')[0] })}</h2>
+            <p className="mx-auto mt-1 max-w-md text-sm text-fg-subtle">{t('Pergunte sobre gastos, saldo, metas e faturas — ou registre conversando: “gastei 35 no mercado”, “recebi 5000 de salário”. Eu nunca invento números.')}</p>
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
-              {SUGGESTIONS.map((s) => (
+              {suggestions().map((s) => (
                 <button key={s} onClick={() => ask(s)} className="group flex items-center justify-between gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-left text-sm transition-colors hover:border-primary/50 hover:bg-surface-2">
                   {s}
                   <ArrowRight className="size-4 shrink-0 text-fg-subtle transition-transform group-hover:translate-x-0.5" aria-hidden />
@@ -155,13 +156,13 @@ export default function Assistant() {
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     {m.entry === 'pending' && (
                       <>
-                        <Button size="sm" leftIcon={<Check className="size-3.5" />} onClick={() => confirmEntry(m)}>Registrar</Button>
-                        <Button size="sm" variant="secondary" leftIcon={<Pencil className="size-3.5" />} onClick={() => editEntry(m)}>Editar antes</Button>
-                        <Button size="sm" variant="ghost" onClick={() => setMessages((l) => l.map((x) => (x.id === m.id ? { ...x, entry: 'cancelled' } : x)))}>Cancelar</Button>
+                        <Button size="sm" leftIcon={<Check className="size-3.5" />} onClick={() => confirmEntry(m)}>{t('Registrar')}</Button>
+                        <Button size="sm" variant="secondary" leftIcon={<Pencil className="size-3.5" />} onClick={() => editEntry(m)}>{t('Editar antes')}</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setMessages((l) => l.map((x) => (x.id === m.id ? { ...x, entry: 'cancelled' } : x)))}>{t('Cancelar')}</Button>
                       </>
                     )}
-                    {m.entry === 'saved' && <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success"><Check className="size-3.5" aria-hidden /> Registrado</span>}
-                    {m.entry === 'cancelled' && <span className="text-xs text-fg-subtle">Não registrado</span>}
+                    {m.entry === 'saved' && <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success"><Check className="size-3.5" aria-hidden /> {t('Registrado')}</span>}
+                    {m.entry === 'cancelled' && <span className="text-xs text-fg-subtle">{t('Não registrado')}</span>}
                   </div>
                 )}
                 {(m.answer?.links?.length || m.answer?.followUps?.length) && (
@@ -181,7 +182,7 @@ export default function Assistant() {
           ))}
         </AnimatePresence>
         {thinking && (
-          <div className="flex gap-3" role="status" aria-label="Nexora AI está pensando">
+          <div className="flex gap-3" role="status" aria-label={t('Nexora AI está pensando')}>
             <span className="grid size-8 place-items-center rounded-full bg-primary-soft text-primary"><Sparkles className="size-4" aria-hidden /></span>
             <div className="card flex items-center gap-1 rounded-2xl rounded-tl-md px-4 py-3">
               {[0, 1, 2].map((i) => <motion.span key={i} className="size-1.5 rounded-full bg-fg-subtle" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }} />)}
@@ -199,7 +200,7 @@ export default function Assistant() {
         }}
         className="glass sticky bottom-[calc(76px+env(safe-area-inset-bottom))] mt-6 flex items-end gap-2 rounded-2xl p-2 shadow-lg lg:bottom-4"
       >
-        <label htmlFor="ai-input" className="sr-only">Pergunte à Nexora AI</label>
+        <label htmlFor="ai-input" className="sr-only">{t('Pergunte à Nexora AI')}</label>
         <textarea
           id="ai-input"
           ref={inputRef}
@@ -213,10 +214,10 @@ export default function Assistant() {
               ask(input);
             }
           }}
-          placeholder="Pergunte ou registre: “gastei 35 no mercado”"
+          placeholder={t('Pergunte ou registre: “gastei 35 no mercado”')}
           className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-fg-subtle"
         />
-        <Button type="submit" size="icon" aria-label="Enviar pergunta" disabled={!input.trim() || thinking}>
+        <Button type="submit" size="icon" aria-label={t('Enviar pergunta')} disabled={!input.trim() || thinking}>
           <ArrowUp className="size-4" />
         </Button>
       </form>

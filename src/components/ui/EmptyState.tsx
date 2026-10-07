@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { t } from '@/i18n';
 import { AlertTriangle, WifiOff } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Button } from './Button';
@@ -19,17 +20,17 @@ export function EmptyState({ icon, title, description, action, className }: { ic
   );
 }
 
-export function ErrorState({ title = 'Algo deu errado', description, onRetry }: { title?: string; description?: string; onRetry?: () => void }) {
+export function ErrorState({ title, description, onRetry }: { title?: string; description?: string; onRetry?: () => void }) {
   return (
     <EmptyState
       icon={<AlertTriangle />}
-      title={title}
-      description={description ?? 'Não foi possível carregar estas informações. Tente novamente.'}
-      action={onRetry && <Button variant="secondary" onClick={onRetry}>Tentar novamente</Button>}
+      title={title ?? t('Algo deu errado')}
+      description={description ?? t('Não foi possível carregar estas informações. Tente novamente.')}
+      action={onRetry && <Button variant="secondary" onClick={onRetry}>{t('Tentar novamente')}</Button>}
     />
   );
 }
 
 export function OfflineState() {
-  return <EmptyState icon={<WifiOff />} title="Você está offline" description="Mostrando os dados salvos neste dispositivo. As alterações serão mantidas localmente." />;
+  return <EmptyState icon={<WifiOff />} title={t('Você está offline')} description={t('Mostrando os dados salvos neste dispositivo. As alterações serão mantidas localmente.')} />;
 }

@@ -23,6 +23,7 @@ import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import { cn } from '@/lib/cn';
 import type { Category, CategoryKind } from '@/types';
+import { t } from '@/i18n';
 
 const COLORS = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948', '#0891b2', '#898781'];
 
@@ -56,11 +57,11 @@ function CategoryModal({ open, onClose, category, kind }: { open: boolean; onClo
     <Modal
       open={open}
       onClose={onClose}
-      title={category ? 'Editar categoria' : 'Nova categoria'}
+      title={category ? t('Editar categoria') : t('Nova categoria')}
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-          <Button type="submit" form="cat-form">Salvar</Button>
+          <Button variant="ghost" onClick={onClose}>{t('Cancelar')}</Button>
+          <Button type="submit" form="cat-form">{t('Salvar')}</Button>
         </>
       }
     >
@@ -79,41 +80,41 @@ function CategoryModal({ open, onClose, category, kind }: { open: boolean; onClo
             monthlyLimit: v.kind === 'expense' && v.monthlyLimit.trim() ? parseMoneyInput(v.monthlyLimit) : undefined,
             system: category?.system,
           });
-          toast.success(category ? 'Categoria atualizada' : 'Categoria criada');
+          toast.success(category ? t('Categoria atualizada') : t('Categoria criada'));
           onClose();
         })}
       >
         <div className="flex items-center gap-3">
           <CategoryIcon icon={icon} color={color} size="lg" />
-          <Field label="Nome" error={formState.errors.name?.message} className="flex-1">{(p) => <Input {...p} {...register('name')} data-autofocus placeholder="Ex.: Pets" />}</Field>
+          <Field label={t('Nome')} error={formState.errors.name?.message} className="flex-1">{(p) => <Input {...p} {...register('name')} data-autofocus placeholder={t('Ex.: Pets')} />}</Field>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Tipo">
+          <Field label={t('Tipo')}>
             {(p) => (
               <Select {...p} {...register('kind')} disabled={!!category}>
-                <option value="expense">Despesa</option>
-                <option value="income">Receita</option>
+                <option value="expense">{t('Despesa')}</option>
+                <option value="income">{t('Receita')}</option>
               </Select>
             )}
           </Field>
           {k === 'expense' && (
-            <Field label="Natureza" hint="Usada na DRE (custos fixos × despesas variáveis)">
+            <Field label={t('Natureza')} hint={t('Usada na DRE (custos fixos × despesas variáveis)')}>
               {(p) => (
                 <Select {...p} {...register('nature')}>
-                  <option value="variable">Variável</option>
-                  <option value="fixed">Fixa</option>
+                  <option value="variable">{t('Variável')}</option>
+                  <option value="fixed">{t('Fixa')}</option>
                 </Select>
               )}
             </Field>
           )}
         </div>
         {k === 'expense' && (
-          <Field label="Limite mensal (opcional)" error={formState.errors.monthlyLimit?.message}>
-            {(p) => <Input {...p} {...register('monthlyLimit')} inputMode="decimal" placeholder="R$ 0,00" />}
+          <Field label={t('Limite mensal (opcional)')} error={formState.errors.monthlyLimit?.message}>
+            {(p) => <Input {...p} {...register('monthlyLimit')} inputMode="decimal" placeholder={formatMoney(0)} />}
           </Field>
         )}
         <fieldset>
-          <legend className="mb-2 text-[13px] font-medium text-fg-muted">Ícone</legend>
+          <legend className="mb-2 text-[13px] font-medium text-fg-muted">{t('Ícone')}</legend>
           <div className="grid grid-cols-8 gap-1.5 sm:grid-cols-10">
             {Object.entries(ICONS)
               .filter(([n]) => n !== 'circle-help')
@@ -125,10 +126,10 @@ function CategoryModal({ open, onClose, category, kind }: { open: boolean; onClo
           </div>
         </fieldset>
         <fieldset>
-          <legend className="mb-2 text-[13px] font-medium text-fg-muted">Cor</legend>
+          <legend className="mb-2 text-[13px] font-medium text-fg-muted">{t('Cor')}</legend>
           <div className="flex flex-wrap gap-2">
             {COLORS.map((c) => (
-              <button key={c} type="button" aria-label={`Cor ${c}`} aria-pressed={color === c} onClick={() => setValue('color', c)} className={cn('size-7 rounded-full', color === c && 'ring-2 ring-fg ring-offset-2 ring-offset-bg-elevated')} style={{ background: c }} />
+              <button key={c} type="button" aria-label={t('Cor {cor}', { cor: c })} aria-pressed={color === c} onClick={() => setValue('color', c)} className={cn('size-7 rounded-full', color === c && 'ring-2 ring-fg ring-offset-2 ring-offset-bg-elevated')} style={{ background: c }} />
             ))}
           </div>
         </fieldset>
@@ -154,7 +155,7 @@ export default function Categories() {
   }, [transactions, categories]);
   const counts = useMemo(() => {
     const m = new Map<string, number>();
-    for (const t of transactions) if (t.categoryId) m.set(t.categoryId, (m.get(t.categoryId) ?? 0) + 1);
+    for (const tx of transactions) if (tx.categoryId) m.set(tx.categoryId, (m.get(tx.categoryId) ?? 0) + 1);
     return m;
   }, [transactions]);
 
@@ -162,14 +163,14 @@ export default function Categories() {
 
   return (
     <div>
-      <PageHeader title="Categorias" description="Personalize nome, ícone, cor, tipo e limite mensal." actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Nova categoria</Button>} />
+      <PageHeader title={t('Categorias')} description={t('Personalize nome, ícone, cor, tipo e limite mensal.')} actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>{t('Nova categoria')}</Button>} />
       <Tabs
         value={tab}
         onChange={setTab}
         className="mb-4"
         tabs={[
-          { value: 'expense', label: 'Despesas', count: categories.filter((c) => c.kind === 'expense').length },
-          { value: 'income', label: 'Receitas', count: categories.filter((c) => c.kind === 'income').length },
+          { value: 'expense', label: t('Despesas'), count: categories.filter((c) => c.kind === 'expense').length },
+          { value: 'income', label: t('Receitas'), count: categories.filter((c) => c.kind === 'income').length },
         ]}
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -181,23 +182,23 @@ export default function Categories() {
               <div className="flex items-center gap-3">
                 <CategoryIcon icon={c.icon} color={c.color} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{c.name}</p>
+                  <p className="truncate font-medium">{t(c.name)}</p>
                   <p className="text-xs text-fg-subtle">
-                    <Link to={`/app/transacoes?categoria=${c.id}`} className="hover:text-primary">{counts.get(c.id) ?? 0} transações</Link>
-                    {c.kind === 'expense' && ` · ${c.nature === 'fixed' ? 'Fixa' : 'Variável'}`}
+                    <Link to={`/app/transacoes?categoria=${c.id}`} className="hover:text-primary">{t((counts.get(c.id) ?? 0) === 1 ? '{n} transação' : '{n} transações', { n: counts.get(c.id) ?? 0 })}</Link>
+                    {c.kind === 'expense' && ` · ${c.nature === 'fixed' ? t('Fixa') : t('Variável')}`}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon-sm" aria-label={`Editar ${c.name}`} onClick={() => setModal({ open: true, category: c })}><Pencil className="size-4" /></Button>
-                <Button variant="ghost" size="icon-sm" aria-label={`Excluir ${c.name}`} onClick={() => setConfirm(c)}><Trash2 className="size-4" /></Button>
+                <Button variant="ghost" size="icon-sm" aria-label={t('Editar {nome}', { nome: t(c.name) })} onClick={() => setModal({ open: true, category: c })}><Pencil className="size-4" /></Button>
+                <Button variant="ghost" size="icon-sm" aria-label={t('Excluir {nome}', { nome: t(c.name) })} onClick={() => setConfirm(c)}><Trash2 className="size-4" /></Button>
               </div>
               <div className="mt-3 flex items-baseline justify-between text-sm">
-                <span className="text-fg-subtle">Este mês</span>
+                <span className="text-fg-subtle">{t('Este mês')}</span>
                 <span className="tabular font-semibold">{money(spent)}{c.monthlyLimit ? <span className="font-normal text-fg-subtle"> / {money(c.monthlyLimit, { compact: true })}</span> : null}</span>
               </div>
               {c.monthlyLimit ? (
-                <Progress value={pct} className="mt-2" size="sm" color={pct >= 100 ? 'var(--danger)' : pct >= 90 ? 'var(--series-2)' : pct >= 70 ? 'var(--warning)' : c.color} label={`Uso do limite de ${c.name}`} />
+                <Progress value={pct} className="mt-2" size="sm" color={pct >= 100 ? 'var(--danger)' : pct >= 90 ? 'var(--series-2)' : pct >= 70 ? 'var(--warning)' : c.color} label={t('Uso do limite de {nome}', { nome: t(c.name) })} />
               ) : (
-                c.kind === 'expense' && <Badge className="mt-2">Sem limite definido</Badge>
+                c.kind === 'expense' && <Badge className="mt-2">{t('Sem limite definido')}</Badge>
               )}
             </Card>
           );
@@ -207,14 +208,14 @@ export default function Categories() {
       <ConfirmDialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
-        title={`Excluir “${confirm?.name}”?`}
-        description={confirm && counts.get(confirm.id) ? `${counts.get(confirm.id)} transações usam esta categoria e ficarão “Sem categoria”.` : 'Esta ação não pode ser desfeita.'}
-        confirmLabel="Excluir"
+        title={t('Excluir “{nome}”?', { nome: confirm ? t(confirm.name) : '' })}
+        description={confirm && counts.get(confirm.id) ? t(counts.get(confirm.id) === 1 ? '{n} transação usa esta categoria e ficará “Sem categoria”.' : '{n} transações usam esta categoria e ficarão “Sem categoria”.', { n: counts.get(confirm.id) }) : t('Esta ação não pode ser desfeita.')}
+        confirmLabel={t('Excluir')}
         onConfirm={() => {
           if (!confirm) return;
           remove('categories', confirm.id);
           remove('budgets', useFinance.getState().budgets.find((b) => b.categoryId === confirm.id)?.id ?? '');
-          toast.success('Categoria excluída');
+          toast.success(t('Categoria excluída'));
         }}
       />
     </div>

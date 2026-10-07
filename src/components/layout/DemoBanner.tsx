@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { t } from '@/i18n';
 import { Sparkles } from 'lucide-react';
 import { useAuth } from '@/store/auth';
 
@@ -13,8 +14,8 @@ export function DemoBanner() {
       <span className="flex items-center gap-1.5">
         <Sparkles className="size-3.5 shrink-0 text-primary" aria-hidden />
         <span>
-          <strong className="text-fg">Modo demonstração</strong>
-          <span className="hidden sm:inline"> — dados fictícios para você explorar a Nexora.</span>
+          <strong className="text-fg">{t('Modo demonstração')}</strong>
+          <span className="hidden sm:inline"> — {t('dados fictícios para você explorar a Nexora.')}</span>
         </span>
       </span>
       <button
@@ -26,7 +27,7 @@ export function DemoBanner() {
         }}
         className="shrink-0 rounded-full bg-primary px-3 py-1 font-semibold text-primary-fg hover:bg-primary-hover"
       >
-        Criar minha conta
+        {t('Criar minha conta')}
       </button>
     </div>
   );

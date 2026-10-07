@@ -1,5 +1,6 @@
 import { formatDate, today } from './dates';
 import { formatMoney, formatPercent } from './format';
+import { currentLang, t } from '@/i18n';
 
 /**
  * Exportação de tabelas em CSV, Excel (.xlsx) e PDF.
@@ -31,7 +32,7 @@ function display(v: ExportRow[string], type: ColumnType = 'text'): string {
   if (type === 'money' && typeof v === 'number') return formatMoney(v);
   if (type === 'percent' && typeof v === 'number') return formatPercent(v);
   if (type === 'date' && typeof v === 'string') return formatDate(v);
-  if (type === 'number' && typeof v === 'number') return String(v).replace('.', ',');
+  if (type === 'number' && typeof v === 'number') return currentLang() === 'en' ? String(v) : String(v).replace('.', ',');
   return String(v);
 }
 
@@ -63,11 +64,11 @@ function csvSafe(s: string) {
 }
 
 /** CSV com `;` e BOM — abre corretamente no Excel em pt-BR. Números em formato brasileiro. */
-export function exportCSV(t: ExportTable) {
-  const lines = [t.columns.map((c) => csvSafe(c.header)).join(';')];
-  for (const r of t.rows) {
+export function exportCSV(tbl: ExportTable) {
+  const lines = [tbl.columns.map((c) => csvSafe(c.header)).join(';')];
+  for (const r of tbl.rows) {
     lines.push(
-      t.columns
+      tbl.columns
         .map((c) => {
           const v = r[c.key];
           if (typeof v === 'number' && (c.type === 'money' || c.type === 'number' || c.type === 'percent')) return v.toFixed(2).replace('.', ',');
@@ -76,20 +77,20 @@ export function exportCSV(t: ExportTable) {
         .join(';'),
     );
   }
-  if (t.summary?.length) {
+  if (tbl.summary?.length) {
     lines.push('');
-    for (const s of t.summary) lines.push(`${csvSafe(s.label)};${csvSafe(s.value)}`);
+    for (const s of tbl.summary) lines.push(`${csvSafe(s.label)};${csvSafe(s.value)}`);
   }
-  download(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), fileName(t.title, 'csv'));
+  download(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), fileName(tbl.title, 'csv'));
 }
 
 export async function exportExcel(tables: ExportTable | ExportTable[]) {
   const list = Array.isArray(tables) ? tables : [tables];
   const { default: writeXlsxFile } = await import('write-excel-file/browser');
-  const sheets = list.map((t) => {
-    const header = t.columns.map((c) => ({ value: c.header, fontWeight: 'bold' as const, backgroundColor: '#EEF0F7' }));
-    const body = t.rows.map((r) =>
-      t.columns.map((c) => {
+  const sheets = list.map((tbl) => {
+    const header = tbl.columns.map((c) => ({ value: c.header, fontWeight: 'bold' as const, backgroundColor: '#EEF0F7' }));
+    const body = tbl.rows.map((r) =>
+      tbl.columns.map((c) => {
         const v = r[c.key];
         if (v === null || v === undefined || v === '') return null;
         if (typeof v === 'number') {
@@ -99,16 +100,16 @@ export async function exportExcel(tables: ExportTable | ExportTable[]) {
         }
         if (c.type === 'date' && typeof v === 'string') {
           const [y, m, d] = v.split('-').map(Number);
-          return { value: new Date(Date.UTC(y, m - 1, d)), type: Date, format: 'dd/mm/yyyy' };
+          return { value: new Date(Date.UTC(y, m - 1, d)), type: Date, format: currentLang() === 'en' ? 'mm/dd/yyyy' : 'dd/mm/yyyy' };
         }
         return { value: String(v), type: String };
       }),
     );
-    const summary = t.summary?.length ? [[], ...t.summary.map((s) => [{ value: s.label, fontWeight: 'bold' as const }, { value: s.value }])] : [];
+    const summary = tbl.summary?.length ? [[], ...tbl.summary.map((s) => [{ value: s.label, fontWeight: 'bold' as const }, { value: s.value }])] : [];
     return {
       data: [header, ...body, ...summary],
-      sheet: t.title.slice(0, 31).replace(/[\\/?*[\]:]/g, '-'),
-      columns: t.columns.map((c) => ({ width: c.width ?? (c.type === 'text' ? 28 : 16) })),
+      sheet: tbl.title.slice(0, 31).replace(/[\\/?*[\]:]/g, '-'),
+      columns: tbl.columns.map((c) => ({ width: c.width ?? (c.type === 'text' ? 28 : 16) })),
     };
   });
   // A tipagem da lib é bem estrita para objetos de célula; os dados acima seguem o formato documentado.
@@ -134,12 +135,12 @@ export async function exportPDF(tables: ExportTable | ExportTable[], docTitle?: 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(170, 176, 196);
-    doc.text(`${title} · gerado em ${formatDate(today())}`, 40, 46);
+    doc.text(t('{title} · gerado em {date}', { title, date: formatDate(today()) }), 40, 46);
   };
 
   header();
   let y = 92;
-  for (const t of list) {
+  for (const tbl of list) {
     if (y > 700) {
       doc.addPage();
       header();
@@ -148,31 +149,31 @@ export async function exportPDF(tables: ExportTable | ExportTable[], docTitle?: 
     doc.setTextColor(12, 15, 26);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text(t.title, 40, y);
-    if (t.subtitle) {
+    doc.text(tbl.title, 40, y);
+    if (tbl.subtitle) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(115, 122, 146);
-      doc.text(t.subtitle, 40, y + 14);
+      doc.text(tbl.subtitle, 40, y + 14);
     }
     autoTable(doc, {
-      startY: y + (t.subtitle ? 24 : 12),
-      head: [t.columns.map((c) => c.header)],
-      body: t.rows.map((r) => t.columns.map((c) => display(r[c.key], c.type))),
+      startY: y + (tbl.subtitle ? 24 : 12),
+      head: [tbl.columns.map((c) => c.header)],
+      body: tbl.rows.map((r) => tbl.columns.map((c) => display(r[c.key], c.type))),
       margin: { left: 40, right: 40, top: 80 },
       styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 5, textColor: [30, 34, 48], lineColor: [230, 233, 241], lineWidth: 0.5 },
       headStyles: { fillColor: [91, 76, 240], textColor: 255, fontStyle: 'bold' },
       alternateRowStyles: { fillColor: [247, 248, 252] },
-      columnStyles: Object.fromEntries(t.columns.map((c, i) => [i, { halign: c.type && c.type !== 'text' && c.type !== 'date' ? 'right' : 'left' }])),
+      columnStyles: Object.fromEntries(tbl.columns.map((c, i) => [i, { halign: c.type && c.type !== 'text' && c.type !== 'date' ? 'right' : 'left' }])),
       didDrawPage: (d) => {
         if (d.pageNumber > 1) header();
       },
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     y = (doc as any).lastAutoTable.finalY + 18;
-    if (t.summary?.length) {
+    if (tbl.summary?.length) {
       doc.setFontSize(9);
-      for (const s of t.summary) {
+      for (const s of tbl.summary) {
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(12, 15, 26);
         doc.text(s.label, 40, y);
@@ -188,8 +189,8 @@ export async function exportPDF(tables: ExportTable | ExportTable[], docTitle?: 
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 160);
-    doc.text(`Página ${i} de ${pages}`, W - 40, doc.internal.pageSize.getHeight() - 20, { align: 'right' });
-    doc.text('Relatório informativo. Não constitui recomendação financeira.', 40, doc.internal.pageSize.getHeight() - 20);
+    doc.text(t('Página {i} de {pages}', { i, pages }), W - 40, doc.internal.pageSize.getHeight() - 20, { align: 'right' });
+    doc.text(t('Relatório informativo. Não constitui recomendação financeira.'), 40, doc.internal.pageSize.getHeight() - 20);
   }
   doc.save(fileName(title, 'pdf'));
 }
@@ -199,7 +200,7 @@ export type ExportFormat = 'csv' | 'xlsx' | 'pdf';
 export async function exportTables(format: ExportFormat, tables: ExportTable[], title?: string) {
   if (format === 'csv') {
     // CSV não suporta múltiplas abas: concatena em um arquivo por tabela.
-    for (const t of tables) exportCSV(t);
+    for (const tbl of tables) exportCSV(tbl);
   } else if (format === 'xlsx') await exportExcel(tables);
   else await exportPDF(tables, title);
 }

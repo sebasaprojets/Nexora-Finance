@@ -17,6 +17,7 @@ import { scoreBand } from '@/lib/score';
 import { useAuth } from '@/store/auth';
 import { useFinance } from '@/store/finance';
 import { toast } from '@/store/toast';
+import { t } from '@/i18n';
 import type { AccountType, FinancialObjective } from '@/types';
 
 const OBJECTIVES: { value: FinancialObjective; label: string; icon: typeof Target; desc: string }[] = [
@@ -68,12 +69,13 @@ export default function Onboarding() {
 
   const diagnosis = useMemo(() => {
     const rate = inc > 0 ? ((inc - exp) / inc) * 100 : 0;
+    const nAccounts = Object.keys(accounts).length;
     const factors = [
-      { label: 'Capacidade de poupança', value: Math.max(0, Math.min(100, (rate / 30) * 100)), weight: 0.35, text: inc > 0 ? `Sobra ${Math.max(0, rate).toFixed(0)}% da sua renda` : 'Informe sua renda' },
-      { label: 'Equilíbrio do orçamento', value: inc >= exp && inc > 0 ? 100 : 0, weight: 0.15, text: exp <= inc ? 'Gastos dentro da renda' : 'Gastos acima da renda' },
-      { label: 'Organização', value: Object.keys(accounts).length ? 100 : 30, weight: 0.15, text: `${Object.keys(accounts).length} conta(s) mapeada(s)` },
-      { label: 'Dívidas', value: wantsDebtFree ? 40 : 80, weight: 0.2, text: wantsDebtFree ? 'Prioridade: quitar dívidas' : 'Sem dívidas declaradas como prioridade' },
-      { label: 'Planejamento', value: goals.length ? 100 : 30, weight: 0.15, text: goals.length ? `${goals.length} meta(s) definida(s)` : 'Nenhuma meta definida' },
+      { label: t('Capacidade de poupança'), value: Math.max(0, Math.min(100, (rate / 30) * 100)), weight: 0.35, text: inc > 0 ? t('Sobra {pct}% da sua renda', { pct: Math.max(0, rate).toFixed(0) }) : t('Informe sua renda') },
+      { label: t('Equilíbrio do orçamento'), value: inc >= exp && inc > 0 ? 100 : 0, weight: 0.15, text: exp <= inc ? t('Gastos dentro da renda') : t('Gastos acima da renda') },
+      { label: t('Organização'), value: nAccounts ? 100 : 30, weight: 0.15, text: t(nAccounts === 1 ? '{n} conta mapeada' : '{n} contas mapeadas', { n: nAccounts }) },
+      { label: t('Dívidas'), value: wantsDebtFree ? 40 : 80, weight: 0.2, text: wantsDebtFree ? t('Prioridade: quitar dívidas') : t('Sem dívidas declaradas como prioridade') },
+      { label: t('Planejamento'), value: goals.length ? 100 : 30, weight: 0.15, text: goals.length ? t(goals.length === 1 ? '{n} meta definida' : '{n} metas definidas', { n: goals.length }) : t('Nenhuma meta definida') },
     ];
     const score = Math.round(factors.reduce((s, f) => s + f.value * f.weight, 0) * 10);
     return { score, factors, rate, band: scoreBand(score), leftover: inc - exp };
@@ -92,17 +94,17 @@ export default function Onboarding() {
       const now = new Date().toISOString();
       for (const opt of ACCOUNT_OPTIONS) {
         if (accounts[opt.type] === undefined) continue;
-        finance.upsert('accounts', { id: uid('acc'), name: opt.label, institution: opt.type === 'cash' ? 'Dinheiro físico' : 'Meu banco', type: opt.type, initialBalance: parseMoneyInput(accounts[opt.type]) || 0, color: opt.color, createdAt: now });
+        finance.upsert('accounts', { id: uid('acc'), name: t(opt.label), institution: opt.type === 'cash' ? t('Dinheiro físico') : t('Meu banco'), type: opt.type, initialBalance: parseMoneyInput(accounts[opt.type]) || 0, color: opt.color, createdAt: now });
       }
       for (const g of goals) {
         const o = GOAL_OPTIONS.find((x) => x.name === g)!;
         const target = g === 'Reserva de emergência' && exp > 0 ? Math.round(exp * 6) : 10000;
-        finance.upsert('goals', { id: uid('goal'), name: g, target, deadline: addMonths(today(), 12), icon: o.icon, color: o.color, initialAmount: 0, contributions: [], createdAt: now });
+        finance.upsert('goals', { id: uid('goal'), name: t(g), target, deadline: addMonths(today(), 12), icon: o.icon, color: o.color, initialAmount: 0, contributions: [], createdAt: now });
       }
     }
     finance.setOnboarding({ objective: objectives[0], objectives, monthlyIncome: inc, monthlyExpenses: exp, accountsCount: Object.keys(accounts).length, cardsCount: cards, goals, completedAt: new Date().toISOString() });
     updateUser({ onboarded: true });
-    toast.success('Tudo pronto!', { description: withDemo ? 'Carregamos dados de exemplo para você explorar.' : 'Sua Nexora está configurada.' });
+    toast.success(t('Tudo pronto!'), { description: withDemo ? t('Carregamos dados de exemplo para você explorar.') : t('Sua Nexora está configurada.') });
     navigate('/app', { replace: true });
   };
 
@@ -113,10 +115,10 @@ export default function Onboarding() {
         <div className="flex items-center justify-between">
           <Logo />
           <span className="text-xs text-fg-subtle">
-            Etapa {step + 1} de {STEPS.length} · {STEPS[step]}
+            {t('Etapa {n} de {total}', { n: step + 1, total: STEPS.length })} · {t(STEPS[step])}
           </span>
         </div>
-        <Progress value={((step + 1) / STEPS.length) * 100} className="mt-5" size="sm" label="Progresso do onboarding" />
+        <Progress value={((step + 1) / STEPS.length) * 100} className="mt-5" size="sm" label={t('Progresso do onboarding')} />
 
         <div className="flex flex-1 flex-col justify-center py-10">
           <AnimatePresence mode="wait" custom={dir}>
@@ -131,9 +133,9 @@ export default function Onboarding() {
               {step === 0 && (
                 <section aria-labelledby="ob-0">
                   <h1 id="ob-0" className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-                    Olá, {user?.name.split(' ')[0]}! Quais são seus objetivos financeiros?
+                    {t('Olá, {name}! Quais são seus objetivos financeiros?', { name: user?.name.split(' ')[0] })}
                   </h1>
-                  <p className="mt-2 text-sm text-fg-subtle">Selecione uma ou mais opções — vamos personalizar a Nexora para você.</p>
+                  <p className="mt-2 text-sm text-fg-subtle">{t('Selecione uma ou mais opções — vamos personalizar a Nexora para você.')}</p>
                   <div role="group" aria-labelledby="ob-0" className="mt-8 grid gap-3 sm:grid-cols-2">
                     {OBJECTIVES.map((o) => (
                       <button
@@ -150,8 +152,8 @@ export default function Onboarding() {
                           <o.icon className="size-5" aria-hidden />
                         </span>
                         <span className="min-w-0">
-                          <span className="block text-sm font-medium">{o.label}</span>
-                          <span className="block text-xs text-fg-subtle">{o.desc}</span>
+                          <span className="block text-sm font-medium">{t(o.label)}</span>
+                          <span className="block text-xs text-fg-subtle">{t(o.desc)}</span>
                         </span>
                         <span aria-hidden className={cn('ml-auto grid size-5 shrink-0 place-items-center rounded-md border transition-colors', objectives.includes(o.value) ? 'border-primary bg-primary text-primary-fg' : 'border-border-strong')}>
                           {objectives.includes(o.value) && <Check className="size-3.5" />}
@@ -161,7 +163,7 @@ export default function Onboarding() {
                   </div>
                 {objectives.length > 0 && (
                     <p className="mt-4 text-sm text-fg-muted" aria-live="polite">
-                      {objectives.length} {objectives.length === 1 ? 'objetivo selecionado' : 'objetivos selecionados'}
+                      {t(objectives.length === 1 ? '{n} objetivo selecionado' : '{n} objetivos selecionados', { n: objectives.length })}
                     </p>
                   )}
                 </section>
@@ -169,21 +171,21 @@ export default function Onboarding() {
 
               {step === 1 && (
                 <section aria-labelledby="ob-1">
-                  <h1 id="ob-1" className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Quanto entra e quanto sai por mês?</h1>
-                  <p className="mt-2 text-sm text-fg-subtle">Uma estimativa já basta. Você poderá ajustar depois.</p>
+                  <h1 id="ob-1" className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{t('Quanto entra e quanto sai por mês?')}</h1>
+                  <p className="mt-2 text-sm text-fg-subtle">{t('Uma estimativa já basta. Você poderá ajustar depois.')}</p>
                   <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                    <Field label="Renda mensal" hint="Salário, freelas e outras entradas">
+                    <Field label={t('Renda mensal')} hint={t('Salário, freelas e outras entradas')}>
                       {(p) => <Input {...p} inputMode="decimal" value={income} onChange={(e) => setIncome(e.target.value)} placeholder="R$ 0,00" className="h-14 text-lg" data-autofocus />}
                     </Field>
-                    <Field label="Gastos médios" hint="Quanto você costuma gastar no mês">
+                    <Field label={t('Gastos médios')} hint={t('Quanto você costuma gastar no mês')}>
                       {(p) => <Input {...p} inputMode="decimal" value={expenses} onChange={(e) => setExpenses(e.target.value)} placeholder="R$ 0,00" className="h-14 text-lg" />}
                     </Field>
                   </div>
                   {inc > 0 && expenses !== '' && (
                     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={cn('mt-5 rounded-xl px-4 py-3 text-sm', diagnosis.leftover >= 0 ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger')}>
                       {diagnosis.leftover >= 0
-                        ? `Sobram ${formatMoney(diagnosis.leftover)} por mês (${diagnosis.rate.toFixed(0)}% da renda).`
-                        : `Faltam ${formatMoney(-diagnosis.leftover)} por mês. Vamos te ajudar a equilibrar.`}
+                        ? t('Sobram {valor} por mês ({pct}% da renda).', { valor: formatMoney(diagnosis.leftover), pct: diagnosis.rate.toFixed(0) })
+                        : t('Faltam {valor} por mês. Vamos te ajudar a equilibrar.', { valor: formatMoney(-diagnosis.leftover) })}
                     </motion.p>
                   )}
                 </section>
@@ -191,8 +193,8 @@ export default function Onboarding() {
 
               {step === 2 && (
                 <section aria-labelledby="ob-2">
-                  <h1 id="ob-2" className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Quais contas você usa?</h1>
-                  <p className="mt-2 text-sm text-fg-subtle">Selecione e informe o saldo atual (opcional).</p>
+                  <h1 id="ob-2" className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{t('Quais contas você usa?')}</h1>
+                  <p className="mt-2 text-sm text-fg-subtle">{t('Selecione e informe o saldo atual (opcional).')}</p>
                   <div className="mt-8 space-y-3">
                     {ACCOUNT_OPTIONS.map((o) => {
                       const on = accounts[o.type] !== undefined;
@@ -213,14 +215,14 @@ export default function Onboarding() {
                             <span className="grid size-10 place-items-center rounded-xl" style={{ background: `color-mix(in oklab, ${o.color} 18%, transparent)`, color: o.color }}>
                               <o.icon className="size-5" aria-hidden />
                             </span>
-                            <span className="text-sm font-medium">{o.label}</span>
+                            <span className="text-sm font-medium">{t(o.label)}</span>
                             {on && <Check className="ml-auto size-4 text-primary" aria-hidden />}
                           </button>
                           {on && (
                             <input
-                              aria-label={`Saldo de ${o.label}`}
+                              aria-label={t('Saldo de {conta}', { conta: t(o.label) })}
                               inputMode="decimal"
-                              placeholder="Saldo R$"
+                              placeholder={t('Saldo R$')}
                               value={accounts[o.type]}
                               onChange={(e) => setAccounts((a) => ({ ...a, [o.type]: e.target.value }))}
                               className="h-10 w-32 rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary"
@@ -234,14 +236,14 @@ export default function Onboarding() {
                     <span className="flex items-center gap-3 text-sm font-medium">
                       <CreditCard className="size-5 text-fg-muted" aria-hidden />
                       <span>
-                        Cartões de crédito
-                        <span className="block text-xs font-normal text-fg-subtle">Opcional — deixe em 0 para pular</span>
+                        {t('Cartões de crédito')}
+                        <span className="block text-xs font-normal text-fg-subtle">{t('Opcional — deixe em 0 para pular')}</span>
                       </span>
                     </span>
                     <div className="flex items-center gap-2">
-                      <Button size="icon-sm" variant="secondary" onClick={() => setCards((c) => Math.max(0, c - 1))} aria-label="Menos cartões">−</Button>
+                      <Button size="icon-sm" variant="secondary" onClick={() => setCards((c) => Math.max(0, c - 1))} aria-label={t('Menos cartões')}>−</Button>
                       <span className="tabular w-6 text-center font-semibold" aria-live="polite">{cards}</span>
-                      <Button size="icon-sm" variant="secondary" onClick={() => setCards((c) => Math.min(10, c + 1))} aria-label="Mais cartões">+</Button>
+                      <Button size="icon-sm" variant="secondary" onClick={() => setCards((c) => Math.min(10, c + 1))} aria-label={t('Mais cartões')}>+</Button>
                     </div>
                   </div>
                 </section>
@@ -249,8 +251,8 @@ export default function Onboarding() {
 
               {step === 3 && (
                 <section aria-labelledby="ob-3">
-                  <h1 id="ob-3" className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">O que você quer conquistar?</h1>
-                  <p className="mt-2 text-sm text-fg-subtle">Escolha uma ou mais metas. Criaremos cada uma para você acompanhar.</p>
+                  <h1 id="ob-3" className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{t('O que você quer conquistar?')}</h1>
+                  <p className="mt-2 text-sm text-fg-subtle">{t('Escolha uma ou mais metas. Criaremos cada uma para você acompanhar.')}</p>
                   <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {GOAL_OPTIONS.map((g) => {
                       const on = goals.includes(g.name);
@@ -264,7 +266,7 @@ export default function Onboarding() {
                           <span className="grid size-10 place-items-center rounded-xl" style={{ background: `color-mix(in oklab, ${g.color} 18%, transparent)`, color: g.color }}>
                             <g.lucide className="size-5" aria-hidden />
                           </span>
-                          {g.name}
+                          {t(g.name)}
                         </button>
                       );
                     })}
@@ -274,13 +276,13 @@ export default function Onboarding() {
 
               {step === 4 && (
                 <section aria-labelledby="ob-4" className="text-center">
-                  <p className="text-xs font-medium tracking-wider text-primary uppercase">Diagnóstico financeiro</p>
-                  <h1 id="ob-4" className="mt-2 font-display text-2xl font-semibold tracking-tight sm:text-3xl">Seu ponto de partida</h1>
+                  <p className="text-xs font-medium tracking-wider text-primary uppercase">{t('Diagnóstico financeiro')}</p>
+                  <h1 id="ob-4" className="mt-2 font-display text-2xl font-semibold tracking-tight sm:text-3xl">{t('Seu ponto de partida')}</h1>
                   <div className="mt-6 flex justify-center">
                     <ScoreGauge score={diagnosis.score} label={diagnosis.band.label} />
                   </div>
                   <p className="mx-auto mt-2 max-w-md text-xs text-fg-subtle">
-                    Score inicial estimado a partir das suas respostas (0–1000). Ele será recalculado com seus dados reais. Não é score de crédito.
+                    {t('Score inicial estimado a partir das suas respostas (0–1000). Ele será recalculado com seus dados reais. Não é score de crédito.')}
                   </p>
                   <ul className="mx-auto mt-6 max-w-md space-y-2.5 text-left">
                     {diagnosis.factors.map((f) => (
@@ -296,10 +298,10 @@ export default function Onboarding() {
                   </ul>
                   <div className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
                     <Button size="lg" className="w-full sm:flex-1" onClick={() => finish(false)}>
-                      Começar do zero
+                      {t('Começar do zero')}
                     </Button>
                     <Button size="lg" variant="secondary" className="w-full sm:flex-1" onClick={() => finish(true)}>
-                      Explorar com dados de exemplo
+                      {t('Explorar com dados de exemplo')}
                     </Button>
                   </div>
                 </section>
@@ -311,10 +313,10 @@ export default function Onboarding() {
         {step < 4 && (
           <div className="flex items-center justify-between gap-3 pb-[env(safe-area-inset-bottom)]">
             <Button variant="ghost" onClick={() => go(-1)} disabled={step === 0} leftIcon={<ArrowLeft className="size-4" />}>
-              Voltar
+              {t('Voltar')}
             </Button>
             <Button onClick={() => go(1)} disabled={!canNext} rightIcon={<ArrowRight className="size-4" />}>
-              {step === 3 ? 'Ver diagnóstico' : 'Continuar'}
+              {step === 3 ? t('Ver diagnóstico') : t('Continuar')}
             </Button>
           </div>
         )}

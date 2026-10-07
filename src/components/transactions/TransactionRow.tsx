@@ -5,6 +5,7 @@ import { CategoryIcon } from '@/components/common/CategoryIcon';
 import { cn } from '@/lib/cn';
 import { formatRelativeDay } from '@/lib/dates';
 import { useMoney } from '@/hooks/useMoney';
+import { t } from '@/i18n';
 
 export const TransactionRow = memo(function TransactionRow({
   tx,
@@ -24,7 +25,7 @@ export const TransactionRow = memo(function TransactionRow({
   const money = useMoney();
   const isTransfer = tx.type === 'transfer';
   const source = card ? `${card.name}` : account?.name;
-  const sub = isTransfer ? `${account?.name ?? '—'} → ${toAccount?.name ?? (tx.toCardId ? 'Fatura do cartão' : 'Investimentos')}` : `${category?.name ?? 'Sem categoria'} · ${source ?? '—'}`;
+  const sub = isTransfer ? `${account?.name ?? '—'} → ${toAccount?.name ?? (tx.toCardId ? t('Fatura do cartão') : t('Investimentos'))}` : `${category ? t(category.name) : t('Sem categoria')} · ${source ?? '—'}`;
   return (
     <button type="button" onClick={onClick} className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-surface-2">
       {isTransfer ? (
@@ -38,8 +39,8 @@ export const TransactionRow = memo(function TransactionRow({
         <p className="flex items-center gap-1.5 truncate text-sm font-medium">
           <span className="truncate">{tx.description}</span>
           {tx.installment && <span className="shrink-0 text-xs text-fg-subtle">{tx.installment.current}/{tx.installment.total}</span>}
-          {tx.recurrence !== 'none' && <Repeat className="size-3 shrink-0 text-fg-subtle" aria-label="Recorrente" />}
-          {tx.attachment && <Paperclip className="size-3 shrink-0 text-fg-subtle" aria-label="Com anexo" />}
+          {tx.recurrence !== 'none' && <Repeat className="size-3 shrink-0 text-fg-subtle" aria-label={t('Recorrente')} />}
+          {tx.attachment && <Paperclip className="size-3 shrink-0 text-fg-subtle" aria-label={t('Com anexo')} />}
         </p>
         <p className="flex items-center gap-1 truncate text-xs text-fg-subtle">
           {card ? <CreditCard className="size-3 shrink-0" aria-hidden /> : !isTransfer && <Landmark className="size-3 shrink-0" aria-hidden />}
@@ -51,7 +52,7 @@ export const TransactionRow = memo(function TransactionRow({
           {tx.type === 'income' ? '+' : tx.type === 'expense' ? '−' : ''}
           {money(tx.amount)}
         </p>
-        <p className="text-xs text-fg-subtle">{formatRelativeDay(tx.date)}{tx.status !== 'paid' && ` · ${tx.status === 'pending' ? 'pendente' : 'agendado'}`}</p>
+        <p className="text-xs text-fg-subtle">{formatRelativeDay(tx.date)}{tx.status !== 'paid' && ` · ${tx.status === 'pending' ? t('pendente') : t('agendado')}`}</p>
       </div>
     </button>
   );

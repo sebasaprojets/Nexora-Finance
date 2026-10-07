@@ -34,6 +34,7 @@ import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import { cn } from '@/lib/cn';
 import type { CreditCard, Invoice, InvoiceStatus } from '@/types';
+import { t } from '@/i18n';
 
 export const INVOICE_STATUS: Record<InvoiceStatus, { label: string; tone: Tone; emoji: string }> = {
   paid: { label: 'Paga', tone: 'success', emoji: '🟢' },
@@ -79,8 +80,8 @@ function CardModal({ open, onClose, card }: { open: boolean; onClose: () => void
   });
   const preview: CreditCard = {
     id: 'preview',
-    name: watch('name') || 'Meu cartão',
-    institution: watch('institution') || 'Banco',
+    name: watch('name') || t('Meu cartão'),
+    institution: watch('institution') || t('Banco'),
     bank: watch('bank') || undefined,
     brand: watch('brand'),
     last4: watch('last4') || '0000',
@@ -94,12 +95,12 @@ function CardModal({ open, onClose, card }: { open: boolean; onClose: () => void
     <Modal
       open={open}
       onClose={onClose}
-      title={card ? 'Editar cartão' : 'Novo cartão'}
+      title={card ? t('Editar cartão') : t('Novo cartão')}
       size="lg"
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-          <Button type="submit" form="card-form">Salvar</Button>
+          <Button variant="ghost" onClick={onClose}>{t('Cancelar')}</Button>
+          <Button type="submit" form="card-form">{t('Salvar')}</Button>
         </>
       }
     >
@@ -122,18 +123,18 @@ function CardModal({ open, onClose, card }: { open: boolean; onClose: () => void
             theme: v.theme,
             createdAt: card?.createdAt ?? new Date().toISOString(),
           });
-          toast.success(card ? 'Cartão atualizado' : 'Cartão adicionado');
+          toast.success(card ? t('Cartão atualizado') : t('Cartão adicionado'));
           onClose();
         })}
       >
         <div className="space-y-3">
           <CreditCardVisual card={preview} compact />
-          <p className="text-xs text-fg-subtle">Nunca armazenamos o número completo, CVV ou senha do cartão.</p>
+          <p className="text-xs text-fg-subtle">{t('Nunca armazenamos o número completo, CVV ou senha do cartão.')}</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <BankPicker
-              label="Banco emissor"
+              label={t('Banco emissor')}
               value={watch('bank')}
               onChange={(b) => {
                 const prev = bankBySlug(watch('bank'));
@@ -144,9 +145,9 @@ function CardModal({ open, onClose, card }: { open: boolean; onClose: () => void
               }}
             />
           </div>
-          <Field label="Nome do cartão" error={formState.errors.name?.message}>{(p) => <Input {...p} {...register('name')} placeholder="Ex.: Nubank Ultravioleta" data-autofocus />}</Field>
-          <Field label="Banco" error={formState.errors.institution?.message}>{(p) => <Input {...p} {...register('institution')} placeholder="Ex.: Nubank" />}</Field>
-          <Field label="Bandeira">
+          <Field label={t('Nome do cartão')} error={formState.errors.name?.message}>{(p) => <Input {...p} {...register('name')} placeholder={t('Ex.: Nubank Ultravioleta')} data-autofocus />}</Field>
+          <Field label={t('Banco')} error={formState.errors.institution?.message}>{(p) => <Input {...p} {...register('institution')} placeholder={t('Ex.: Nubank')} />}</Field>
+          <Field label={t('Bandeira')}>
             {(p) => (
               <Select {...p} {...register('brand')}>
                 <option value="mastercard">Mastercard</option>
@@ -157,21 +158,21 @@ function CardModal({ open, onClose, card }: { open: boolean; onClose: () => void
               </Select>
             )}
           </Field>
-          <Field label="Últimos 4 dígitos" error={formState.errors.last4?.message}>{(p) => <Input {...p} {...register('last4')} inputMode="numeric" maxLength={4} placeholder="0000" />}</Field>
-          <Field label="Limite" error={formState.errors.limit?.message}>{(p) => <Input {...p} {...register('limit')} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
-          <Field label="Conta para pagamento">
+          <Field label={t('Últimos 4 dígitos')} error={formState.errors.last4?.message}>{(p) => <Input {...p} {...register('last4')} inputMode="numeric" maxLength={4} placeholder="0000" />}</Field>
+          <Field label={t('Limite')} error={formState.errors.limit?.message}>{(p) => <Input {...p} {...register('limit')} inputMode="decimal" placeholder={formatMoney(0)} />}</Field>
+          <Field label={t('Conta para pagamento')}>
             {(p) => (
               <Select {...p} {...register('paymentAccountId')}>
                 {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </Select>
             )}
           </Field>
-          <Field label="Dia do fechamento">{(p) => <Input {...p} type="number" min={1} max={31} {...register('closingDay', { valueAsNumber: true })} />}</Field>
-          <Field label="Dia do vencimento" error={formState.errors.dueDay?.message}>{(p) => <Input {...p} type="number" min={1} max={31} {...register('dueDay', { valueAsNumber: true })} />}</Field>
-          <Field label="Visual" className="sm:col-span-2">
+          <Field label={t('Dia do fechamento')}>{(p) => <Input {...p} type="number" min={1} max={31} {...register('closingDay', { valueAsNumber: true })} />}</Field>
+          <Field label={t('Dia do vencimento')} error={formState.errors.dueDay?.message}>{(p) => <Input {...p} type="number" min={1} max={31} {...register('dueDay', { valueAsNumber: true })} />}</Field>
+          <Field label={t('Visual')} className="sm:col-span-2">
             {(p) => (
               <Select {...p} {...register('theme')}>
-                {Object.entries(CARD_THEMES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                {Object.entries(CARD_THEMES).map(([k, v]) => <option key={k} value={k}>{t(v.label)}</option>)}
               </Select>
             )}
           </Field>
@@ -193,40 +194,40 @@ function PayInvoiceModal({ summary, invoice, onClose }: { summary: CardSummary |
     <Modal
       open={open}
       onClose={onClose}
-      title="Pagar fatura"
-      description={invoice && summary ? `${summary.card.name} · vencimento ${formatDate(invoice.dueDate)}` : undefined}
+      title={t('Pagar fatura')}
+      description={invoice && summary ? t('{cartao} · vencimento {data}', { cartao: summary.card.name, data: formatDate(invoice.dueDate) }) : undefined}
       size="sm"
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+          <Button variant="ghost" onClick={onClose}>{t('Cancelar')}</Button>
           <Button
             disabled={!(value > 0) || value > remaining + 0.01}
             onClick={() => {
               if (!summary || !invoice) return;
               payInvoice({ invoiceId: invoice.id, cardId: summary.card.id, accountId: account || summary.card.paymentAccountId || accounts[0]?.id, amount: value });
-              toast.success('Pagamento registrado', { description: `${formatMoney(value)} debitados da conta.` });
+              toast.success(t('Pagamento registrado'), { description: t('{valor} debitados da conta.', { valor: formatMoney(value) }) });
               setAmount('');
               onClose();
             }}
           >
-            Confirmar pagamento
+            {t('Confirmar pagamento')}
           </Button>
         </>
       }
     >
       <div className="space-y-4">
         <div className="rounded-xl bg-surface-2 p-4 text-center">
-          <p className="text-xs text-fg-subtle">Valor em aberto</p>
+          <p className="text-xs text-fg-subtle">{t('Valor em aberto')}</p>
           <p className="tabular font-display text-2xl font-semibold">{formatMoney(remaining)}</p>
         </div>
-        <Field label="Pagar com">
+        <Field label={t('Pagar com')}>
           {(p) => (
             <Select {...p} value={account || summary?.card.paymentAccountId || ''} onChange={(e) => setAccount(e.target.value)}>
               {accounts.filter((a) => !a.archived).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
             </Select>
           )}
         </Field>
-        <Field label="Valor" hint="Deixe em branco para pagar o total. Pagamentos parciais são permitidos.">
+        <Field label={t('Valor')} hint={t('Deixe em branco para pagar o total. Pagamentos parciais são permitidos.')}>
           {(p) => <Input {...p} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder={formatMoney(remaining).replace('R$ ', '')} />}
         </Field>
       </div>
@@ -263,22 +264,22 @@ export default function Cards() {
 
   return (
     <div>
-      <PageHeader title="Cartões" description="Limites, faturas, vencimentos e compras." actions={<><TourButton id={tourId} /><Button data-tour="card-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>Novo cartão</Button></>} />
+      <PageHeader title={t('Cartões')} description={t('Limites, faturas, vencimentos e compras.')} actions={<><TourButton id={tourId} /><Button data-tour="card-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Novo cartão')}</Button></>} />
 
       {cards.length === 0 ? (
         <Card>
-          <EmptyState icon={<CardIcon />} title="Nenhum cartão cadastrado" description="Adicione seus cartões de crédito para acompanhar faturas e limites." action={
+          <EmptyState icon={<CardIcon />} title={t('Nenhum cartão cadastrado')} description={t('Adicione seus cartões de crédito para acompanhar faturas e limites.')} action={
               <div className="flex flex-wrap justify-center gap-2">
-                <Button onClick={() => setModal({ open: true })}>+ Adicionar cartão</Button>
+                <Button onClick={() => setModal({ open: true })}>{t('+ Adicionar cartão')}</Button>
                 <Button
                   variant="ghost"
                   onClick={() => {
                     skipCardStep('card', true);
-                    toast.info('Tudo bem! Você pode adicionar um cartão quando quiser.');
+                    toast.info(t('Tudo bem! Você pode adicionar um cartão quando quiser.'));
                     navigate('/app');
                   }}
                 >
-                  Não tenho / agora não
+                  {t('Não tenho / agora não')}
                 </Button>
               </div>
             }
@@ -288,9 +289,9 @@ export default function Cards() {
         <>
           <div className="mb-6 grid grid-cols-3 gap-3">
             {[
-              { label: 'Limite total', value: totalLimit },
-              { label: 'Utilizado', value: totalUsed },
-              { label: 'Disponível', value: totalLimit - totalUsed },
+              { label: t('Limite total'), value: totalLimit },
+              { label: t('Utilizado'), value: totalUsed },
+              { label: t('Disponível'), value: totalLimit - totalUsed },
             ].map((k) => (
               <div key={k.label} className="card px-4 py-3">
                 <p className="text-xs text-fg-subtle">{k.label}</p>
@@ -310,10 +311,10 @@ export default function Cards() {
                 <CreditCardVisual card={s.card} />
                 <div className="px-2 pt-3 pb-1">
                   <div className="flex justify-between text-xs text-fg-subtle">
-                    <span>Usado {money(s.used, { compact: true })}</span>
-                    <span>Disponível {money(s.available, { compact: true })}</span>
+                    <span>{t('Usado {valor}', { valor: money(s.used, { compact: true }) })}</span>
+                    <span>{t('Disponível {valor}', { valor: money(s.available, { compact: true }) })}</span>
                   </div>
-                  <Progress value={s.usagePct} size="sm" className="mt-1.5" color={s.usagePct > 80 ? 'var(--danger)' : 'var(--primary)'} label={`Limite utilizado de ${s.card.name}`} />
+                  <Progress value={s.usagePct} size="sm" className="mt-1.5" color={s.usagePct > 80 ? 'var(--danger)' : 'var(--primary)'} label={t('Limite utilizado de {cartao}', { cartao: s.card.name })} />
                 </div>
               </button>
             ))}
@@ -327,11 +328,11 @@ export default function Cards() {
                   description={`${selected.card.brand.toUpperCase()} •••• ${selected.card.last4}`}
                   action={
                     <Dropdown
-                      label="Ações do cartão"
-                      trigger={(p) => <Button variant="ghost" size="icon-sm" aria-label="Ações do cartão" {...p}><MoreHorizontal className="size-4" /></Button>}
+                      label={t('Ações do cartão')}
+                      trigger={(p) => <Button variant="ghost" size="icon-sm" aria-label={t('Ações do cartão')} {...p}><MoreHorizontal className="size-4" /></Button>}
                       items={[
-                        { label: 'Editar cartão', icon: <Pencil />, onSelect: () => setModal({ open: true, card: selected.card }) },
-                        { label: 'Excluir cartão', icon: <Trash2 />, danger: true, onSelect: () => setConfirm(selected.card) },
+                        { label: t('Editar cartão'), icon: <Pencil />, onSelect: () => setModal({ open: true, card: selected.card }) },
+                        { label: t('Excluir cartão'), icon: <Trash2 />, danger: true, onSelect: () => setConfirm(selected.card) },
                       ]}
                     />
                   }
@@ -339,12 +340,12 @@ export default function Cards() {
                 <CardBody>
                   <dl className="grid grid-cols-2 gap-3 text-sm">
                     {[
-                      ['Limite', money(selected.card.limit)],
-                      ['Disponível', money(selected.available)],
-                      ['Fatura atual', money(selected.current?.total ?? 0)],
-                      ['Fechamento', `Dia ${selected.card.closingDay}`],
-                      ['Vencimento', `Dia ${selected.card.dueDay}`],
-                      ['Melhor dia de compra', `Dia ${selected.card.closingDay}`],
+                      [t('Limite'), money(selected.card.limit)],
+                      [t('Disponível'), money(selected.available)],
+                      [t('Fatura atual'), money(selected.current?.total ?? 0)],
+                      [t('Fechamento'), t('Dia {n}', { n: selected.card.closingDay })],
+                      [t('Vencimento'), t('Dia {n}', { n: selected.card.dueDay })],
+                      [t('Melhor dia de compra'), t('Dia {n}', { n: selected.card.closingDay })],
                     ].map(([k, v]) => (
                       <div key={k} className="rounded-xl bg-surface-2/70 p-3">
                         <dt className="text-xs text-fg-subtle">{k}</dt>
@@ -356,16 +357,16 @@ export default function Cards() {
                     <div className={cn('mt-4 rounded-xl border p-3 text-sm', pending.status === 'overdue' ? 'border-danger/30 bg-danger-soft' : 'border-border bg-surface-2/70')}>
                       <p className="flex items-center gap-2 font-medium">
                         <CalendarClock className="size-4" aria-hidden />
-                        Fatura de {formatMonthLong(pending.month).toLowerCase()} {pending.status === 'overdue' ? 'atrasada' : 'fechada'}
+                        {t(pending.status === 'overdue' ? 'Fatura de {mes} atrasada' : 'Fatura de {mes} fechada', { mes: formatMonthLong(pending.month).toLowerCase() })}
                       </p>
                       <p className="mt-1 text-fg-muted">
-                        {money(pending.total - pending.paid)} · vence em {formatDate(pending.dueDate)}
+                        {t('{valor} · vence em {data}', { valor: money(pending.total - pending.paid), data: formatDate(pending.dueDate) })}
                       </p>
                     </div>
                   )}
                   <div data-tour="card-actions" className="mt-4 grid grid-cols-2 gap-2">
                     <Button variant="secondary" leftIcon={<ShoppingCart className="size-4" />} onClick={() => openTx({ type: 'expense', defaults: { cardId: selected.card.id, method: 'credit' } })}>
-                      Adicionar compra
+                      {t('Adicionar compra')}
                     </Button>
                     <Button
                       leftIcon={<Wallet className="size-4" />}
@@ -375,7 +376,7 @@ export default function Cards() {
                         if (inv) setPay({ summary: selected, invoice: inv });
                       }}
                     >
-                      Pagar fatura
+                      {t('Pagar fatura')}
                     </Button>
                   </div>
                 </CardBody>
@@ -383,19 +384,19 @@ export default function Cards() {
 
               <Card data-tour="invoice" className="lg:col-span-2">
                 <CardHeader
-                  title="Fatura"
+                  title={t('Fatura')}
                   icon={<Receipt />}
-                  description={viewed ? `${formatDate(viewed.periodStart)} a ${formatDate(viewed.periodEnd)} · vence ${formatDate(viewed.dueDate)}` : 'Sem fatura neste período'}
+                  description={viewed ? t('{inicio} a {fim} · vence {data}', { inicio: formatDate(viewed.periodStart), fim: formatDate(viewed.periodEnd), data: formatDate(viewed.dueDate) }) : t('Sem fatura neste período')}
                   action={
                     <Segmented
                       size="sm"
-                      label="Fatura"
+                      label={t('Fatura')}
                       value={view}
                       onChange={setView}
                       options={[
-                        { value: 'previous', label: 'Anterior' },
-                        { value: 'current', label: 'Atual' },
-                        { value: 'next', label: 'Próxima' },
+                        { value: 'previous', label: t('Anterior') },
+                        { value: 'current', label: t('Atual') },
+                        { value: 'next', label: t('Próxima') },
                       ]}
                     />
                   }
@@ -406,53 +407,53 @@ export default function Cards() {
                       <div className="mb-4 flex flex-wrap items-center gap-3">
                         <p className="tabular font-display text-3xl font-semibold tracking-tight">{money(viewed.total)}</p>
                         <Badge tone={INVOICE_STATUS[viewed.status].tone}>
-                          <span aria-hidden>{INVOICE_STATUS[viewed.status].emoji}</span> {INVOICE_STATUS[viewed.status].label}
+                          <span aria-hidden>{INVOICE_STATUS[viewed.status].emoji}</span> {t(INVOICE_STATUS[viewed.status].label)}
                         </Badge>
-                        {viewed.paid > 0 && <span className="text-xs text-fg-subtle">Pago: {money(viewed.paid)}</span>}
+                        {viewed.paid > 0 && <span className="text-xs text-fg-subtle">{t('Pago: {valor}', { valor: money(viewed.paid) })}</span>}
                       </div>
                       {viewed.transactions.length ? (
                         <ul className="divide-y divide-border">
-                          {viewed.transactions.map((t) => {
-                            const cat = t.categoryId ? lookups.category.get(t.categoryId) : undefined;
+                          {viewed.transactions.map((tx) => {
+                            const cat = tx.categoryId ? lookups.category.get(tx.categoryId) : undefined;
                             return (
-                              <li key={t.id}>
-                                <button className="flex w-full items-center gap-3 py-2.5 text-left" onClick={() => openTx({ type: t.type, editing: t })}>
+                              <li key={tx.id}>
+                                <button className="flex w-full items-center gap-3 py-2.5 text-left" onClick={() => openTx({ type: tx.type, editing: tx })}>
                                   <CategoryIcon icon={cat?.icon} color={cat?.color} size="sm" />
                                   <div className="min-w-0 flex-1">
                                     <p className="truncate text-sm font-medium">
-                                      {t.description}
-                                      {t.installment && <span className="ml-1.5 text-xs text-fg-subtle">{t.installment.current}/{t.installment.total}</span>}
+                                      {tx.description}
+                                      {tx.installment && <span className="ml-1.5 text-xs text-fg-subtle">{tx.installment.current}/{tx.installment.total}</span>}
                                     </p>
-                                    <p className="text-xs text-fg-subtle">{formatDate(t.date)} · {cat?.name}</p>
+                                    <p className="text-xs text-fg-subtle">{formatDate(tx.date)} · {cat && t(cat.name)}</p>
                                   </div>
-                                  <span className="tabular text-sm font-semibold">{money(t.amount)}</span>
+                                  <span className="tabular text-sm font-semibold">{money(tx.amount)}</span>
                                 </button>
                               </li>
                             );
                           })}
                         </ul>
                       ) : (
-                        <p className="py-8 text-center text-sm text-fg-subtle">Nenhuma compra nesta fatura.</p>
+                        <p className="py-8 text-center text-sm text-fg-subtle">{t('Nenhuma compra nesta fatura.')}</p>
                       )}
                     </>
                   ) : (
-                    <p className="py-8 text-center text-sm text-fg-subtle">Não há fatura {view === 'previous' ? 'anterior' : 'futura'} registrada.</p>
+                    <p className="py-8 text-center text-sm text-fg-subtle">{view === 'previous' ? t('Não há fatura anterior registrada.') : t('Não há fatura futura registrada.')}</p>
                   )}
                 </CardBody>
               </Card>
 
               <Card className="lg:col-span-3">
-                <CardHeader title="Histórico de faturas" />
+                <CardHeader title={t('Histórico de faturas')} />
                 <CardBody className="overflow-x-auto">
                   <table className="w-full min-w-[560px] text-sm">
                     <thead>
                       <tr className="text-left text-xs text-fg-subtle">
-                        <th className="pb-2 font-medium">Mês</th>
-                        <th className="pb-2 font-medium">Fechamento</th>
-                        <th className="pb-2 font-medium">Vencimento</th>
-                        <th className="pb-2 text-right font-medium">Total</th>
-                        <th className="pb-2 text-right font-medium">Pago</th>
-                        <th className="pb-2 pl-4 font-medium">Status</th>
+                        <th className="pb-2 font-medium">{t('Mês')}</th>
+                        <th className="pb-2 font-medium">{t('Fechamento')}</th>
+                        <th className="pb-2 font-medium">{t('Vencimento')}</th>
+                        <th className="pb-2 text-right font-medium">{t('Total')}</th>
+                        <th className="pb-2 text-right font-medium">{t('Pago')}</th>
+                        <th className="pb-2 pl-4 font-medium">{t('Status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -463,7 +464,7 @@ export default function Cards() {
                           <td className="py-2.5 text-fg-muted">{formatDate(i.dueDate)}</td>
                           <td className="tabular py-2.5 text-right font-semibold">{money(i.total)}</td>
                           <td className="tabular py-2.5 text-right text-fg-muted">{money(i.paid)}</td>
-                          <td className="py-2.5 pl-4"><Badge tone={INVOICE_STATUS[i.status].tone}><span aria-hidden>{INVOICE_STATUS[i.status].emoji}</span> {INVOICE_STATUS[i.status].label}</Badge></td>
+                          <td className="py-2.5 pl-4"><Badge tone={INVOICE_STATUS[i.status].tone}><span aria-hidden>{INVOICE_STATUS[i.status].emoji}</span> {t(INVOICE_STATUS[i.status].label)}</Badge></td>
                         </tr>
                       ))}
                     </tbody>
@@ -480,13 +481,13 @@ export default function Cards() {
       <ConfirmDialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
-        title="Excluir cartão?"
-        description="As compras registradas continuarão no histórico, mas sem cartão vinculado."
-        confirmLabel="Excluir"
+        title={t('Excluir cartão?')}
+        description={t('As compras registradas continuarão no histórico, mas sem cartão vinculado.')}
+        confirmLabel={t('Excluir')}
         onConfirm={() => {
           if (confirm) remove('cards', confirm.id);
           setSelectedId(null);
-          toast.success('Cartão excluído');
+          toast.success(t('Cartão excluído'));
         }}
       />
     </div>

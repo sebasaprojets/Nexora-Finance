@@ -5,6 +5,7 @@ import { formatMoney } from '@/lib/format';
 import { formatDate } from '@/lib/dates';
 import { useMoney } from '@/hooks/useMoney';
 import { axisProps, ChartTooltipBox } from './ChartTooltip';
+import { t } from '@/i18n';
 
 const C = { income: 'var(--series-income)', expense: 'var(--series-expense)', net: 'var(--series-net)' };
 
@@ -12,7 +13,7 @@ const C = { income: 'var(--series-income)', expense: 'var(--series-expense)', ne
 export const FlowChart = memo(function FlowChart({ data, height = 300, showNet = true, variant = 'area' }: { data: SeriesPoint[]; height?: number; showNet?: boolean; variant?: 'area' | 'line' }) {
   const money = useMoney();
   return (
-    <div style={{ height }} role="img" aria-label="Gráfico de receitas, despesas e resultado por período">
+    <div style={{ height }} role="img" aria-label={t('Gráfico de receitas, despesas e resultado por período')}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
@@ -37,9 +38,9 @@ export const FlowChart = memo(function FlowChart({ data, height = 300, showNet =
                 <ChartTooltipBox
                   title={p.from === p.to ? formatDate(p.from) : `${formatDate(p.from)} – ${formatDate(p.to)}`}
                   rows={[
-                    { label: 'Receitas', value: money(p.income), color: C.income },
-                    { label: 'Despesas', value: money(p.expense), color: C.expense },
-                    { label: 'Resultado', value: money(p.net, { signed: true }), color: C.net },
+                    { label: t('Receitas'), value: money(p.income), color: C.income },
+                    { label: t('Despesas'), value: money(p.expense), color: C.expense },
+                    { label: t('Resultado'), value: money(p.net, { signed: true }), color: C.net },
                   ]}
                 />
               );
@@ -47,16 +48,16 @@ export const FlowChart = memo(function FlowChart({ data, height = 300, showNet =
           />
           {variant === 'area' ? (
             <>
-              <Area type="monotone" dataKey="income" name="Receitas" stroke={C.income} strokeWidth={2} fill="url(#g-income)" activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} animationDuration={700} />
-              <Area type="monotone" dataKey="expense" name="Despesas" stroke={C.expense} strokeWidth={2} fill="url(#g-expense)" activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} animationDuration={700} />
+              <Area type="monotone" dataKey="income" name={t('Receitas')} stroke={C.income} strokeWidth={2} fill="url(#g-income)" activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} animationDuration={700} />
+              <Area type="monotone" dataKey="expense" name={t('Despesas')} stroke={C.expense} strokeWidth={2} fill="url(#g-expense)" activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} animationDuration={700} />
             </>
           ) : (
             <>
-              <Line type="monotone" dataKey="income" name="Receitas" stroke={C.income} strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} />
-              <Line type="monotone" dataKey="expense" name="Despesas" stroke={C.expense} strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} />
+              <Line type="monotone" dataKey="income" name={t('Receitas')} stroke={C.income} strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} />
+              <Line type="monotone" dataKey="expense" name={t('Despesas')} stroke={C.expense} strokeWidth={2} dot={false} activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} />
             </>
           )}
-          {showNet && <Line type="monotone" dataKey="net" name="Resultado" stroke={C.net} strokeWidth={2} strokeDasharray="5 4" dot={false} activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} animationDuration={700} />}
+          {showNet && <Line type="monotone" dataKey="net" name={t('Resultado')} stroke={C.net} strokeWidth={2} strokeDasharray="5 4" dot={false} activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }} animationDuration={700} />}
         </ComposedChart>
       </ResponsiveContainer>
     </div>

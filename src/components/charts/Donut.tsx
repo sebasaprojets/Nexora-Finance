@@ -3,6 +3,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useMoney } from '@/hooks/useMoney';
 import { formatPercent } from '@/lib/format';
 import { ChartTooltipBox } from './ChartTooltip';
+import { t } from '@/i18n';
 
 export interface DonutDatum {
   id: string;
@@ -16,7 +17,7 @@ export interface DonutDatum {
 export const Donut = memo(function Donut({
   data,
   total,
-  centerLabel = 'Total',
+  centerLabel,
   selected,
   onSelect,
   size = 220,
@@ -40,7 +41,7 @@ export const Donut = memo(function Donut({
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
               const d = payload[0].payload as DonutDatum;
-              return <ChartTooltipBox title={d.label} rows={[{ label: 'Valor', value: money(d.value), color: d.color }, { label: 'Participação', value: formatPercent(d.pct) }]} />;
+              return <ChartTooltipBox title={d.label} rows={[{ label: t('Valor'), value: money(d.value), color: d.color }, { label: t('Participação'), value: formatPercent(d.pct) }]} />;
             }}
           />
           <Pie
@@ -70,7 +71,7 @@ export const Donut = memo(function Donut({
         </PieChart>
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-xs text-fg-subtle">{focused ? focused.label : centerLabel}</span>
+        <span className="text-xs text-fg-subtle">{focused ? focused.label : (centerLabel ?? t('Total'))}</span>
         <span className="tabular font-display text-xl font-semibold">{money(focused ? focused.value : total, { compact: true })}</span>
         {focused && <span className="text-xs text-fg-muted">{formatPercent(focused.pct)}</span>}
       </div>

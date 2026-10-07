@@ -9,6 +9,7 @@ import { useFinanceData } from '@/hooks/useFinanceData';
 import { useSettings } from '@/store/settings';
 import { useUI } from '@/store/ui';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n';
 
 interface Step {
   key: string;
@@ -32,36 +33,36 @@ export function useGettingStarted() {
   const raw: Step[] = [
     {
       key: 'account',
-      title: 'Cadastre suas contas',
-      desc: 'Banco, conta digital, poupança ou dinheiro em espécie — com o saldo de hoje.',
-      cta: 'Adicionar conta',
+      title: t('Cadastre suas contas'),
+      desc: t('Banco, conta digital, poupança ou dinheiro em espécie — com o saldo de hoje.'),
+      cta: t('Adicionar conta'),
       done: data.accounts.length > 0,
       icon: Landmark,
       action: () => navigate('/app/contas?nova=1'),
     },
     {
       key: 'income',
-      title: 'Registre sua renda',
-      desc: 'Salário, freelas e outras entradas. Marque como mensal o que se repete.',
-      cta: 'Adicionar receita',
-      done: data.transactions.some((t) => t.type === 'income'),
+      title: t('Registre sua renda'),
+      desc: t('Salário, freelas e outras entradas. Marque como mensal o que se repete.'),
+      cta: t('Adicionar receita'),
+      done: data.transactions.some((x) => x.type === 'income'),
       icon: TrendingUp,
       action: () => openTx({ type: 'income' }),
     },
     {
       key: 'expense',
-      title: 'Registre suas despesas',
-      desc: 'Aluguel, mercado, transporte… comece pelas contas fixas do mês.',
-      cta: 'Adicionar despesa',
-      done: data.transactions.some((t) => t.type === 'expense'),
+      title: t('Registre suas despesas'),
+      desc: t('Aluguel, mercado, transporte… comece pelas contas fixas do mês.'),
+      cta: t('Adicionar despesa'),
+      done: data.transactions.some((x) => x.type === 'expense'),
       icon: TrendingDown,
       action: () => openTx({ type: 'expense' }),
     },
     {
       key: 'card',
-      title: 'Adicione seus cartões',
-      desc: 'Acompanhe limite, faturas e receba aviso antes do vencimento.',
-      cta: 'Adicionar cartão',
+      title: t('Adicione seus cartões'),
+      desc: t('Acompanhe limite, faturas e receba aviso antes do vencimento.'),
+      cta: t('Adicionar cartão'),
       done: data.cards.length > 0,
       optional: true,
       icon: CreditCard,
@@ -69,18 +70,18 @@ export function useGettingStarted() {
     },
     {
       key: 'budget',
-      title: 'Defina um orçamento',
-      desc: 'Um limite mensal para a categoria em que você mais gasta.',
-      cta: 'Criar orçamento',
+      title: t('Defina um orçamento'),
+      desc: t('Um limite mensal para a categoria em que você mais gasta.'),
+      cta: t('Criar orçamento'),
       done: data.budgets.length > 0,
       icon: Wallet,
       action: () => navigate('/app/orcamentos?novo=1'),
     },
     {
       key: 'goal',
-      title: 'Crie uma meta',
-      desc: 'Reserva, viagem, carro… veja quanto guardar por mês.',
-      cta: 'Criar meta',
+      title: t('Crie uma meta'),
+      desc: t('Reserva, viagem, carro… veja quanto guardar por mês.'),
+      cta: t('Criar meta'),
       done: data.goals.length > 0,
       icon: Target,
       action: () => navigate('/app/metas?nova=1'),
@@ -106,26 +107,24 @@ export function GettingStarted({ variant = 'full' }: { variant?: 'full' | 'compa
             <Rocket className="size-5" aria-hidden />
           </span>
           <div className="min-w-0">
-            <h2 className="font-display text-lg font-semibold tracking-tight">Primeiros passos</h2>
+            <h2 className="font-display text-lg font-semibold tracking-tight">{t('Primeiros passos')}</h2>
             <p className="text-sm text-fg-subtle">
-              {variant === 'full' ? 'Siga a ordem abaixo para montar seu painel. Cada item é marcado automaticamente.' : 'Complete para aproveitar tudo da Nexora.'}
+              {variant === 'full' ? t('Siga a ordem abaixo para montar seu painel. Cada item é marcado automaticamente.') : t('Complete para aproveitar tudo da Nexora.')}
             </p>
           </div>
         </div>
         {variant === 'compact' && (
-          <Button variant="ghost" size="icon-sm" aria-label="Ocultar primeiros passos" onClick={() => hide(true)}>
+          <Button variant="ghost" size="icon-sm" aria-label={t('Ocultar primeiros passos')} onClick={() => hide(true)}>
             <X className="size-4" />
           </Button>
         )}
       </div>
       <div className="px-5 pt-4 sm:px-6">
         <div className="flex items-center justify-between text-xs text-fg-subtle">
-          <span>
-            {doneCount} de {total} concluídos
-          </span>
+          <span>{t('{done} de {total} concluídos', { done: doneCount, total })}</span>
           <span className="tabular">{Math.round((doneCount / total) * 100)}%</span>
         </div>
-        <Progress value={(doneCount / total) * 100} size="sm" className="mt-1.5" label="Progresso dos primeiros passos" />
+        <Progress value={(doneCount / total) * 100} size="sm" className="mt-1.5" label={t('Progresso dos primeiros passos')} />
       </div>
       <ol className={cn('grid gap-2 p-5 sm:p-6', variant === 'compact' ? 'sm:grid-cols-2 xl:grid-cols-3' : 'sm:grid-cols-2')}>
         {steps.map((s, i) => {
@@ -151,8 +150,8 @@ export function GettingStarted({ variant = 'full' }: { variant?: 'full' | 'compa
               <div className="min-w-0 flex-1">
                 <p className={cn('flex flex-wrap items-center gap-1.5 text-sm font-medium', s.done && 'text-fg-muted line-through decoration-1')}>
                   {s.title}
-                  {s.optional && <Badge>{s.skipped ? 'Pulado' : 'Opcional'}</Badge>}
-                  <span className="sr-only">{s.skipped ? '(pulado)' : s.done ? '(concluído)' : '(pendente)'}</span>
+                  {s.optional && <Badge>{s.skipped ? t('Pulado') : t('Opcional')}</Badge>}
+                  <span className="sr-only">{s.skipped ? t('(pulado)') : s.done ? t('(concluído)') : t('(pendente)')}</span>
                 </p>
                 {!s.done && <p className="mt-0.5 text-xs text-fg-subtle">{s.desc}</p>}
                 {!s.done && (
@@ -162,14 +161,14 @@ export function GettingStarted({ variant = 'full' }: { variant?: 'full' | 'compa
                     </Button>
                     {s.optional && (
                       <Button size="sm" variant="ghost" onClick={() => setSkipped(s.key, true)}>
-                        Agora não
+                        {t('Agora não')}
                       </Button>
                     )}
                   </div>
                 )}
                 {s.skipped && (
                   <button type="button" onClick={() => setSkipped(s.key, false)} className="mt-1 text-left text-xs text-fg-subtle underline-offset-2 hover:text-fg hover:underline">
-                    Mostrar de novo
+                    {t('Mostrar de novo')}
                   </button>
                 )}
               </div>

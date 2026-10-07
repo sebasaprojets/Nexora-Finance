@@ -12,6 +12,7 @@ import {
   type Period,
 } from './finance';
 import { formatMoney, formatPercent, pctChange } from './format';
+import { t } from '@/i18n';
 
 export type InsightTone = 'positive' | 'negative' | 'neutral' | 'warning';
 
@@ -38,8 +39,8 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
     out.push({
       id: 'top-category',
       tone: 'neutral',
-      title: 'Maior categoria de gasto',
-      text: `Seu maior gasto foi ${top.category.name.toLowerCase()}: ${money(top.total)}, o que representa ${formatPercent(top.pct)} das suas despesas no período.`,
+      title: t('Maior categoria de gasto'),
+      text: t('Seu maior gasto foi {categoria}: {valor}, o que representa {pct} das suas despesas no período.', { categoria: t(top.category.name).toLowerCase(), valor: money(top.total), pct: formatPercent(top.pct) }),
       href: '/app/analises',
     });
     const food = cats.find((c) => c.category.id === 'cat_food');
@@ -47,8 +48,8 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
       out.push({
         id: 'food-share',
         tone: 'neutral',
-        title: 'Alimentação',
-        text: `Seus gastos com alimentação representam ${formatPercent(food.pct, 0)} das suas despesas.`,
+        title: t('Alimentação'),
+        text: t('Seus gastos com alimentação representam {pct} das suas despesas.', { pct: formatPercent(food.pct, 0) }),
       });
   }
 
@@ -57,8 +58,14 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
     out.push({
       id: 'expense-vs-prev',
       tone: diff <= 0 ? 'positive' : 'warning',
-      title: diff <= 0 ? 'Gastos em queda' : 'Gastos em alta',
-      text: `Você gastou ${money(Math.abs(diff))} a ${diff <= 0 ? 'menos' : 'mais'} que no período anterior (${formatPercent(pctChange(cur.expense, before.expense) ?? 0, 1, true)}).`,
+      title: diff <= 0 ? t('Gastos em queda') : t('Gastos em alta'),
+      text: (diff <= 0 ? t('Você gastou {valor} a menos que no período anterior ({pct}).', {
+        valor: money(Math.abs(diff)),
+        pct: formatPercent(pctChange(cur.expense, before.expense) ?? 0, 1, true),
+      }) : t('Você gastou {valor} a mais que no período anterior ({pct}).', {
+        valor: money(Math.abs(diff)),
+        pct: formatPercent(pctChange(cur.expense, before.expense) ?? 0, 1, true),
+      })),
       href: '/app/analises',
     });
   }
@@ -73,19 +80,19 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
     out.push({
       id: 'revenue-growth',
       tone: growth > 0 ? 'positive' : 'negative',
-      title: growth > 0 ? 'Receita crescendo' : 'Receita em queda',
-      text: `Sua receita ${growth > 0 ? 'cresceu' : 'caiu'} ${formatPercent(Math.abs(growth), 0)} nos últimos 3 meses em relação aos 3 anteriores.`,
+      title: growth > 0 ? t('Receita crescendo') : t('Receita em queda'),
+      text: (growth > 0 ? t('Sua receita cresceu {pct} nos últimos 3 meses em relação aos 3 anteriores.', { pct: formatPercent(Math.abs(growth), 0) }) : t('Sua receita caiu {pct} nos últimos 3 meses em relação aos 3 anteriores.', { pct: formatPercent(Math.abs(growth), 0) })),
     });
 
   if (cur.income > 0)
     out.push({
       id: 'savings-rate',
       tone: cur.savingsRate >= 20 ? 'positive' : cur.savingsRate >= 0 ? 'warning' : 'negative',
-      title: cur.net >= 0 ? 'Resultado positivo' : 'Resultado negativo',
+      title: cur.net >= 0 ? t('Resultado positivo') : t('Resultado negativo'),
       text:
         cur.net >= 0
-          ? `Você economizou ${money(cur.net)} no período — ${formatPercent(cur.savingsRate, 0)} da sua renda.`
-          : `Suas despesas superaram as receitas em ${money(Math.abs(cur.net))} no período.`,
+          ? t('Você economizou {valor} no período — {pct} da sua renda.', { valor: money(cur.net), pct: formatPercent(cur.savingsRate, 0) })
+          : t('Suas despesas superaram as receitas em {valor} no período.', { valor: money(Math.abs(cur.net)) }),
     });
 
   const goals = data.goals.map((g) => goalProgress(g)).filter((g) => !g.reached);
@@ -94,8 +101,14 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
     out.push({
       id: `goal-${g.goal.id}`,
       tone: g.onTrack === false ? 'warning' : 'positive',
-      title: `Meta: ${g.goal.name}`,
-      text: `Se continuar guardando ${money(g.avgMonthly)} por mês, sua meta será alcançada em aproximadamente ${g.monthsToGoal} ${g.monthsToGoal === 1 ? 'mês' : 'meses'}.`,
+      title: t('Meta: {meta}', { meta: g.goal.name }),
+      text: (g.monthsToGoal === 1 ? t('Se continuar guardando {valor} por mês, sua meta será alcançada em aproximadamente {n} mês.', {
+        valor: money(g.avgMonthly),
+        n: g.monthsToGoal,
+      }) : t('Se continuar guardando {valor} por mês, sua meta será alcançada em aproximadamente {n} meses.', {
+        valor: money(g.avgMonthly),
+        n: g.monthsToGoal,
+      })),
       href: '/app/metas',
     });
 
@@ -104,11 +117,11 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
     out.push({
       id: `budget-${risky[0].budget.id}`,
       tone: risky[0].level === 'exceeded' ? 'negative' : 'warning',
-      title: 'Orçamento',
+      title: t('Orçamento'),
       text:
         risky[0].level === 'exceeded'
-          ? `Você ultrapassou o orçamento de ${risky[0].category?.name} em ${money(Math.abs(risky[0].remaining))}.`
-          : `Você já usou ${formatPercent(risky[0].pct, 0)} do orçamento de ${risky[0].category?.name} este mês.`,
+          ? t('Você ultrapassou o orçamento de {categoria} em {valor}.', { categoria: t(risky[0].category?.name ?? 'Categoria'), valor: money(Math.abs(risky[0].remaining)) })
+          : t('Você já usou {pct} do orçamento de {categoria} este mês.', { pct: formatPercent(risky[0].pct, 0), categoria: t(risky[0].category?.name ?? 'Categoria') }),
       href: '/app/orcamentos',
     });
 
@@ -117,8 +130,8 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
     out.push({
       id: `unusual-${unusual.tx.id}`,
       tone: 'warning',
-      title: 'Gasto fora do padrão',
-      text: `“${unusual.tx.description}” (${money(unusual.tx.amount)}) está bem acima do seu gasto médio em ${unusual.category.toLowerCase()} (${money(unusual.avg)}).`,
+      title: t('Gasto fora do padrão'),
+      text: t('“{descricao}” ({valor}) está bem acima do seu gasto médio em {categoria} ({media}).', { descricao: unusual.tx.description, valor: money(unusual.tx.amount), categoria: t(unusual.category).toLowerCase(), media: money(unusual.avg) }),
       href: '/app/transacoes',
     });
 
@@ -127,8 +140,8 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
     out.push({
       id: 'subscriptions',
       tone: 'neutral',
-      title: 'Assinaturas',
-      text: `Você gasta ${money(subs.monthly)}/mês com ${subs.count} assinaturas (${money(subs.yearly)} por ano).`,
+      title: t('Assinaturas'),
+      text: (subs.count === 1 ? t('Você gasta {mensal}/mês com 1 assinatura ({anual} por ano).', { mensal: money(subs.monthly), n: subs.count, anual: money(subs.yearly) }) : t('Você gasta {mensal}/mês com {n} assinaturas ({anual} por ano).', { mensal: money(subs.monthly), n: subs.count, anual: money(subs.yearly) })),
       href: '/app/assinaturas',
     });
 
@@ -139,8 +152,8 @@ export function generateInsights(data: FinanceData, p: Period, prev: Period, mon
     out.push({
       id: 'biggest-expense',
       tone: 'neutral',
-      title: 'Maior despesa',
-      text: `Sua maior despesa no período foi “${biggest.description}”, de ${money(biggest.amount)}.`,
+      title: t('Maior despesa'),
+      text: t('Sua maior despesa no período foi “{descricao}”, de {valor}.', { descricao: biggest.description, valor: money(biggest.amount) }),
       href: '/app/transacoes',
     });
 

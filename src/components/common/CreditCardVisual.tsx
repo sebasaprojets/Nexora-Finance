@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Wifi } from 'lucide-react';
 import type { CreditCard } from '@/types';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n';
 import { BankLogo } from './BankLogo';
 
 export const CARD_THEMES: Record<CreditCard['theme'], { bg: string; label: string }> = {
@@ -33,7 +34,7 @@ export function CreditCardVisual({ card, className, compact }: { card: CreditCar
       transition={{ type: 'spring', stiffness: 260, damping: 22 }}
       style={{ background: CARD_THEMES[card.theme].bg, transformPerspective: 900 }}
       className={cn('relative aspect-[1.586] w-full overflow-hidden rounded-2xl p-5 text-white shadow-lg select-none', compact && 'p-4', className)}
-      aria-label={`Cartão ${card.name} final ${card.last4}`}
+      aria-label={t('Cartão {name} final {last4}', { name: card.name, last4: card.last4 })}
       role="img"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_100%_0%,rgba(255,255,255,0.22),transparent_50%)]" />

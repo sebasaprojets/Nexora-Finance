@@ -5,34 +5,35 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { Button } from '@/components/ui/Button';
 import { exportTables, type ExportFormat, type ExportTable } from '@/lib/export';
 import { toast } from '@/store/toast';
+import { t } from '@/i18n';
 
-export function ExportMenu({ getTables, title, label = 'Exportar', size = 'md' }: { getTables: () => ExportTable[]; title?: string; label?: string; size?: 'sm' | 'md' }) {
+export function ExportMenu({ getTables, title, label, size = 'md' }: { getTables: () => ExportTable[]; title?: string; label?: string; size?: 'sm' | 'md' }) {
   const [busy, setBusy] = useState(false);
   const { canUse } = usePlan();
   const run = async (f: ExportFormat) => {
-    if (f !== 'csv' && !canUse(`A exportação em ${f === 'pdf' ? 'PDF' : 'Excel'}`)) return;
+    if (f !== 'csv' && !canUse(t('A exportação em {formato}', { formato: f === 'pdf' ? 'PDF' : 'Excel' }))) return;
     setBusy(true);
     try {
       const tables = getTables();
-      if (!tables.some((t) => t.rows.length)) {
-        toast.warning('Nada para exportar', { description: 'Não há linhas com os filtros atuais.' });
+      if (!tables.some((tb) => tb.rows.length)) {
+        toast.warning(t('Nada para exportar'), { description: t('Não há linhas com os filtros atuais.') });
         return;
       }
       await exportTables(f, tables, title);
-      toast.success(`Arquivo ${f.toUpperCase()} gerado`);
+      toast.success(t('Arquivo {formato} gerado', { formato: f.toUpperCase() }));
     } catch (e) {
       console.error(e);
-      toast.error('Falha ao exportar', { description: 'Tente novamente.' });
+      toast.error(t('Falha ao exportar'), { description: t('Tente novamente.') });
     } finally {
       setBusy(false);
     }
   };
   return (
     <Dropdown
-      label="Formatos de exportação"
+      label={t('Formatos de exportação')}
       trigger={(p) => (
         <Button data-tour="export" variant="secondary" size={size} loading={busy} leftIcon={<Download className="size-4" />} {...p}>
-          {label}
+          {label ?? t('Exportar')}
         </Button>
       )}
       items={[

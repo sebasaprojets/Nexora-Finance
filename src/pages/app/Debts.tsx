@@ -21,6 +21,7 @@ import { formatMoney, formatPercent, parseMoneyInput, round2 } from '@/lib/forma
 import { uid } from '@/lib/id';
 import { sanitizeText } from '@/lib/sanitize';
 import type { Debt, DebtStatus } from '@/types';
+import { t } from '@/i18n';
 
 const STATUS: Record<DebtStatus, { label: string; tone: Tone }> = {
   active: { label: 'Em dia', tone: 'primary' },
@@ -48,10 +49,10 @@ function DebtModal({ open, onClose, debt }: { open: boolean; onClose: () => void
     const total = parseMoneyInput(f.total);
     const remaining = f.remaining ? parseMoneyInput(f.remaining) : total;
     const n = parseInt(f.installments, 10);
-    if (!f.name.trim()) e.name = 'Informe um nome';
-    if (!(total > 0)) e.total = 'Informe o valor total';
-    if (!(remaining >= 0) || remaining > total * 3) e.remaining = 'Valor restante inválido';
-    if (!(n >= 1)) e.installments = 'Parcelas inválidas';
+    if (!f.name.trim()) e.name = t('Informe um nome');
+    if (!(total > 0)) e.total = t('Informe o valor total');
+    if (!(remaining >= 0) || remaining > total * 3) e.remaining = t('Valor restante inválido');
+    if (!(n >= 1)) e.installments = t('Parcelas inválidas');
     setErr(e);
     if (Object.keys(e).length) return;
     const paid = Math.min(n, Math.max(0, parseInt(f.paid, 10) || 0));
@@ -69,25 +70,25 @@ function DebtModal({ open, onClose, debt }: { open: boolean; onClose: () => void
       status: remaining <= 0 ? 'paid' : f.status,
       createdAt: debt?.createdAt ?? new Date().toISOString(),
     });
-    toast.success(debt ? 'Dívida atualizada' : 'Dívida adicionada');
+    toast.success(debt ? t('Dívida atualizada') : t('Dívida adicionada'));
     onClose();
   };
   return (
-    <Modal open={open} onClose={onClose} title={debt ? 'Editar dívida' : 'Nova dívida'} size="lg" footer={<><Button variant="ghost" onClick={onClose}>Cancelar</Button><Button onClick={save}>Salvar</Button></>}>
+    <Modal open={open} onClose={onClose} title={debt ? t('Editar dívida') : t('Nova dívida')} size="lg" footer={<><Button variant="ghost" onClick={onClose}>{t('Cancelar')}</Button><Button onClick={save}>{t('Salvar')}</Button></>}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Nome" error={err.name}>{(p) => <Input {...p} value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder="Ex.: Empréstimo pessoal" data-autofocus />}</Field>
-        <Field label="Credor">{(p) => <Input {...p} value={f.creditor} onChange={(e) => set({ creditor: e.target.value })} placeholder="Banco ou loja" />}</Field>
-        <Field label="Valor total" error={err.total}>{(p) => <Input {...p} value={f.total} onChange={(e) => set({ total: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
-        <Field label="Valor restante" error={err.remaining} hint="Saldo devedor atual">{(p) => <Input {...p} value={f.remaining} onChange={(e) => set({ remaining: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
-        <Field label="Juros ao mês (%)">{(p) => <Input {...p} value={f.rate} onChange={(e) => set({ rate: e.target.value })} inputMode="decimal" placeholder="0,0" />}</Field>
-        <Field label="Dia do vencimento">{(p) => <Input {...p} type="number" min={1} max={31} value={f.dueDay} onChange={(e) => set({ dueDay: e.target.value })} />}</Field>
-        <Field label="Total de parcelas" error={err.installments}>{(p) => <Input {...p} type="number" min={1} value={f.installments} onChange={(e) => set({ installments: e.target.value })} />}</Field>
-        <Field label="Parcelas pagas">{(p) => <Input {...p} type="number" min={0} value={f.paid} onChange={(e) => set({ paid: e.target.value })} />}</Field>
-        <Field label="Valor da parcela" hint="Em branco: calculado automaticamente">{(p) => <Input {...p} value={f.amount} onChange={(e) => set({ amount: e.target.value })} inputMode="decimal" placeholder="R$ 0,00" />}</Field>
-        <Field label="Status">
+        <Field label={t('Nome')} error={err.name}>{(p) => <Input {...p} value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder={t('Ex.: Empréstimo pessoal')} data-autofocus />}</Field>
+        <Field label={t('Credor')}>{(p) => <Input {...p} value={f.creditor} onChange={(e) => set({ creditor: e.target.value })} placeholder={t('Banco ou loja')} />}</Field>
+        <Field label={t('Valor total')} error={err.total}>{(p) => <Input {...p} value={f.total} onChange={(e) => set({ total: e.target.value })} inputMode="decimal" placeholder={formatMoney(0)} />}</Field>
+        <Field label={t('Valor restante')} error={err.remaining} hint={t('Saldo devedor atual')}>{(p) => <Input {...p} value={f.remaining} onChange={(e) => set({ remaining: e.target.value })} inputMode="decimal" placeholder={formatMoney(0)} />}</Field>
+        <Field label={t('Juros ao mês (%)')}>{(p) => <Input {...p} value={f.rate} onChange={(e) => set({ rate: e.target.value })} inputMode="decimal" placeholder="0,0" />}</Field>
+        <Field label={t('Dia do vencimento')}>{(p) => <Input {...p} type="number" min={1} max={31} value={f.dueDay} onChange={(e) => set({ dueDay: e.target.value })} />}</Field>
+        <Field label={t('Total de parcelas')} error={err.installments}>{(p) => <Input {...p} type="number" min={1} value={f.installments} onChange={(e) => set({ installments: e.target.value })} />}</Field>
+        <Field label={t('Parcelas pagas')}>{(p) => <Input {...p} type="number" min={0} value={f.paid} onChange={(e) => set({ paid: e.target.value })} />}</Field>
+        <Field label={t('Valor da parcela')} hint={t('Em branco: calculado automaticamente')}>{(p) => <Input {...p} value={f.amount} onChange={(e) => set({ amount: e.target.value })} inputMode="decimal" placeholder={formatMoney(0)} />}</Field>
+        <Field label={t('Status')}>
           {(p) => (
             <Select {...p} value={f.status} onChange={(e) => set({ status: e.target.value as DebtStatus })}>
-              {Object.entries(STATUS).map(([k2, v]) => <option key={k2} value={k2}>{v.label}</option>)}
+              {Object.entries(STATUS).map(([k2, v]) => <option key={k2} value={k2}>{t(v.label)}</option>)}
             </Select>
           )}
         </Field>
@@ -116,18 +117,18 @@ export default function Debts() {
 
   return (
     <div>
-      <PageHeader title="Dívidas" description="Controle saldos, juros, parcelas e monte um plano de quitação." actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>Nova dívida</Button>} />
+      <PageHeader title={t('Dívidas')} description={t('Controle saldos, juros, parcelas e monte um plano de quitação.')} actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>{t('Nova dívida')}</Button>} />
 
       {debts.length === 0 ? (
-        <Card><EmptyState icon={<HandCoins />} title="Nenhuma dívida registrada" description="Ótimo! Se tiver empréstimos ou parcelamentos, registre aqui para planejar a quitação." action={<Button onClick={() => setModal({ open: true })}>+ Adicionar dívida</Button>} /></Card>
+        <Card><EmptyState icon={<HandCoins />} title={t('Nenhuma dívida registrada')} description={t('Ótimo! Se tiver empréstimos ou parcelamentos, registre aqui para planejar a quitação.')} action={<Button onClick={() => setModal({ open: true })}>{t('+ Adicionar dívida')}</Button>} /></Card>
       ) : (
         <>
           <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
-              ['Saldo devedor', money(totals.remaining)],
-              ['Valor original', money(totals.total)],
-              ['Parcelas mensais', money(totals.monthly)],
-              ['Dívidas ativas', String(totals.count)],
+              [t('Saldo devedor'), money(totals.remaining)],
+              [t('Valor original'), money(totals.total)],
+              [t('Parcelas mensais'), money(totals.monthly)],
+              [t('Dívidas ativas'), String(totals.count)],
             ].map(([l, v]) => (
               <div key={l} className="card px-4 py-3">
                 <p className="text-xs text-fg-subtle">{l}</p>
@@ -144,31 +145,31 @@ export default function Debts() {
                   <div className="flex items-start gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{d.name}</p>
-                      <p className="text-xs text-fg-subtle">{d.creditor} · vence dia {d.dueDay}</p>
+                      <p className="text-xs text-fg-subtle">{t('{credor} · vence dia {dia}', { credor: d.creditor, dia: d.dueDay })}</p>
                     </div>
-                    <Badge tone={STATUS[d.status].tone}>{STATUS[d.status].label}</Badge>
+                    <Badge tone={STATUS[d.status].tone}>{t(STATUS[d.status].label)}</Badge>
                     <Dropdown
-                      label="Ações"
-                      trigger={(p) => <Button variant="ghost" size="icon-sm" aria-label={`Ações para ${d.name}`} {...p}><MoreHorizontal className="size-4" /></Button>}
+                      label={t('Ações')}
+                      trigger={(p) => <Button variant="ghost" size="icon-sm" aria-label={t('Ações para {nome}', { nome: d.name })} {...p}><MoreHorizontal className="size-4" /></Button>}
                       items={[
-                        { label: 'Editar', icon: <Pencil />, onSelect: () => setModal({ open: true, debt: d }) },
-                        { label: 'Excluir', icon: <Trash2 />, danger: true, onSelect: () => setConfirm(d) },
+                        { label: t('Editar'), icon: <Pencil />, onSelect: () => setModal({ open: true, debt: d }) },
+                        { label: t('Excluir'), icon: <Trash2 />, danger: true, onSelect: () => setConfirm(d) },
                       ]}
                     />
                   </div>
                   <div className="mt-4 flex items-baseline justify-between">
                     <span className="tabular text-xl font-semibold">{money(d.remaining)}</span>
-                    <span className="text-xs text-fg-subtle">de {money(d.total)}</span>
+                    <span className="text-xs text-fg-subtle">{t('de {valor}', { valor: money(d.total) })}</span>
                   </div>
-                  <Progress value={pct} className="mt-2" color="var(--success)" label={`Quitação de ${d.name}`} />
+                  <Progress value={pct} className="mt-2" color="var(--success)" label={t('Quitação de {nome}', { nome: d.name })} />
                   <dl className="mt-4 grid grid-cols-3 gap-2 text-xs">
-                    <div className="rounded-lg bg-surface-2/70 p-2.5"><dt className="text-fg-subtle">Juros</dt><dd className="mt-0.5 font-semibold">{formatPercent(d.interestRate)} a.m.</dd></div>
-                    <div className="rounded-lg bg-surface-2/70 p-2.5"><dt className="text-fg-subtle">Parcelas</dt><dd className="mt-0.5 font-semibold">{d.installmentsPaid}/{d.installments}</dd></div>
-                    <div className="rounded-lg bg-surface-2/70 p-2.5"><dt className="text-fg-subtle">Parcela</dt><dd className="tabular mt-0.5 font-semibold">{money(d.installmentAmount)}</dd></div>
+                    <div className="rounded-lg bg-surface-2/70 p-2.5"><dt className="text-fg-subtle">{t('Juros')}</dt><dd className="mt-0.5 font-semibold">{t('{taxa} a.m.', { taxa: formatPercent(d.interestRate) })}</dd></div>
+                    <div className="rounded-lg bg-surface-2/70 p-2.5"><dt className="text-fg-subtle">{t('Parcelas')}</dt><dd className="mt-0.5 font-semibold">{d.installmentsPaid}/{d.installments}</dd></div>
+                    <div className="rounded-lg bg-surface-2/70 p-2.5"><dt className="text-fg-subtle">{t('Parcela')}</dt><dd className="tabular mt-0.5 font-semibold">{money(d.installmentAmount)}</dd></div>
                   </dl>
                   {d.status !== 'paid' && (
                     <Button variant="soft" className="mt-4 w-full" onClick={() => { setPay(d); setPayAccount(accounts[0]?.id ?? ''); }}>
-                      Registrar pagamento de parcela
+                      {t('Registrar pagamento de parcela')}
                     </Button>
                   )}
                 </Card>
@@ -179,18 +180,18 @@ export default function Debts() {
           {totals.count > 0 && (
             <Card className="mt-6">
               <CardHeader
-                title="Plano de pagamento"
-                description="Simulação educativa: paga o mínimo de todas e direciona o extra para a prioritária."
+                title={t('Plano de pagamento')}
+                description={t('Simulação educativa: paga o mínimo de todas e direciona o extra para a prioritária.')}
                 icon={<Route />}
                 action={
                   <Segmented
                     size="sm"
-                    label="Estratégia"
+                    label={t('Estratégia')}
                     value={strategy}
                     onChange={setStrategy}
                     options={[
-                      { value: 'avalanche', label: 'Avalanche' },
-                      { value: 'snowball', label: 'Bola de neve' },
+                      { value: 'avalanche', label: t('Avalanche') },
+                      { value: 'snowball', label: t('Bola de neve') },
                     ]}
                   />
                 }
@@ -198,29 +199,29 @@ export default function Debts() {
               <CardBody>
                 <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
                   <div className="space-y-4">
-                    <Field label="Valor extra por mês" hint="Quanto você pode pagar além das parcelas">
+                    <Field label={t('Valor extra por mês')} hint={t('Quanto você pode pagar além das parcelas')}>
                       {(p) => <Input {...p} value={extra} onChange={(e) => setExtra(e.target.value)} inputMode="decimal" />}
                     </Field>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between rounded-lg bg-surface-2/70 px-3 py-2"><span className="text-fg-subtle">Quitação em</span><strong>{plan.feasible ? `${plan.months} meses` : 'mais de 30 anos'}</strong></div>
-                      <div className="flex justify-between rounded-lg bg-surface-2/70 px-3 py-2"><span className="text-fg-subtle">Juros totais</span><strong className="tabular">{money(plan.totalInterest)}</strong></div>
+                      <div className="flex justify-between rounded-lg bg-surface-2/70 px-3 py-2"><span className="text-fg-subtle">{t('Quitação em')}</span><strong>{plan.feasible ? t(plan.months === 1 ? '{n} mês' : '{n} meses', { n: plan.months }) : t('mais de 30 anos')}</strong></div>
+                      <div className="flex justify-between rounded-lg bg-surface-2/70 px-3 py-2"><span className="text-fg-subtle">{t('Juros totais')}</span><strong className="tabular">{money(plan.totalInterest)}</strong></div>
                       {base.feasible && plan.months < base.months && (
                         <p className="rounded-lg bg-success-soft px-3 py-2 text-xs text-success">
-                          Com o extra você quita {base.months - plan.months} meses antes e economiza {money(base.totalInterest - plan.totalInterest)} em juros.
+                          {t(base.months - plan.months === 1 ? 'Com o extra você quita {n} mês antes e economiza {valor} em juros.' : 'Com o extra você quita {n} meses antes e economiza {valor} em juros.', { n: base.months - plan.months, valor: money(base.totalInterest - plan.totalInterest) })}
                         </p>
                       )}
                     </div>
                     <div>
-                      <p className="mb-1.5 text-xs font-medium text-fg-subtle">Ordem de prioridade</p>
+                      <p className="mb-1.5 text-xs font-medium text-fg-subtle">{t('Ordem de prioridade')}</p>
                       <ol className="space-y-1 text-sm">
                         {plan.order.map((id, i) => (
                           <li key={id} className="flex gap-2"><span className="tabular text-fg-subtle">{i + 1}.</span>{names.get(id)}</li>
                         ))}
                       </ol>
-                      <p className="mt-2 text-xs text-fg-subtle">{strategy === 'avalanche' ? 'Avalanche: maior juros primeiro — paga menos juros.' : 'Bola de neve: menor saldo primeiro — vitórias rápidas.'}</p>
+                      <p className="mt-2 text-xs text-fg-subtle">{strategy === 'avalanche' ? t('Avalanche: maior juros primeiro — paga menos juros.') : t('Bola de neve: menor saldo primeiro — vitórias rápidas.')}</p>
                     </div>
                   </div>
-                  <div className="h-72" role="img" aria-label="Saldo devedor projetado ao longo dos meses">
+                  <div className="h-72" role="img" aria-label={t('Saldo devedor projetado ao longo dos meses')}>
                     <ResponsiveContainer>
                       <AreaChart data={plan.schedule.map((s) => ({ ...s, label: formatMonthShort(s.month) }))} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                         <defs>
@@ -231,7 +232,7 @@ export default function Debts() {
                         </defs>
                         <XAxis dataKey="label" {...axisProps} minTickGap={20} />
                         <YAxis {...axisProps} width={56} tickFormatter={(v: number) => formatMoney(v, { abbreviate: true, compact: true }).replace('R$ ', '')} />
-                        <Tooltip content={({ active, payload }) => (active && payload?.length ? <ChartTooltipBox title={formatMonthLong((payload[0].payload as { month: string }).month)} rows={[{ label: 'Saldo devedor', value: money(Number(payload[0].value)), color: 'var(--series-2)' }]} /> : null)} />
+                        <Tooltip content={({ active, payload }) => (active && payload?.length ? <ChartTooltipBox title={formatMonthLong((payload[0].payload as { month: string }).month)} rows={[{ label: t('Saldo devedor'), value: money(Number(payload[0].value)), color: 'var(--series-2)' }]} /> : null)} />
                         <Area type="monotone" dataKey="remainingTotal" stroke="var(--series-2)" strokeWidth={2} fill="url(#debt-g)" />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -244,24 +245,24 @@ export default function Debts() {
       )}
 
       <DebtModal open={modal.open} debt={modal.debt} onClose={() => setModal({ open: false })} />
-      <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)} title="Excluir dívida?" description="Esta ação não pode ser desfeita." confirmLabel="Excluir" onConfirm={() => { if (confirm) remove('debts', confirm.id); toast.success('Dívida excluída'); }} />
+      <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)} title={t('Excluir dívida?')} description={t('Esta ação não pode ser desfeita.')} confirmLabel={t('Excluir')} onConfirm={() => { if (confirm) remove('debts', confirm.id); toast.success(t('Dívida excluída')); }} />
       <Modal
         open={!!pay}
         onClose={() => setPay(null)}
-        title="Pagar parcela"
+        title={t('Pagar parcela')}
         description={pay ? `${pay.name} · ${formatMoney(Math.min(pay.remaining, pay.installmentAmount))}` : undefined}
         size="sm"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setPay(null)}>Cancelar</Button>
-            <Button onClick={() => { if (pay) { payInstallment(pay.id, payAccount || undefined); toast.success('Parcela registrada'); } setPay(null); }}>Confirmar</Button>
+            <Button variant="ghost" onClick={() => setPay(null)}>{t('Cancelar')}</Button>
+            <Button onClick={() => { if (pay) { payInstallment(pay.id, payAccount || undefined); toast.success(t('Parcela registrada')); } setPay(null); }}>{t('Confirmar')}</Button>
           </>
         }
       >
-        <Field label="Debitar da conta" hint="Uma despesa será registrada para manter seus saldos corretos.">
+        <Field label={t('Debitar da conta')} hint={t('Uma despesa será registrada para manter seus saldos corretos.')}>
           {(p) => (
             <Select {...p} value={payAccount} onChange={(e) => setPayAccount(e.target.value)}>
-              <option value="">Não registrar transação</option>
+              <option value="">{t('Não registrar transação')}</option>
               {accounts.filter((a) => !a.archived).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
             </Select>
           )}

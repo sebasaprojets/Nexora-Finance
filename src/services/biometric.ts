@@ -1,4 +1,5 @@
 import { readJSON, writeJSON } from './storage';
+import { t } from '@/i18n';
 
 /**
  * Entrar com Face ID / Touch ID / digital / Windows Hello (WebAuthn — chaves de acesso).
@@ -32,9 +33,9 @@ export function biometricLabel(): string {
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
   if (/iPhone|iPad|iPod/.test(ua)) return 'Face ID';
   if (/Macintosh/.test(ua)) return 'Touch ID';
-  if (/Android/.test(ua)) return 'biometria';
+  if (/Android/.test(ua)) return t('biometria');
   if (/Windows/.test(ua)) return 'Windows Hello';
-  return 'biometria';
+  return t('biometria');
 }
 
 /** O aparelho tem autenticador biométrico/PIN de plataforma disponível? */
@@ -71,7 +72,7 @@ export async function enableBiometric(user: { id: string; email: string; name: s
       attestation: 'none',
     },
   })) as PublicKeyCredential | null;
-  if (!cred) throw new Error('Cadastro cancelado');
+  if (!cred) throw new Error(t('Cadastro cancelado'));
   const entry: StoredCredential = { credentialId: b64url(cred.rawId), userId: user.id, createdAt: new Date().toISOString() };
   writeJSON(KEY, [...list().filter((c) => c.userId !== user.id), entry]);
 }
@@ -79,7 +80,7 @@ export async function enableBiometric(user: { id: string; email: string; name: s
 /** Pede Face ID/digital e devolve o id do usuário autenticado. */
 export async function authenticateBiometric(): Promise<string> {
   const creds = list();
-  if (!creds.length) throw new Error('Nenhuma biometria cadastrada neste aparelho');
+  if (!creds.length) throw new Error(t('Nenhuma biometria cadastrada neste aparelho'));
   const assertion = (await navigator.credentials.get({
     publicKey: {
       challenge: challenge(),
@@ -89,10 +90,10 @@ export async function authenticateBiometric(): Promise<string> {
       timeout: 60_000,
     },
   })) as PublicKeyCredential | null;
-  if (!assertion) throw new Error('Autenticação cancelada');
+  if (!assertion) throw new Error(t('Autenticação cancelada'));
   const id = b64url(assertion.rawId);
   const match = creds.find((c) => c.credentialId === id);
-  if (!match) throw new Error('Credencial não reconhecida');
+  if (!match) throw new Error(t('Credencial não reconhecida'));
   return match.userId;
 }
 

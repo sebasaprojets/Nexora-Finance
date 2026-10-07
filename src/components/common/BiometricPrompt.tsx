@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/store/auth';
 import { toast, useToasts } from '@/store/toast';
 import { notifyUser } from '@/services/notifications';
+import { t } from '@/i18n';
 import { biometricAvailable, biometricEnabledFor, biometricLabel, biometricPrompted, enableBiometric, setBiometricPrompted } from '@/services/biometric';
 
 /**
@@ -15,7 +16,7 @@ export function BiometricPrompt() {
   const user = useAuth((s) => s.user);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const label = biometricLabel();
+  const label = t(biometricLabel());
 
   useEffect(() => {
     if (!user || biometricPrompted(user.id) || biometricEnabledFor(user.id)) return;
@@ -56,18 +57,18 @@ export function BiometricPrompt() {
     setBusy(true);
     try {
       await enableBiometric(user);
-      toast.success(`${label} ativado`, { description: 'Na próxima vez, entre sem digitar a senha.' });
-      notifyUser({ kind: 'security', title: `${label} ativado neste aparelho`, body: 'Você pode desativar a qualquer momento em Segurança.', href: '/app/seguranca' });
+      toast.success(t('{label} ativado', { label }), { description: t('Na próxima vez, entre sem digitar a senha.') });
+      notifyUser({ kind: 'security', title: t('{label} ativado neste aparelho', { label }), body: t('Você pode desativar a qualquer momento em Segurança.'), href: '/app/seguranca' });
       close();
     } catch {
-      toast.error(`Não foi possível ativar o ${label}`, { description: 'Tente novamente em Segurança.' });
+      toast.error(t('Não foi possível ativar o {label}', { label }), { description: t('Tente novamente em Segurança.') });
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <Modal open={open} onClose={close} title={`Entrar com ${label}?`} size="sm">
+    <Modal open={open} onClose={close} title={t('Entrar com {label}?', { label })} size="sm">
       <div className="flex flex-col items-center text-center">
         <div className="relative my-2">
           <div className="absolute inset-0 rounded-3xl bg-primary/25 blur-2xl" aria-hidden />
@@ -76,17 +77,17 @@ export function BiometricPrompt() {
           </span>
         </div>
         <p className="mt-3 text-sm text-fg-muted">
-          Acesse a Nexora em um segundo, sem digitar a senha. Seu rosto ou digital <strong className="text-fg">nunca sai do aparelho</strong> — quem confirma é o próprio sistema do celular.
+          {t('Acesse a Nexora em um segundo, sem digitar a senha.')} <strong className="text-fg">{t('Seu rosto ou digital nunca sai do aparelho')}</strong> — {t('quem confirma é o próprio sistema do celular.')}
         </p>
         <p className="mt-3 flex items-center gap-1.5 text-xs text-fg-subtle">
-          <ShieldCheck className="size-3.5 text-success" aria-hidden /> Você pode desativar quando quiser em Segurança.
+          <ShieldCheck className="size-3.5 text-success" aria-hidden /> {t('Você pode desativar quando quiser em Segurança.')}
         </p>
         <div className="mt-6 flex w-full flex-col gap-2">
           <Button size="lg" className="w-full" loading={busy} leftIcon={<ScanFace className="size-5" />} onClick={activate}>
-            Ativar {label}
+            {t('Ativar {label}', { label })}
           </Button>
           <Button size="lg" variant="ghost" className="w-full" onClick={close}>
-            Agora não
+            {t('Agora não')}
           </Button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { t } from '@/i18n';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeftRight, BarChart3, House, Plus, User, TrendingDown, TrendingUp, Repeat2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -19,9 +20,9 @@ export function BottomNav() {
   const openTx = useUI((s) => s.openTransaction);
 
   const actions = [
-    { label: 'Receita', icon: TrendingUp, type: 'income' as const, color: 'var(--series-income)' },
-    { label: 'Despesa', icon: TrendingDown, type: 'expense' as const, color: 'var(--series-expense)' },
-    { label: 'Transferência', icon: Repeat2, type: 'transfer' as const, color: 'var(--series-net)' },
+    { label: t('Receita'), icon: TrendingUp, type: 'income' as const, color: 'var(--series-income)' },
+    { label: t('Despesa'), icon: TrendingDown, type: 'expense' as const, color: 'var(--series-expense)' },
+    { label: t('Transferência'), icon: Repeat2, type: 'transfer' as const, color: 'var(--series-net)' },
   ];
 
   return (
@@ -47,7 +48,7 @@ export function BottomNav() {
             exit="hidden"
             variants={{ show: { transition: { staggerChildren: 0.04 } }, hidden: {} }}
             role="menu"
-            aria-label="Adicionar"
+            aria-label={t('Adicionar')}
           >
             {actions.map((a) => (
               <motion.button
@@ -68,7 +69,7 @@ export function BottomNav() {
       </AnimatePresence>
       <nav
         data-tour="nav"
-        aria-label="Navegação inferior"
+        aria-label={t('Navegação inferior')}
         className="glass fixed inset-x-0 bottom-0 z-50 border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         <ul className="mx-auto grid h-16 max-w-md grid-cols-5 items-center">
@@ -78,7 +79,7 @@ export function BottomNav() {
                 <button
                   onClick={() => setOpen(!open)}
                   aria-expanded={open}
-                  aria-label={open ? 'Fechar menu de adição' : 'Adicionar transação'}
+                  aria-label={open ? t('Fechar menu de adição') : t('Adicionar transação')}
                   data-tour="add-transaction"
                   className="grid size-12 -translate-y-3 place-items-center rounded-2xl bg-primary text-primary-fg shadow-[0_10px_30px_-8px_var(--primary)] transition-transform active:scale-95"
                 >
@@ -96,7 +97,7 @@ export function BottomNav() {
                   }
                 >
                   <it.icon className="size-5" aria-hidden />
-                  {it.label}
+                  {t(it.label)}
                 </NavLink>
               </li>
             ),

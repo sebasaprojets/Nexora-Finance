@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { t as tr } from '@/i18n';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, type TargetAndTransition, type Transition } from 'framer-motion';
 import { MARK, MARK_VIEWBOX, WORDMARK, WORDMARK_STROKE, WORDMARK_VIEWBOX } from './geometry';
@@ -125,7 +126,7 @@ export function IntroSplash({ onDone }: { onDone: () => void }) {
           exit={{ opacity: 0, transition: { duration: reduced ? 0.3 : 0.6, ease: 'easeOut' } }}
           role="dialog"
           aria-modal="true"
-          aria-label="Nexora Finance — Inteligência financeira em um só lugar"
+          aria-label={`Nexora Finance — ${tr('Inteligência financeira em um só lugar')}`}
         >
           {/* Fundo: brilho central que respira, vinheta e partículas em deriva. */}
           <motion.div

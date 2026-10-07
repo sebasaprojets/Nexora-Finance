@@ -6,6 +6,7 @@ import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
 import { Delta } from '@/components/ui/Delta';
 import { Sparkline } from '@/components/ui/Sparkline';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { t } from '@/i18n';
 
 export interface StatCardProps {
   label: string;
@@ -36,7 +37,7 @@ export function StatCard({ label, value, format, delta, deltaUnit, inverse, comp
         <span className="text-[13px] font-medium text-fg-muted">{label}</span>
         {info && (
           <Tooltip content={info} className="ml-auto">
-            <button type="button" className="-m-1.5 rounded-full p-1.5 text-fg-subtle hover:text-fg" aria-label={`Sobre ${label}`}>
+            <button type="button" className="-m-1.5 rounded-full p-1.5 text-fg-subtle hover:text-fg" aria-label={t('Sobre {label}', { label })}>
               <Info className="size-3.5" />
             </button>
           </Tooltip>

@@ -1,5 +1,6 @@
 import type { User } from '@/types';
 import { cloudEnabled } from '@/services/cloud';
+import { currentLocale, t } from '@/i18n';
 
 /**
  * Planos da Nexora. A cobrança só é ativada com `VITE_BILLING=on` (e Supabase
@@ -23,24 +24,30 @@ export const founderOffer = env.VITE_FOUNDER_OFFER !== 'off';
 export const FREE_LIMITS = { accounts: 3, cards: 2, goals: 3, budgets: 5 } as const;
 export type LimitedResource = keyof typeof FREE_LIMITS;
 
-export const FREE_FEATURES = [
-  `Até ${FREE_LIMITS.accounts} contas e ${FREE_LIMITS.cards} cartões`,
-  'Transações ilimitadas',
-  `Até ${FREE_LIMITS.goals} metas e ${FREE_LIMITS.budgets} orçamentos`,
-  'Dashboard, análises, DRE e calendário',
-  'Alertas de contas e gastos fora do padrão',
-  'Sincronização entre seus aparelhos',
-  'Nexora AI (perguntas e lançamentos por conversa)',
-  'Exportação CSV',
-];
+/** Recursos do plano Grátis, no idioma atual. */
+export function freeFeatures(): string[] {
+  return [
+    t('Até {accounts} contas e {cards} cartões', { accounts: FREE_LIMITS.accounts, cards: FREE_LIMITS.cards }),
+    t('Transações ilimitadas'),
+    t('Até {goals} metas e {budgets} orçamentos', { goals: FREE_LIMITS.goals, budgets: FREE_LIMITS.budgets }),
+    t('Dashboard, análises, DRE e calendário'),
+    t('Alertas de contas e gastos fora do padrão'),
+    t('Sincronização entre seus aparelhos'),
+    t('Nexora AI (perguntas e lançamentos por conversa)'),
+    t('Exportação CSV'),
+  ];
+}
 
-export const PRO_FEATURES = [
-  'Tudo do plano Grátis',
-  'Contas, cartões, metas e orçamentos ilimitados',
-  'Relatórios em PDF e Excel',
-  'Suporte prioritário pelo WhatsApp',
-  'Acesso antecipado às novidades',
-];
+/** Recursos do plano Pro, no idioma atual. */
+export function proFeatures(): string[] {
+  return [
+    t('Tudo do plano Grátis'),
+    t('Contas, cartões, metas e orçamentos ilimitados'),
+    t('Relatórios em PDF e Excel'),
+    t('Suporte prioritário pelo WhatsApp'),
+    t('Acesso antecipado às novidades'),
+  ];
+}
 
 /** O usuário tem acesso total? (sempre sim com a cobrança desligada ou na demonstração). */
 export function hasPro(user: User | null | undefined) {
@@ -57,4 +64,4 @@ export function limitReached(user: User | null | undefined, resource: LimitedRes
   return !hasPro(user) && count >= FREE_LIMITS[resource];
 }
 
-export const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+export const brl = (v: number) => v.toLocaleString(currentLocale(), { style: 'currency', currency: 'BRL' });

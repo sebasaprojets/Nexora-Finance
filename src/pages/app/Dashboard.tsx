@@ -33,10 +33,11 @@ import { generateInsights } from '@/lib/insights';
 import { addDays, diffDays, formatDate, formatDayMonth, today } from '@/lib/dates';
 import { pctChange } from '@/lib/format';
 import { cn } from '@/lib/cn';
+import { t } from '@/i18n';
 
 function greeting() {
   const h = new Date().getHours();
-  return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  return h < 12 ? t('Bom dia') : h < 18 ? t('Boa tarde') : t('Boa noite');
 }
 
 export default function Dashboard() {
@@ -63,7 +64,7 @@ export default function Dashboard() {
   const insights = useMemo(() => generateInsights(data, period, previous, (v) => money(v)), [data, period, previous, money]);
   const budgets = useMemo(() => budgetUsage(data.budgets, data.categories, data.transactions), [data]);
   const goals = useMemo(() => data.goals.map((g) => goalProgress(g)), [data.goals]);
-  const recent = useMemo(() => [...data.transactions].filter((t) => t.date <= today()).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0, 7), [data.transactions]);
+  const recent = useMemo(() => [...data.transactions].filter((x) => x.date <= today()).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0, 7), [data.transactions]);
 
   const upcoming = useMemo(() => {
     const ref = today();
@@ -72,10 +73,10 @@ export default function Dashboard() {
     for (const c of data.cards) {
       const s = cardSummary(c, data.transactions);
       for (const inv of [s.pending, s.current].filter(Boolean)) {
-        if (inv && inv.total - inv.paid > 0 && inv.dueDate <= limit) items.push({ id: inv.id, label: `Fatura ${c.name}`, date: inv.dueDate, amount: inv.total - inv.paid, kind: inv.status === 'overdue' ? 'Atrasada' : inv.status === 'open' ? 'Aberta' : 'Fechada', href: '/app/cartoes' });
+        if (inv && inv.total - inv.paid > 0 && inv.dueDate <= limit) items.push({ id: inv.id, label: t('Fatura {name}', { name: c.name }), date: inv.dueDate, amount: inv.total - inv.paid, kind: inv.status === 'overdue' ? t('Atrasada') : inv.status === 'open' ? t('Aberta') : t('Fechada'), href: '/app/cartoes' });
       }
     }
-    for (const u of subscriptionsSummary(data.subscriptions).upcoming) if (u.date <= limit) items.push({ id: u.sub.id, label: u.sub.name, date: u.date, amount: u.sub.amount, kind: 'Assinatura', href: '/app/assinaturas' });
+    for (const u of subscriptionsSummary(data.subscriptions).upcoming) if (u.date <= limit) items.push({ id: u.sub.id, label: u.sub.name, date: u.date, amount: u.sub.amount, kind: t('Assinatura'), href: '/app/assinaturas' });
     return items.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 6);
   }, [data]);
 
@@ -98,7 +99,7 @@ export default function Dashboard() {
             <p className="text-sm text-fg-subtle">
               {greeting()} · {formatDate(today())}
             </p>
-            <h1 className="mt-1 truncate font-display text-2xl font-semibold tracking-tight sm:text-[28px]">Olá, {firstName} 👋</h1>
+            <h1 className="mt-1 truncate font-display text-2xl font-semibold tracking-tight sm:text-[28px]">{t('Olá, {name} 👋', { name: firstName })}</h1>
           </div>
           <TourButton id={tourId} className="lg:hidden" />
         </div>
@@ -114,43 +115,43 @@ export default function Dashboard() {
         <>
           {!checklist.complete && !checklistHidden && <GettingStarted variant="compact" />}
           {/* 1–2. Saldo, entradas/saídas e KPIs */}
-          <section data-tour="kpis" aria-label="Resumo financeiro" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+          <section data-tour="kpis" aria-label={t('Resumo financeiro')} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
             <StatCard
               emphasis
               className="col-span-2 lg:col-span-1"
-              label="Saldo total"
+              label={t('Saldo total')}
               icon={<Wallet />}
               value={m.nw.cash}
               format={(v) => money(v)}
               delta={pctChange(m.nw.cash, m.prevBalance)}
-              comparison={`vs. ${money(m.prevBalance, { compact: true })} em ${formatDayMonth(period.from)}`}
+              comparison={t('vs. {value} em {date}', { value: money(m.prevBalance, { compact: true }), date: formatDayMonth(period.from) })}
               spark={balanceSpark}
-              info="Soma dos saldos de todas as contas (exceto investimentos), considerando transações até hoje."
+              info={t('Soma dos saldos de todas as contas (exceto investimentos), considerando transações até hoje.')}
             />
-            <StatCard label="Entradas" icon={<ArrowDownLeft />} value={m.cur.income} format={(v) => money(v)} delta={pctChange(m.cur.income, m.prev.income)} comparison={`ant. ${money(m.prev.income, { compact: true })}`} spark={m.series.map((s) => s.income)} sparkColor="var(--series-income)" info="Total de receitas no período selecionado, comparado ao período anterior de mesma duração." />
-            <StatCard label="Saídas" icon={<ArrowUpRight />} value={m.cur.expense} format={(v) => money(v)} inverse delta={pctChange(m.cur.expense, m.prev.expense)} comparison={`ant. ${money(m.prev.expense, { compact: true })}`} spark={m.series.map((s) => s.expense)} sparkColor="var(--series-expense)" info="Total de despesas (inclui compras no cartão pela data da compra). Transferências não contam." />
-            <StatCard label="Economia" icon={<PiggyBank />} value={m.cur.net} format={(v) => money(v)} delta={pctChange(m.cur.net, savingsPrev)} comparison={`${m.cur.savingsRate.toFixed(0)}% da renda`} spark={m.series.map((s) => s.net)} sparkColor="var(--series-net)" info="Entradas − saídas no período. A porcentagem indica quanto da renda foi poupado." />
-            <StatCard label="Investimentos" icon={<TrendingUp />} value={m.portfolio.current} format={(v) => money(v)} delta={m.portfolio.returnPct} comparison="rentab. total" spark={m.portfolio.history.map((h) => h.value)} sparkColor="var(--series-7)" info="Valor de mercado atual da carteira. A variação é a rentabilidade acumulada sobre o valor aplicado." />
-            <StatCard className="col-span-2 lg:col-span-1" label="Patrimônio líquido" icon={<Scale />} value={m.nw.total} format={(v) => money(v)} delta={nwDelta} comparison={`${money(m.nw.debts + m.nw.cardDebt, { compact: true })} em dívidas`} info="Saldo em contas + investimentos − dívidas − faturas de cartão em aberto." />
+            <StatCard label={t('Entradas')} icon={<ArrowDownLeft />} value={m.cur.income} format={(v) => money(v)} delta={pctChange(m.cur.income, m.prev.income)} comparison={t('ant. {value}', { value: money(m.prev.income, { compact: true }) })} spark={m.series.map((s) => s.income)} sparkColor="var(--series-income)" info={t('Total de receitas no período selecionado, comparado ao período anterior de mesma duração.')} />
+            <StatCard label={t('Saídas')} icon={<ArrowUpRight />} value={m.cur.expense} format={(v) => money(v)} inverse delta={pctChange(m.cur.expense, m.prev.expense)} comparison={t('ant. {value}', { value: money(m.prev.expense, { compact: true }) })} spark={m.series.map((s) => s.expense)} sparkColor="var(--series-expense)" info={t('Total de despesas (inclui compras no cartão pela data da compra). Transferências não contam.')} />
+            <StatCard label={t('Economia')} icon={<PiggyBank />} value={m.cur.net} format={(v) => money(v)} delta={pctChange(m.cur.net, savingsPrev)} comparison={t('{pct}% da renda', { pct: m.cur.savingsRate.toFixed(0) })} spark={m.series.map((s) => s.net)} sparkColor="var(--series-net)" info={t('Entradas − saídas no período. A porcentagem indica quanto da renda foi poupado.')} />
+            <StatCard label={t('Investimentos')} icon={<TrendingUp />} value={m.portfolio.current} format={(v) => money(v)} delta={m.portfolio.returnPct} comparison={t('rentab. total')} spark={m.portfolio.history.map((h) => h.value)} sparkColor="var(--series-7)" info={t('Valor de mercado atual da carteira. A variação é a rentabilidade acumulada sobre o valor aplicado.')} />
+            <StatCard className="col-span-2 lg:col-span-1" label={t('Patrimônio líquido')} icon={<Scale />} value={m.nw.total} format={(v) => money(v)} delta={nwDelta} comparison={t('{value} em dívidas', { value: money(m.nw.debts + m.nw.cardDebt, { compact: true }) })} info={t('Saldo em contas + investimentos − dívidas − faturas de cartão em aberto.')} />
           </section>
 
           {/* 3. Fluxo financeiro + categorias */}
           <div className="grid gap-4 lg:grid-cols-3">
             <Card data-tour="flow-chart" className="lg:col-span-2">
               <CardHeader
-                title="Fluxo financeiro"
-                description="Receitas, despesas e resultado no período"
+                title={t('Fluxo financeiro')}
+                description={t('Receitas, despesas e resultado no período')}
                 action={
                   <Segmented
                     size="sm"
-                    label="Agrupamento"
+                    label={t('Agrupamento')}
                     value={gran}
                     onChange={setGran}
                     options={[
-                      { value: 'auto', label: 'Auto' },
-                      { value: 'day', label: 'Dia' },
-                      { value: 'week', label: 'Semana' },
-                      { value: 'month', label: 'Mês' },
+                      { value: 'auto', label: t('Auto') },
+                      { value: 'day', label: t('Dia') },
+                      { value: 'week', label: t('Semana') },
+                      { value: 'month', label: t('Mês') },
                     ]}
                     className="hidden sm:inline-flex"
                   />
@@ -160,33 +161,33 @@ export default function Dashboard() {
                 <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
                   <Legend
                     items={[
-                      { label: 'Receitas', color: 'var(--series-income)' },
-                      { label: 'Despesas', color: 'var(--series-expense)' },
-                      { label: 'Resultado', color: 'var(--series-net)', dashed: true },
+                      { label: t('Receitas'), color: 'var(--series-income)' },
+                      { label: t('Despesas'), color: 'var(--series-expense)' },
+                      { label: t('Resultado'), color: 'var(--series-net)', dashed: true },
                     ]}
                   />
                   <p className="text-xs text-fg-subtle">
-                    Resultado: <span className={cn('tabular font-semibold', m.cur.net >= 0 ? 'text-success' : 'text-danger')}>{money(m.cur.net, { signed: true })}</span>
+                    {t('Resultado:')} <span className={cn('tabular font-semibold', m.cur.net >= 0 ? 'text-success' : 'text-danger')}>{money(m.cur.net, { signed: true })}</span>
                   </p>
                 </div>
                 <FlowChart data={m.series} height={280} />
               </CardBody>
             </Card>
             <Card>
-              <CardHeader title="Para onde vai meu dinheiro?" description="Despesas por categoria" action={<Link to="/app/analises" className="text-xs font-medium text-primary hover:underline">Detalhes</Link>} />
+              <CardHeader title={t('Para onde vai meu dinheiro?')} description={t('Despesas por categoria')} action={<Link to="/app/analises" className="text-xs font-medium text-primary hover:underline">{t('Detalhes')}</Link>} />
               <CardBody>
                 {m.cats.length ? (
                   <>
                     <Donut
                       size={190}
                       total={m.cur.expense}
-                      data={m.cats.slice(0, 6).map((c) => ({ id: c.category.id, label: c.category.name, value: c.total, color: c.category.color, pct: c.pct }))}
+                      data={m.cats.slice(0, 6).map((c) => ({ id: c.category.id, label: t(c.category.name), value: c.total, color: c.category.color, pct: c.pct }))}
                     />
                     <ul className="mt-4 space-y-2">
                       {m.cats.slice(0, 4).map((c) => (
                         <li key={c.category.id} className="flex items-center gap-2 text-sm">
                           <span className="size-2.5 rounded-full" style={{ background: c.category.color }} aria-hidden />
-                          <span className="flex-1 truncate text-fg-muted">{c.category.name}</span>
+                          <span className="flex-1 truncate text-fg-muted">{t(c.category.name)}</span>
                           <span className="tabular text-xs text-fg-subtle">{c.pct.toFixed(0)}%</span>
                           <span className="tabular w-24 text-right font-medium">{money(c.total)}</span>
                         </li>
@@ -194,19 +195,19 @@ export default function Dashboard() {
                     </ul>
                   </>
                 ) : (
-                  <p className="py-10 text-center text-sm text-fg-subtle">Sem despesas no período.</p>
+                  <p className="py-10 text-center text-sm text-fg-subtle">{t('Sem despesas no período.')}</p>
                 )}
               </CardBody>
             </Card>
           </div>
 
           {/* 4. Ações rápidas */}
-          <section data-tour="quick-actions" aria-label="Ações rápidas" className="grid grid-cols-4 gap-2 sm:gap-3">
+          <section data-tour="quick-actions" aria-label={t('Ações rápidas')} className="grid grid-cols-4 gap-2 sm:gap-3">
             {[
-              { label: 'Receita', icon: TrendingUp, color: 'var(--series-income)', onClick: () => openTx({ type: 'income' }) },
-              { label: 'Despesa', icon: TrendingDown, color: 'var(--series-expense)', onClick: () => openTx({ type: 'expense' }) },
-              { label: 'Transferir', icon: Repeat2, color: 'var(--series-net)', onClick: () => openTx({ type: 'transfer' }) },
-              { label: 'Faturas', icon: CreditCard, color: 'var(--series-7)', to: '/app/cartoes' },
+              { label: t('Receita'), icon: TrendingUp, color: 'var(--series-income)', onClick: () => openTx({ type: 'income' }) },
+              { label: t('Despesa'), icon: TrendingDown, color: 'var(--series-expense)', onClick: () => openTx({ type: 'expense' }) },
+              { label: t('Transferir'), icon: Repeat2, color: 'var(--series-net)', onClick: () => openTx({ type: 'transfer' }) },
+              { label: t('Faturas'), icon: CreditCard, color: 'var(--series-7)', to: '/app/cartoes' },
             ].map((a) => {
               const inner = (
                 <>
@@ -233,23 +234,23 @@ export default function Dashboard() {
           <Deferred minHeight={420}>
           <div className="grid gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
-              <CardHeader title="Transações recentes" action={<Link to="/app/transacoes" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">Ver todas <ArrowRight className="size-3" /></Link>} />
+              <CardHeader title={t('Transações recentes')} action={<Link to="/app/transacoes" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">{t('Ver todas')} <ArrowRight className="size-3" /></Link>} />
               <CardBody className="px-3 pt-3">
-                {recent.map((t) => (
+                {recent.map((tx) => (
                   <TransactionRow
-                    key={t.id}
-                    tx={t}
-                    category={t.categoryId ? lookups.category.get(t.categoryId) : undefined}
-                    account={t.accountId ? lookups.account.get(t.accountId) : undefined}
-                    toAccount={t.toAccountId ? lookups.account.get(t.toAccountId) : undefined}
-                    card={t.cardId ? lookups.card.get(t.cardId) : undefined}
-                    onClick={() => openTx({ type: t.type, editing: t })}
+                    key={tx.id}
+                    tx={tx}
+                    category={tx.categoryId ? lookups.category.get(tx.categoryId) : undefined}
+                    account={tx.accountId ? lookups.account.get(tx.accountId) : undefined}
+                    toAccount={tx.toAccountId ? lookups.account.get(tx.toAccountId) : undefined}
+                    card={tx.cardId ? lookups.card.get(tx.cardId) : undefined}
+                    onClick={() => openTx({ type: tx.type, editing: tx })}
                   />
                 ))}
               </CardBody>
             </Card>
             <Card>
-              <CardHeader title="Contas a pagar" description="Próximos 30 dias" icon={<CalendarClock />} />
+              <CardHeader title={t('Contas a pagar')} description={t('Próximos 30 dias')} icon={<CalendarClock />} />
               <CardBody className="pt-3">
                 {upcoming.length ? (
                   <ul className="divide-y divide-border">
@@ -265,7 +266,7 @@ export default function Dashboard() {
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium">{u.label}</p>
                               <p className={cn('text-xs', days < 0 ? 'text-danger' : days <= 3 ? 'text-warning' : 'text-fg-subtle')}>
-                                {u.kind} · {days < 0 ? `venceu há ${-days} dias` : days === 0 ? 'vence hoje' : `em ${days} dias`}
+                                {u.kind} · {days < 0 ? (days === -1 ? t('venceu há {n} dia', { n: -days }) : t('venceu há {n} dias', { n: -days })) : days === 0 ? t('vence hoje') : days === 1 ? t('em {n} dia', { n: days }) : t('em {n} dias', { n: days })}
                               </p>
                             </div>
                             <span className="tabular text-sm font-semibold">{money(u.amount)}</span>
@@ -275,7 +276,7 @@ export default function Dashboard() {
                     })}
                   </ul>
                 ) : (
-                  <p className="py-8 text-center text-sm text-fg-subtle">Nenhum vencimento nos próximos 30 dias.</p>
+                  <p className="py-8 text-center text-sm text-fg-subtle">{t('Nenhum vencimento nos próximos 30 dias.')}</p>
                 )}
               </CardBody>
             </Card>
@@ -285,7 +286,7 @@ export default function Dashboard() {
           {/* 6–8. Metas, orçamentos e insights */}
           <div className="grid gap-4 lg:grid-cols-3">
             <Card>
-              <CardHeader title="Metas" action={<Link to="/app/metas" className="text-xs font-medium text-primary hover:underline">Ver metas</Link>} />
+              <CardHeader title={t('Metas')} action={<Link to="/app/metas" className="text-xs font-medium text-primary hover:underline">{t('Ver metas')}</Link>} />
               <CardBody className="space-y-4">
                 {goals.length ? (
                   goals.slice(0, 3).map((g) => (
@@ -295,34 +296,34 @@ export default function Dashboard() {
                         <span className="flex-1 truncate text-sm font-medium">{g.goal.name}</span>
                         <span className="tabular text-xs font-semibold">{g.pct.toFixed(0)}%</span>
                       </div>
-                      <Progress value={g.pct} color={g.goal.color} label={`Progresso da meta ${g.goal.name}`} />
+                      <Progress value={g.pct} color={g.goal.color} label={t('Progresso da meta {name}', { name: g.goal.name })} />
                       <p className="mt-1 text-xs text-fg-subtle">
-                        {money(g.current, { compact: true })} de {money(g.goal.target, { compact: true })}
+                        {t('{current} de {target}', { current: money(g.current, { compact: true }), target: money(g.goal.target, { compact: true }) })}
                       </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-fg-subtle">Crie uma meta para acompanhar seu progresso.</p>
+                  <p className="text-sm text-fg-subtle">{t('Crie uma meta para acompanhar seu progresso.')}</p>
                 )}
               </CardBody>
             </Card>
             <Card>
-              <CardHeader title="Orçamentos do mês" action={<Link to="/app/orcamentos" className="text-xs font-medium text-primary hover:underline">Gerenciar</Link>} />
+              <CardHeader title={t('Orçamentos do mês')} action={<Link to="/app/orcamentos" className="text-xs font-medium text-primary hover:underline">{t('Gerenciar')}</Link>} />
               <CardBody className="space-y-4">
                 {budgets.length ? (
                   budgets.slice(0, 4).map((b) => (
                     <div key={b.budget.id}>
                       <div className="mb-1.5 flex items-center justify-between text-sm">
-                        <span className="font-medium">{b.category?.name}</span>
+                        <span className="font-medium">{b.category && t(b.category.name)}</span>
                         <span className="tabular text-xs text-fg-subtle">
                           {money(b.spent, { compact: true })} / {money(b.budget.amount, { compact: true })}
                         </span>
                       </div>
-                      <Progress value={b.pct} color={b.level === 'exceeded' ? 'var(--danger)' : b.level === 'alert' ? 'var(--series-2)' : b.level === 'attention' ? 'var(--warning)' : 'var(--success)'} label={`Orçamento ${b.category?.name}`} />
+                      <Progress value={b.pct} color={b.level === 'exceeded' ? 'var(--danger)' : b.level === 'alert' ? 'var(--series-2)' : b.level === 'attention' ? 'var(--warning)' : 'var(--success)'} label={t('Orçamento {name}', { name: b.category ? t(b.category.name) : '' })} />
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-fg-subtle">Defina limites por categoria para receber alertas.</p>
+                  <p className="text-sm text-fg-subtle">{t('Defina limites por categoria para receber alertas.')}</p>
                 )}
               </CardBody>
             </Card>
@@ -336,7 +337,7 @@ export default function Dashboard() {
 
           <Deferred minHeight={160}>
           <Card>
-            <CardHeader title="Contas" description="Saldo atual por conta" icon={<Landmark />} action={<Link to="/app/contas" className="text-xs font-medium text-primary hover:underline">Ver contas</Link>} />
+            <CardHeader title={t('Contas')} description={t('Saldo atual por conta')} icon={<Landmark />} action={<Link to="/app/contas" className="text-xs font-medium text-primary hover:underline">{t('Ver contas')}</Link>} />
             <CardBody className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <AccountsMini />
             </CardBody>

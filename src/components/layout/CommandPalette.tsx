@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { t } from '@/i18n';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -45,22 +46,22 @@ export function CommandPalette() {
       fn();
     };
     return [
-      { id: 'new-expense', group: 'Ações', label: 'Nova despesa', hint: 'D', icon: <TrendingDown />, keywords: 'gasto adicionar', run: close(() => openTx({ type: 'expense' })) },
-      { id: 'new-income', group: 'Ações', label: 'Nova receita', hint: 'R', icon: <TrendingUp />, keywords: 'ganho entrada adicionar', run: close(() => openTx({ type: 'income' })) },
-      { id: 'new-transfer', group: 'Ações', label: 'Nova transferência', icon: <Repeat2 />, keywords: 'mover pix', run: close(() => openTx({ type: 'transfer' })) },
+      { id: 'new-expense', group: t('Ações'), label: t('Nova despesa'), hint: 'D', icon: <TrendingDown />, keywords: `gasto adicionar ${t('gasto adicionar')}`, run: close(() => openTx({ type: 'expense' })) },
+      { id: 'new-income', group: t('Ações'), label: t('Nova receita'), hint: 'R', icon: <TrendingUp />, keywords: `ganho entrada adicionar ${t('ganho entrada adicionar')}`, run: close(() => openTx({ type: 'income' })) },
+      { id: 'new-transfer', group: t('Ações'), label: t('Nova transferência'), icon: <Repeat2 />, keywords: `mover pix ${t('mover pix')}`, run: close(() => openTx({ type: 'transfer' })) },
       ...ALL_NAV.map((n) => ({
         id: n.to,
-        group: 'Navegar',
-        label: n.label,
+        group: t('Navegar'),
+        label: t(n.label),
         hint: n.shortcut,
         icon: <n.icon />,
-        keywords: n.keywords,
+        keywords: `${n.label} ${n.keywords ?? ''}`,
         run: close(() => navigate(n.to)),
       })),
-      { id: 'theme-dark', group: 'Preferências', label: 'Tema escuro', icon: <Moon />, run: close(() => setSettings({ theme: 'dark' })) },
-      { id: 'theme-light', group: 'Preferências', label: 'Tema claro', icon: <Sun />, run: close(() => setSettings({ theme: 'light' })) },
-      { id: 'hide', group: 'Preferências', label: 'Ocultar/mostrar valores', icon: <EyeOff />, keywords: 'privacidade', run: close(toggleHide) },
-      { id: 'logout', group: 'Preferências', label: 'Sair da conta', icon: <LogOut />, keywords: 'logout', run: close(() => { signOut(); navigate('/entrar'); }) },
+      { id: 'theme-dark', group: t('Preferências'), label: t('Tema escuro'), icon: <Moon />, run: close(() => setSettings({ theme: 'dark' })) },
+      { id: 'theme-light', group: t('Preferências'), label: t('Tema claro'), icon: <Sun />, run: close(() => setSettings({ theme: 'light' })) },
+      { id: 'hide', group: t('Preferências'), label: t('Ocultar/mostrar valores'), icon: <EyeOff />, keywords: `privacidade ${t('privacidade')}`, run: close(toggleHide) },
+      { id: 'logout', group: t('Preferências'), label: t('Sair da conta'), icon: <LogOut />, keywords: 'logout', run: close(() => { signOut(); navigate('/entrar'); }) },
     ];
   }, [navigate, openTx, setOpen, setSettings, toggleHide, signOut]);
 
@@ -70,17 +71,17 @@ export function CommandPalette() {
     const txs: Command[] =
       q.length >= 2
         ? transactions
-            .filter((t) => normalize(t.description).includes(q))
+            .filter((tx) => normalize(tx.description).includes(q))
             .slice(0, 6)
-            .map((t) => ({
-              id: t.id,
-              group: 'Transações',
-              label: t.description,
-              hint: `${formatDate(t.date)} · ${money(t.amount)}`,
-              icon: t.type === 'income' ? <TrendingUp /> : t.type === 'expense' ? <TrendingDown /> : <Repeat2 />,
+            .map((tx) => ({
+              id: tx.id,
+              group: t('Transações'),
+              label: tx.description,
+              hint: `${formatDate(tx.date)} · ${money(tx.amount)}`,
+              icon: tx.type === 'income' ? <TrendingUp /> : tx.type === 'expense' ? <TrendingDown /> : <Repeat2 />,
               run: () => {
                 setOpen(false);
-                navigate(`/app/transacoes?busca=${encodeURIComponent(t.description)}`);
+                navigate(`/app/transacoes?busca=${encodeURIComponent(tx.description)}`);
               },
             }))
         : [];
@@ -126,7 +127,7 @@ export function CommandPalette() {
           <motion.div
             role="dialog"
             aria-modal="true"
-            aria-label="Paleta de comandos"
+            aria-label={t('Paleta de comandos')}
             initial={{ opacity: 0, scale: 0.97, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.98 }}
@@ -140,7 +141,7 @@ export function CommandPalette() {
                 ref={input}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Digite um comando ou busque transações…"
+                placeholder={t('Digite um comando ou busque transações…')}
                 className="h-14 flex-1 bg-transparent text-[15px] outline-none placeholder:text-fg-subtle"
                 role="combobox"
                 aria-expanded
@@ -150,7 +151,7 @@ export function CommandPalette() {
               <kbd className="rounded-md border border-border px-1.5 py-0.5 text-[11px] text-fg-subtle">ESC</kbd>
             </div>
             <div ref={list} id="cmdk-list" role="listbox" className="scrollbar-thin max-h-[52vh] overflow-y-auto p-2">
-              {results.length === 0 && <p className="px-3 py-10 text-center text-sm text-fg-subtle">Nenhum resultado para “{query}”.</p>}
+              {results.length === 0 && <p className="px-3 py-10 text-center text-sm text-fg-subtle">{t('Nenhum resultado para “{query}”.', { query })}</p>}
               {results.map((c, i) => {
                 const header = c.group !== lastGroup ? c.group : null;
                 lastGroup = c.group;
