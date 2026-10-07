@@ -15,7 +15,7 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: 'Visão geral',
     items: [
-      { to: '/app', label: 'Dashboard', icon: LayoutDashboard, shortcut: 'G', keywords: 'inicio home painel overview panel' },
+      { to: '/app', label: 'Início', icon: LayoutDashboard, shortcut: 'G', keywords: 'inicio home painel overview panel' },
       { to: '/app/analises', label: 'Análises', icon: BarChart3, keywords: 'graficos dre lucros perdas fluxo caixa analytics charts profit loss cash flow income statement graficos ganancias perdidas flujo estado de resultados' },
       { to: '/app/saude', label: 'Saúde financeira', icon: Gauge, keywords: 'score pontuacao health salud puntuacion' },
       { to: '/app/assistente', label: 'Nexora AI', icon: Bot, keywords: 'assistente ia chat assistant ai asistente' },
@@ -59,7 +59,7 @@ export const ALL_NAV = [...NAV_GROUPS.flatMap((g) => g.items), ...ACCOUNT_NAV];
 const byPath = (to: string) => ALL_NAV.find((n) => n.to === to)!;
 
 /** Menu lateral enxuto: o essencial sempre visível… */
-export const PRIMARY_NAV: NavItem[] = ['/app', '/app/transacoes', '/app/contas', '/app/cartoes', '/app/metas', '/app/analises', '/app/assistente'].map(byPath);
+export const PRIMARY_NAV: NavItem[] = ['/app', '/app/assistente', '/app/transacoes', '/app/cartoes', '/app/metas', '/app/contas'].map(byPath);
 
 /** …e o restante agrupado em "Mais" (fechado por padrão). */
-export const MORE_NAV: NavItem[] = ['/app/orcamentos', '/app/investimentos', '/app/dividas', '/app/assinaturas', '/app/calendario', '/app/relatorios', '/app/categorias', '/app/saude'].map(byPath);
+export const MORE_NAV: NavItem[] = ['/app/analises', '/app/orcamentos', '/app/investimentos', '/app/dividas', '/app/assinaturas', '/app/calendario', '/app/relatorios', '/app/categorias', '/app/saude'].map(byPath);

@@ -10,7 +10,7 @@ import { useResolvedTheme } from '@/hooks/useTheme';
 import { ALL_NAV } from '@/lib/navigation';
 
 /** Telas que não cabem na barra inferior do celular. */
-const SECTIONS = ['/app/contas', '/app/cartoes', '/app/metas', '/app/orcamentos', '/app/investimentos', '/app/dividas', '/app/assinaturas', '/app/calendario', '/app/relatorios', '/app/categorias', '/app/saude', '/app/assistente'];
+const SECTIONS = ['/app/contas', '/app/cartoes', '/app/metas', '/app/analises', '/app/orcamentos', '/app/investimentos', '/app/dividas', '/app/assinaturas', '/app/calendario', '/app/relatorios', '/app/categorias', '/app/saude'];
 
 /** Menu "Mais" do celular: plano, todas as telas e a conta, num lugar só. */
 export default function More() {

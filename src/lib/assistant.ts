@@ -184,6 +184,26 @@ export function suggestions(): string[] {
   return SUGGESTION_KEYS.map((s) => t(s));
 }
 
+/**
+ * Quanto dá para gastar por dia até o fim do mês, mantendo 20% da renda guardados
+ * e as contas previstas pagas (usado no Início e na Nexora AI).
+ */
+export function spendingAllowance(data: FinanceData, ref = today()) {
+  const month = monthKey(ref);
+  const cur = summarize(data.transactions, { from: startOfMonth(ref), to: ref });
+  const avg = monthlyAverages(data.transactions, 3);
+  const events = monthEvents(data, month);
+  const pendingIncome = events.filter((e) => e.kind === 'income' && !e.done && e.date > ref).reduce((s, e) => s + (e.amount ?? 0), 0);
+  const expectedIncome = Math.max(cur.income + pendingIncome, avg.income);
+  const pendingBills = events
+    .filter((e) => !e.done && e.date >= ref && ['bill', 'invoice', 'debt', 'subscription'].includes(e.kind) && !(e.kind === 'subscription' && data.subscriptions.find((x) => x.id === e.refId)?.cardId))
+    .reduce((s, e) => s + (e.amount ?? 0), 0);
+  const savingsTarget = expectedIncome * 0.2;
+  const daysLeft = daysInMonth(Number(month.slice(0, 4)), Number(month.slice(5))) - Number(ref.slice(8)) + 1;
+  const free = expectedIncome - cur.expense - pendingBills - savingsTarget;
+  return { perDay: free / daysLeft, free, daysLeft, expectedIncome, spent: cur.expense, income: cur.income, pendingBills, savingsTarget };
+}
+
 export function answer(question: string, data: FinanceData, money: (v: number) => string = (v) => formatMoney(v)): AssistantAnswer {
   const q = norm(question);
   const ref = today();
@@ -217,18 +237,8 @@ export function answer(question: string, data: FinanceData, money: (v: number) =
   // --- Quanto posso gastar hoje?
   if (/posso gastar|disponivel para gastar|limite diario|gastar por dia|can i (still )?spend|available to spend|safe to spend|daily (limit|budget)|spend per day|puedo gastar|disponible para gastar|gastar (por|al) dia/.test(q)) {
     if (!hasTx) return noData;
-    const month = monthKey(ref);
-    const cur = summarize(data.transactions, { from: startOfMonth(ref), to: ref });
-    const avg = monthlyAverages(data.transactions, 3);
-    const pendingIncome = monthEvents(data, month).filter((e) => e.kind === 'income' && !e.done && e.date > ref).reduce((s, e) => s + (e.amount ?? 0), 0);
-    const expectedIncome = Math.max(cur.income + pendingIncome, avg.income);
-    const pendingBills = monthEvents(data, month)
-      .filter((e) => !e.done && e.date >= ref && ['bill', 'invoice', 'debt', 'subscription'].includes(e.kind) && !(e.kind === 'subscription' && data.subscriptions.find((s) => s.id === e.refId)?.cardId))
-      .reduce((s, e) => s + (e.amount ?? 0), 0);
-    const savingsTarget = expectedIncome * 0.2;
-    const daysLeft = daysInMonth(Number(month.slice(0, 4)), Number(month.slice(5))) - Number(ref.slice(8)) + 1;
-    const free = expectedIncome - cur.expense - pendingBills - savingsTarget;
-    const perDay = free / daysLeft;
+    const { perDay, free, daysLeft, expectedIncome, spent, pendingBills, savingsTarget } = spendingAllowance(data, ref);
+    const cur = { expense: spent };
     return {
       text:
         perDay > 0

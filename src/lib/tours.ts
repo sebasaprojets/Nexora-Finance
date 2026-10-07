@@ -106,15 +106,12 @@ const RAW_TOURS: Record<string, Tour> = {
   // ---------------------------------------------------------------------------
   dashboard: {
     id: 'dashboard',
-    title: 'Dashboard',
+    title: 'Início',
     steps: [
-      { title: 'Seu painel está pronto 🎉', body: 'Com seus lançamentos, o dashboard mostra em segundos quanto você tem, quanto entrou, quanto saiu e quanto está economizando. Vamos conhecer cada parte.' },
-      { target: 'kpis', title: 'Seus números principais', body: 'Saldo, entradas, saídas e economia. Cada card compara com o período anterior e tem um mini gráfico. Toque ou passe o mouse no “i” para entender o cálculo.' },
-      { target: 'period', title: 'Escolha o período', body: 'Troque entre 7 dias, 30 dias, 3 meses, 6 meses, 1 ano ou datas personalizadas. Todos os números e gráficos se atualizam.' },
-      { target: 'flow-chart', title: 'Fluxo financeiro', body: 'Receitas (verde) e despesas (laranja) ao longo do tempo. A linha tracejada é o resultado — o que sobrou. Toque no gráfico para ver os valores de cada dia ou semana.' },
-      { target: 'quick-actions', title: 'Ações rápidas', body: 'Atalhos para lançar receitas, despesas, transferências e pagar faturas.' },
-      { target: 'insights', title: 'Nexora Insights', body: 'Dicas geradas a partir dos seus números reais — por exemplo, quanto você gastou a mais ou a menos que no período anterior.' },
-      { target: 'search', title: 'Busca e comandos', body: 'Pressione Ctrl + K (ou ⌘ + K) para buscar transações e ir para qualquer tela.' },
+      { title: 'Seu Início está pronto 🎉', body: 'Aqui fica o essencial, em linguagem simples: quanto você pode gastar, o que vai vencer e para onde foi seu dinheiro.' },
+      { target: 'kpis', title: 'Quanto você pode gastar', body: 'A Nexora calcula quanto dá para gastar por dia até o fim do mês, guardando 20% da renda e com as contas previstas pagas.' },
+      { target: 'ai-home', title: 'Converse com a Nexora AI', body: 'Pergunte qualquer coisa ou registre um gasto escrevendo, como “gastei 30 no mercado”. Ela entende e organiza para você.' },
+      { target: 'insights', title: 'Dicas para você', body: 'Dicas geradas a partir dos seus números reais — por exemplo, quando um gasto foge do seu padrão.' },
       { target: 'hide-values', title: 'Privacidade na tela', body: 'Em um lugar público? Toque no olho para ocultar todos os valores.' },
     ],
   },

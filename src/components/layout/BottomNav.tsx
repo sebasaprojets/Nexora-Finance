@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { t } from '@/i18n';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeftRight, BarChart3, House, LayoutGrid, Plus, TrendingDown, TrendingUp, Repeat2 } from 'lucide-react';
+import { ArrowLeftRight, House, LayoutGrid, Sparkles, Plus, TrendingDown, TrendingUp, Repeat2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useUI } from '@/store/ui';
 
@@ -9,7 +9,7 @@ const items = [
   { to: '/app', label: 'Início', icon: House },
   { to: '/app/transacoes', label: 'Transações', icon: ArrowLeftRight },
   null,
-  { to: '/app/analises', label: 'Análises', icon: BarChart3 },
+  { to: '/app/assistente', label: 'Nexora AI', icon: Sparkles },
   { to: '/app/mais', label: 'Mais', icon: LayoutGrid },
 ] as const;
 
@@ -20,7 +20,7 @@ export function BottomNav() {
   const openTx = useUI((s) => s.openTransaction);
   const { pathname } = useLocation();
   // "Mais" fica aceso também nas telas que ele agrupa (Contas, Metas, Perfil…).
-  const inMore = !['/app', '/app/transacoes', '/app/analises'].some((p) => (p === '/app' ? pathname === '/app' || pathname === '/app/' : pathname.startsWith(p)));
+  const inMore = !['/app', '/app/transacoes', '/app/assistente'].some((p) => (p === '/app' ? pathname === '/app' || pathname === '/app/' : pathname.startsWith(p)));
 
   const actions = [
     { label: t('Receita'), icon: TrendingUp, type: 'income' as const, color: 'var(--series-income)' },

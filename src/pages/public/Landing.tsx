@@ -170,18 +170,6 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* BENEFÍCIOS */}
-        <section className="cv-auto border-y border-border bg-bg-elevated/50 px-5 py-20">
-          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 md:grid-cols-4 md:gap-10">
-            {t.stats.map(([v, l], i) => (
-              <motion.div key={l} {...reveal} transition={{ ...reveal.transition, delay: i * 0.06 }} className="text-center md:text-left">
-                <p className="tabular font-display text-4xl font-semibold tracking-tight sm:text-5xl">{v}</p>
-                <p className="mt-2 text-sm text-fg-muted">{l}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
         {/* FUNCIONALIDADES */}
         <section id="funcionalidades" className="cv-auto scroll-mt-20 px-5 py-24">
           <div className="mx-auto max-w-7xl space-y-24">

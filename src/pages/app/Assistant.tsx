@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { usePlan } from '@/hooks/usePlan';
 import { FREE_LIMITS, addAiUsage, aiUsage } from '@/lib/plans';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ArrowUp, Bot, Check, Pencil, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -107,6 +107,18 @@ export default function Assistant() {
       inputRef.current?.focus();
     }, 450);
   };
+
+  // Pergunta vinda do Início (?q=...): responde na hora.
+  const [params, setParams] = useSearchParams();
+  const asked = useRef(false);
+  useEffect(() => {
+    const q = params.get('q');
+    if (!q || asked.current) return;
+    asked.current = true;
+    setParams({}, { replace: true });
+    ask(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-10rem)] max-w-3xl flex-col">
