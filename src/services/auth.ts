@@ -120,7 +120,10 @@ export const authService = {
       return null;
     }
     const user = users().find((u) => u.id === session.userId);
-    return user ? { session, user: publicUser(user) } : null;
+    if (!user) return null;
+    // A demonstração é sempre genérica (corrige sessões antigas com outro nome).
+    const pub = publicUser(user);
+    return { session, user: user.provider === 'demo' ? { ...pub, name: 'Visitante', avatarUrl: undefined } : pub };
   },
 
   async signIn(email: string, password: string, remember: boolean) {
@@ -182,19 +185,18 @@ export const authService = {
   async signInDemo() {
     await delay(350);
     const list = users();
-    let user = list.find((u) => u.provider === 'demo');
-    if (!user) {
-      user = {
-        id: 'usr_demo',
-        name: 'Sebastião',
-        email: 'demo@nexora.app',
-        plan: 'pro',
-        createdAt: '2025-01-12T10:00:00.000Z',
-        onboarded: true,
-        provider: 'demo',
-      };
-      saveUsers([...list, user]);
-    }
+    // Conta de demonstração genérica (igual para qualquer visitante, sem dados pessoais).
+    const demo: StoredUser = {
+      id: 'usr_demo',
+      name: 'Visitante',
+      email: 'demo@nexora.app',
+      plan: 'pro',
+      createdAt: '2025-01-12T10:00:00.000Z',
+      onboarded: true,
+      provider: 'demo',
+    };
+    const user = { ...(list.find((u) => u.provider === 'demo') ?? {}), ...demo, avatarUrl: undefined };
+    saveUsers([...list.filter((u) => u.provider !== 'demo'), user]);
     return { session: createSession(user.id, true), user: publicUser(user) };
   },
 

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { WifiOff } from 'lucide-react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
+import { DemoBanner } from '@/components/layout/DemoBanner';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { InstallPrompt } from '@/components/layout/InstallPrompt';
@@ -70,6 +71,7 @@ export function AppLayout() {
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
+        <DemoBanner />
         {!online && (
           <div role="status" className="flex items-center justify-center gap-2 bg-warning-soft px-4 py-2 text-xs font-medium text-warning">
             <WifiOff className="size-3.5" aria-hidden /> Você está offline — exibindo dados salvos neste dispositivo.
