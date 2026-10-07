@@ -286,24 +286,4 @@ export function IntroSplash({ onDone }: { onDone: () => void }) {
   );
 }
 
-const SESSION_KEY = 'nexora:intro-seen';
-
-/** Mostra a abertura uma vez por sessão (se ativada nas configurações). */
-export function shouldShowIntro(enabled: boolean): boolean {
-  if (!enabled || typeof window === 'undefined') return false;
-  try {
-    return sessionStorage.getItem(SESSION_KEY) !== '1';
-  } catch {
-    return true;
-  }
-}
-
-export function markIntroSeen() {
-  try {
-    sessionStorage.setItem(SESSION_KEY, '1');
-  } catch {
-    /* modo privado */
-  }
-}
-
 export const REPLAY_INTRO_EVENT = 'nexora:replay-intro';

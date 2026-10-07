@@ -56,7 +56,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="flex items-center gap-2 text-sm font-medium"><Clapperboard className="size-4 text-fg-subtle" aria-hidden /> Abertura animada</p>
-              <p className="text-xs text-fg-subtle">Animação do logo exibida ao abrir a Nexora (uma vez por sessão).</p>
+              <p className="text-xs text-fg-subtle">Animação do logo exibida sempre que a Nexora é aberta.</p>
               <button type="button" onClick={() => window.dispatchEvent(new Event(REPLAY_INTRO_EVENT))} className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
                 <Play className="size-3" aria-hidden /> Ver agora
               </button>

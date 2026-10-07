@@ -9,7 +9,7 @@ import { useApplyTheme } from '@/hooks/useTheme';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useAuth } from '@/store/auth';
 import { useFinance } from '@/store/finance';
-import { IntroSplash, markIntroSeen, REPLAY_INTRO_EVENT, shouldShowIntro } from '@/components/brand/IntroSplash';
+import { IntroSplash, REPLAY_INTRO_EVENT } from '@/components/brand/IntroSplash';
 
 // Code splitting por rota.
 const Landing = lazy(() => import('@/pages/public/Landing'));
@@ -85,11 +85,8 @@ export function App() {
   useApplyTheme();
   useWorkspaceSync();
   useEffect(() => init(), [init]);
-  // Abertura cinematográfica: uma vez por sessão (pode ser revista em Configurações).
-  const [intro, setIntro] = useState(() => shouldShowIntro(true));
-  useEffect(() => {
-    if (intro) markIntroSeen();
-  }, [intro]);
+  // Abertura cinematográfica: sempre exibida ao abrir/recarregar o site, em qualquer dispositivo.
+  const [intro, setIntro] = useState(true);
   useEffect(() => {
     const replay = () => setIntro(true);
     window.addEventListener(REPLAY_INTRO_EVENT, replay);
