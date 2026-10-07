@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { AppLayout } from '@/layouts/AppLayout';
@@ -9,6 +9,8 @@ import { useApplyTheme } from '@/hooks/useTheme';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useAuth } from '@/store/auth';
 import { useFinance } from '@/store/finance';
+import { useSettings } from '@/store/settings';
+import { IntroSplash, markIntroSeen, REPLAY_INTRO_EVENT, shouldShowIntro } from '@/components/brand/IntroSplash';
 
 // Code splitting por rota.
 const Landing = lazy(() => import('@/pages/public/Landing'));
@@ -84,6 +86,16 @@ export function App() {
   useApplyTheme();
   useWorkspaceSync();
   useEffect(() => init(), [init]);
+  // Abertura cinematográfica: uma vez por sessão (pode ser revista em Configurações).
+  const [intro, setIntro] = useState(() => shouldShowIntro(useSettings.getState().intro));
+  useEffect(() => {
+    if (intro) markIntroSeen();
+  }, [intro]);
+  useEffect(() => {
+    const replay = () => setIntro(true);
+    window.addEventListener(REPLAY_INTRO_EVENT, replay);
+    return () => window.removeEventListener(REPLAY_INTRO_EVENT, replay);
+  }, []);
 
   return (
     <MotionConfig reducedMotion={reduced ? 'always' : 'never'}>
@@ -126,6 +138,7 @@ export function App() {
           </Suspense>
         </BrowserRouter>
         <Toaster />
+        {intro && <IntroSplash onDone={() => setIntro(false)} />}
       </ErrorBoundary>
     </MotionConfig>
   );

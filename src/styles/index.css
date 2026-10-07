@@ -236,6 +236,18 @@
   }
 }
 
+/* Partículas da abertura: sobem devagar e cintilam. */
+@keyframes nx-particle {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  20% { opacity: var(--o, 0.6); }
+  100% { transform: translate3d(0, -60px, 0); opacity: 0; }
+}
+.nx-particle {
+  animation: nx-particle 8s ease-in-out infinite;
+  box-shadow: 0 0 6px 1px rgb(127 233 255 / 0.6);
+  will-change: transform, opacity;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -1,4 +1,5 @@
-import { Database, Eye, Globe, GraduationCap, Monitor, Moon, Palette, RotateCcw, Sparkles, Sun, Wallet } from 'lucide-react';
+import { Clapperboard, Database, Eye, Globe, GraduationCap, Monitor, Moon, Palette, Play, RotateCcw, Sparkles, Sun, Wallet } from 'lucide-react';
+import { REPLAY_INTRO_EVENT } from '@/components/brand/IntroSplash';
 import { PageHeader } from '@/components/common/PageHeader';
 import { NotificationSettings } from '@/components/common/NotificationSettings';
 import { Button } from '@/components/ui/Button';
@@ -51,6 +52,16 @@ export default function SettingsPage() {
               <p className="text-xs text-fg-subtle">“Sistema” respeita a preferência de movimento reduzido do dispositivo.</p>
             </div>
             <Segmented size="sm" label="Animações" value={s.reducedMotion} onChange={(v) => s.set({ reducedMotion: v })} options={[{ value: 'system', label: 'Sistema' }, { value: 'off', label: 'Ativas' }, { value: 'on', label: 'Reduzidas' }]} />
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="flex items-center gap-2 text-sm font-medium"><Clapperboard className="size-4 text-fg-subtle" aria-hidden /> Abertura animada</p>
+              <p className="text-xs text-fg-subtle">Animação do logo ao abrir a Nexora (uma vez por sessão).</p>
+              <button type="button" onClick={() => window.dispatchEvent(new Event(REPLAY_INTRO_EVENT))} className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                <Play className="size-3" aria-hidden /> Ver agora
+              </button>
+            </div>
+            <Switch checked={s.intro} onChange={(v) => s.set({ intro: v })} label="Abertura animada" />
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>

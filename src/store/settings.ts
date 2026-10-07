@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hideValues: false,
   reducedMotion: 'system',
   tutorials: { enabled: true, seen: [] },
+  intro: true,
   notifications: {
     push: false,
     email: true,
