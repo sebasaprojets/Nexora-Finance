@@ -53,7 +53,7 @@ function Nav() {
     ['#faq', 'FAQ'],
   ];
   return (
-    <header className="glass fixed inset-x-0 top-0 z-50 border-x-0 border-t-0">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-bg/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
       <nav className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-5" aria-label="Principal">
         <Link to="/" aria-label="Nexora — início"><Logo /></Link>
         <ul className="ml-6 hidden gap-6 text-sm text-fg-muted md:flex">
@@ -110,7 +110,7 @@ export default function Landing() {
       <Nav />
       <main>
         {/* HERO */}
-        <section className="relative px-5 pt-32 pb-20 sm:pt-40">
+        <section className="relative px-5 pt-[calc(env(safe-area-inset-top)+8rem)] pb-20 sm:pt-40">
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-50" aria-hidden />
           <div className="pointer-events-none absolute top-0 left-1/2 size-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#7b6dff]/15 blur-[140px]" aria-hidden />
           <div className="relative mx-auto max-w-4xl text-center">

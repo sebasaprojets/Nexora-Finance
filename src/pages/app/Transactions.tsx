@@ -320,7 +320,7 @@ export default function Transactions() {
       </div>
 
       {selected.size > 0 && (
-        <div className="glass sticky top-[72px] z-20 mb-3 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm shadow-md">
+        <div className="glass sticky top-[calc(72px+env(safe-area-inset-top))] z-20 mb-3 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm shadow-md">
           <span className="font-medium">{selected.size} selecionada(s)</span>
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
             Limpar

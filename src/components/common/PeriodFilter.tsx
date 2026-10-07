@@ -1,5 +1,6 @@
 import { CalendarRange } from 'lucide-react';
 import { Segmented } from '@/components/ui/Segmented';
+import { cn } from '@/lib/cn';
 import { PERIOD_LABELS, type Period, type PeriodPreset } from '@/lib/finance';
 
 const PRESETS: PeriodPreset[] = ['7d', '30d', '3m', '6m', '1y', 'custom'];
@@ -18,19 +19,38 @@ export function PeriodFilter({
   presets?: PeriodPreset[];
 }) {
   return (
-    <div data-tour="period" className="flex max-w-full min-w-0 flex-wrap items-center gap-2">
+    <div data-tour="period" className="flex w-full max-w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
+      {/* Celular: grade de 3 colunas, todos os botões visíveis e do mesmo tamanho. */}
+      <div role="radiogroup" aria-label="Período" className="grid w-full grid-cols-3 gap-1.5 sm:hidden">
+        {presets.map((p) => (
+          <button
+            key={p}
+            role="radio"
+            aria-checked={preset === p}
+            onClick={() => onPreset(p)}
+            className={cn(
+              'flex h-10 items-center justify-center gap-1.5 rounded-xl border text-[13px] font-medium transition-colors [&>svg]:size-3.5',
+              preset === p ? 'border-primary bg-primary-soft text-fg' : 'border-border bg-surface-2/60 text-fg-muted',
+            )}
+          >
+            {p === 'custom' && <CalendarRange aria-hidden />}
+            {p === 'custom' ? 'Datas' : PERIOD_LABELS[p]}
+          </button>
+        ))}
+      </div>
       <Segmented
         label="Período"
         size="sm"
         value={preset}
         onChange={onPreset}
+        className="hidden sm:inline-flex"
         options={presets.map((p) => ({ value: p, label: PERIOD_LABELS[p], icon: p === 'custom' ? <CalendarRange /> : undefined }))}
       />
       {preset === 'custom' && (
-        <div className="flex items-center gap-1.5 text-xs">
-          <input type="date" aria-label="Data inicial" value={custom.from} max={custom.to} onChange={(e) => e.target.value && onCustom({ ...custom, from: e.target.value })} className="h-8 rounded-lg border border-border bg-surface-2/60 px-2 text-fg outline-none focus:border-primary" />
+        <div className="flex w-full items-center gap-1.5 text-xs sm:w-auto">
+          <input type="date" aria-label="Data inicial" value={custom.from} max={custom.to} onChange={(e) => e.target.value && onCustom({ ...custom, from: e.target.value })} className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-surface-2/60 px-2 text-fg outline-none focus:border-primary sm:h-8 sm:flex-none" />
           <span className="text-fg-subtle">até</span>
-          <input type="date" aria-label="Data final" value={custom.to} min={custom.from} onChange={(e) => e.target.value && onCustom({ ...custom, to: e.target.value })} className="h-8 rounded-lg border border-border bg-surface-2/60 px-2 text-fg outline-none focus:border-primary" />
+          <input type="date" aria-label="Data final" value={custom.to} min={custom.from} onChange={(e) => e.target.value && onCustom({ ...custom, to: e.target.value })} className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-surface-2/60 px-2 text-fg outline-none focus:border-primary sm:h-8 sm:flex-none" />
         </div>
       )}
     </div>

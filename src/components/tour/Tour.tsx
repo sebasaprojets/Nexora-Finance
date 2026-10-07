@@ -136,7 +136,7 @@ export function TourOverlay() {
   let style: React.CSSProperties;
   // Centralizado sem `transform` (a animação do framer-motion usa transform e o sobrescreveria).
   if (!spot) style = { inset: 0, margin: 'auto', height: 'fit-content', width: CARD_W };
-  else if (mobile) style = spot.top + spot.height / 2 > vh * 0.55 ? { top: 16, left: 16, right: 16 } : { bottom: 16, left: 16, right: 16 };
+  else if (mobile) style = spot.top + spot.height / 2 > vh * 0.55 ? { top: 'calc(env(safe-area-inset-top) + 12px)', left: 16, right: 16 } : { bottom: 'calc(env(safe-area-inset-bottom) + 12px)', left: 16, right: 16 };
   else {
     const below = spot.top + spot.height + 12;
     const fitsBelow = below + 230 < vh;

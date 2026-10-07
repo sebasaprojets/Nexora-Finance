@@ -35,7 +35,7 @@ const TERMS = {
 export default function Legal({ doc }: { doc: 'privacy' | 'terms' }) {
   const d = doc === 'privacy' ? PRIVACY : TERMS;
   return (
-    <div className="min-h-dvh px-5 py-8">
+    <div className="min-h-dvh px-5 pt-[calc(env(safe-area-inset-top)+2rem)] pb-8">
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between">
           <Link to="/" aria-label="Nexora — início"><Logo /></Link>

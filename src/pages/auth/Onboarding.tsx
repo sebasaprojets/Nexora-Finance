@@ -109,7 +109,7 @@ export default function Onboarding() {
   return (
     <div className="relative min-h-dvh overflow-hidden">
       <div className="pointer-events-none absolute -top-48 left-1/2 size-[640px] -translate-x-1/2 rounded-full bg-[#7b6dff]/12 blur-[140px]" aria-hidden />
-      <div className="relative mx-auto flex min-h-dvh max-w-2xl flex-col px-5 py-6">
+      <div className="relative mx-auto flex min-h-dvh max-w-2xl flex-col px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-6">
         <div className="flex items-center justify-between">
           <Logo />
           <span className="text-xs text-fg-subtle">
@@ -291,10 +291,10 @@ export default function Onboarding() {
                     ))}
                   </ul>
                   <div className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
-                    <Button size="lg" className="flex-1" onClick={() => finish(false)}>
+                    <Button size="lg" className="w-full sm:flex-1" onClick={() => finish(false)}>
                       Começar do zero
                     </Button>
-                    <Button size="lg" variant="secondary" className="flex-1" onClick={() => finish(true)}>
+                    <Button size="lg" variant="secondary" className="w-full sm:flex-1" onClick={() => finish(true)}>
                       Explorar com dados de exemplo
                     </Button>
                   </div>

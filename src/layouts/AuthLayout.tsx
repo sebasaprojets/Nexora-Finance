@@ -8,7 +8,7 @@ import { Logo } from '@/components/common/Logo';
 export function AuthLayout({ title, subtitle, children, footer }: { title: string; subtitle: string; children: ReactNode; footer?: ReactNode }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_1.05fr]">
-      <div className="flex flex-col px-5 py-6 sm:px-10">
+      <div className="flex flex-col px-5 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-6 sm:px-10">
         <Link to="/" aria-label="Nexora — página inicial" className="w-fit">
           <Logo />
         </Link>

@@ -87,14 +87,17 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm text-fg-subtle">
-            {greeting()} · {formatDate(today())}
-          </p>
-          <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-[28px]">Olá, {firstName} 👋</h1>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm text-fg-subtle">
+              {greeting()} · {formatDate(today())}
+            </p>
+            <h1 className="mt-1 truncate font-display text-2xl font-semibold tracking-tight sm:text-[28px]">Olá, {firstName} 👋</h1>
+          </div>
+          <TourButton id="dashboard" className="lg:hidden" />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <TourButton id="dashboard" />
+        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
+          <TourButton id="dashboard" className="hidden lg:inline-flex" />
           <PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />
         </div>
       </div>
