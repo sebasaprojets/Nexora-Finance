@@ -282,7 +282,7 @@ export function IntroSplash({ onDone }: { onDone: () => void }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={t(3.3, 1.3)}
               >
-                Inteligência financeira em um só lugar.
+                {tr('Inteligência financeira em um só lugar.')}
               </motion.p>
             </motion.div>
           </div>
