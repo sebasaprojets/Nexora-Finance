@@ -9,7 +9,8 @@ import { ConfirmDialog } from '@/components/ui/Modal';
 import { useAuth } from '@/store/auth';
 import { toast } from '@/store/toast';
 import { BUSINESS, whatsappLink } from '@/config/business';
-import { PRICES, freeFeatures, proFeatures, billingEnabled, brl, hasPro } from '@/lib/plans';
+import { PRICES, TRIAL_DAYS, freeFeatures, proFeatures, billingEnabled, limitsEnabled, brl, hasPro, isPaidPro, startTrial, trialActive, trialAvailable, trialDaysLeft } from '@/lib/plans';
+import { UsageMeters } from '@/components/billing/UsageMeters';
 import { formatDate } from '@/lib/dates';
 import { cn } from '@/lib/cn';
 import { t } from '@/i18n';
@@ -24,7 +25,15 @@ export default function Plan() {
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [params, setParams] = useSearchParams();
   const polled = useRef(false);
-  const paid = billingEnabled && hasPro(user) && !demo;
+  const paid = isPaidPro(user) && !demo;
+  const onTrial = !paid && !demo && trialActive(user.id);
+  const canTrial = trialAvailable(user);
+  const free = limitsEnabled && !demo && !hasPro(user);
+  const beginTrial = () => {
+    startTrial(user.id);
+    useAuth.setState({ user: { ...user } });
+    toast.success(t('Teste do Pro ativado! 🎉'), { description: t('Você tem {n} dias com tudo liberado.', { n: TRIAL_DAYS }) });
+  };
   const founderPrice = user.founder ? PRICES.founder : null;
 
   // Voltando do Mercado Pago: o webhook ativa o plano em alguns segundos.
@@ -77,7 +86,34 @@ export default function Plan() {
     <div className="mx-auto max-w-4xl space-y-6">
       <PageHeader title={t('Meu plano')} description={t('Escolha como usar a Nexora. Sem fidelidade — cancele quando quiser.')} />
 
-      {!billingEnabled && (
+      {onTrial && (
+        <Card className="holo flex items-start gap-3 p-5">
+          <Sparkles className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+          <div>
+            <p className="font-medium">{t('Teste do Pro ativo · {n} dias restantes', { n: trialDaysLeft(user.id) })}</p>
+            <p className="mt-1 text-sm text-fg-subtle">{t('Aproveite tudo liberado. Ao final do teste você volta ao Grátis automaticamente — sem cobrança e sem perder dados.')}</p>
+          </div>
+        </Card>
+      )}
+
+      {free && (
+        <Card className="p-5 sm:p-6">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-display text-lg font-semibold">{t('Seu uso no plano Grátis')}</p>
+              <p className="text-sm text-fg-subtle">{t('Ao chegar no limite, seus dados continuam salvos — só não dá para criar novos itens.')}</p>
+            </div>
+            {canTrial && (
+              <Button leftIcon={<Sparkles className="size-4" />} onClick={beginTrial}>
+                {t('Testar Pro grátis por {n} dias', { n: TRIAL_DAYS })}
+              </Button>
+            )}
+          </div>
+          <UsageMeters />
+        </Card>
+      )}
+
+      {!limitsEnabled && (
         <Card className="holo flex items-start gap-3 p-5">
           <Sparkles className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
           <div>
@@ -87,7 +123,7 @@ export default function Plan() {
         </Card>
       )}
 
-      {billingEnabled && paid && (
+      {paid && (
         <Card className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center">
           <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary"><Crown className="size-5" aria-hidden /></span>
           <div className="min-w-0 flex-1">
@@ -134,7 +170,7 @@ export default function Plan() {
               <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-fg-subtle" aria-hidden /> {f}</li>
             ))}
           </ul>
-          {billingEnabled && !paid && <Badge className="mt-5">{t('Seu plano atual')}</Badge>}
+          {free && <Badge className="mt-5">{t('Seu plano atual')}</Badge>}
         </Card>
 
         <Card className="relative overflow-hidden border-primary/50 p-6">
@@ -156,8 +192,25 @@ export default function Plan() {
                 {t('Assinar Pro')}
               </Button>
             )}
-            {demo && billingEnabled && <p className="mt-6 text-sm text-fg-subtle">{t('Crie sua conta para assinar o Pro.')}</p>}
-            {(hasPro(user) && !billingEnabled) && <Badge tone="success" className="mt-5">{t('Liberado no beta')}</Badge>}
+            {canTrial && !billingEnabled && (
+              <Button size="lg" className="mt-6 w-full" leftIcon={<Sparkles className="size-4" />} onClick={beginTrial}>
+                {t('Testar Pro grátis por {n} dias', { n: TRIAL_DAYS })}
+              </Button>
+            )}
+            {canTrial && billingEnabled && (
+              <Button variant="ghost" className="mt-2 w-full" onClick={beginTrial}>
+                {t('ou teste grátis por {n} dias', { n: TRIAL_DAYS })}
+              </Button>
+            )}
+            {!billingEnabled && !canTrial && !paid && !demo && limitsEnabled && (
+              <p className="mt-6 rounded-xl bg-surface-2/70 p-3 text-sm text-fg-muted">
+                {t('O pagamento online chega em breve.')}{' '}
+                {wa ? <a href={wa} target="_blank" rel="noreferrer" className="font-medium text-primary hover:underline">{t('Fale com a gente para ativar o Pro.')}</a> : t('Fique de olho: avisaremos por aqui.')}
+              </p>
+            )}
+            {demo && <p className="mt-6 text-sm text-fg-subtle">{t('Crie sua conta para assinar o Pro.')}</p>}
+            {paid && <Badge tone="success" className="mt-5">{t('Seu plano atual')}</Badge>}
+            {!limitsEnabled && <Badge tone="success" className="mt-5">{t('Liberado no beta')}</Badge>}
           </div>
         </Card>
       </div>

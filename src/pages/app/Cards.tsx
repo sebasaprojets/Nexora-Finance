@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { UsageBadge } from '@/components/billing/UsageBadge';
 import { usePlan } from '@/hooks/usePlan';
 import { useNavigate } from 'react-router-dom';
 import { useSettings } from '@/store/settings';
@@ -264,7 +265,7 @@ export default function Cards() {
 
   return (
     <div>
-      <PageHeader title={t('Cartões')} description={t('Limites, faturas, vencimentos e compras.')} actions={<><TourButton id={tourId} /><Button data-tour="card-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Novo cartão')}</Button></>} />
+      <PageHeader title={t('Cartões')} description={t('Limites, faturas, vencimentos e compras.')} actions={<><TourButton id={tourId} /><UsageBadge resource="cards" /><Button data-tour="card-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Novo cartão')}</Button></>} />
 
       {cards.length === 0 ? (
         <Card>

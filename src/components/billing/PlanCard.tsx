@@ -2,16 +2,20 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Crown, Sparkles } from 'lucide-react';
 import { t } from '@/i18n';
 import { useAuth } from '@/store/auth';
-import { billingEnabled, hasPro } from '@/lib/plans';
+import { FREE_LIMITS, isPaidPro, limitsEnabled, trialActive, trialDaysLeft, type LimitedResource } from '@/lib/plans';
+import { usePlan } from '@/hooks/usePlan';
 import { formatDate } from '@/lib/dates';
 import { cn } from '@/lib/cn';
 
 /** Situação do plano + atalho para melhorar (menu lateral e tela "Mais"). */
 export function PlanCard({ compact, className }: { compact?: boolean; className?: string }) {
   const user = useAuth((s) => s.user);
+  const { usage } = usePlan();
   if (!user) return null;
   const demo = user.provider === 'demo';
-  const pro = billingEnabled && hasPro(user) && !demo;
+  const pro = isPaidPro(user) && !demo;
+  const trial = !pro && !demo && trialActive(user.id);
+  const atLimit = (Object.keys(FREE_LIMITS) as LimitedResource[]).filter((r) => usage(r).used >= usage(r).limit).length;
 
   let title: string;
   let text: string;
@@ -20,7 +24,7 @@ export function PlanCard({ compact, className }: { compact?: boolean; className?
     title = t('Modo demonstração');
     text = t('Crie sua conta para salvar seus dados.');
     cta = t('Ver planos');
-  } else if (!billingEnabled) {
+  } else if (!limitsEnabled) {
     title = t('Beta · tudo liberado');
     text = t('Você usa todos os recursos Pro de graça durante o beta.');
     cta = t('Ver planos');
@@ -33,12 +37,16 @@ export function PlanCard({ compact, className }: { compact?: boolean; className?
           ? t('Renova em {date}', { date: formatDate(user.planRenewsAt.slice(0, 10)) })
           : t('Assinatura ativa');
     cta = t('Gerenciar');
+  } else if (trial) {
+    title = t('Teste do Pro');
+    text = t('{n} dias restantes com tudo liberado.', { n: trialDaysLeft(user.id) });
+    cta = t('Ver planos');
   } else {
     title = t('Plano Grátis');
-    text = t('Desbloqueie tudo ilimitado e relatórios em PDF.');
+    text = atLimit ? (atLimit === 1 ? t('Você atingiu o limite em 1 recurso.') : t('Você atingiu o limite em {n} recursos.', { n: atLimit })) : t('Desbloqueie tudo ilimitado e relatórios em PDF.');
     cta = t('Seja Pro');
   }
-  const highlight = billingEnabled && !pro && !demo;
+  const highlight = limitsEnabled && !pro && !demo && !trial;
 
   return (
     <Link
@@ -52,17 +60,21 @@ export function PlanCard({ compact, className }: { compact?: boolean; className?
     >
       <div className="flex items-center gap-2.5">
         <span className={cn('grid size-8 shrink-0 place-items-center rounded-lg', pro ? 'bg-primary text-primary-fg' : 'bg-primary-soft text-primary')}>
-          {pro || highlight ? <Crown className="size-4" aria-hidden /> : <Sparkles className="size-4" aria-hidden />}
+          {pro || trial || highlight ? <Crown className="size-4" aria-hidden /> : <Sparkles className="size-4" aria-hidden />}
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-semibold">{title}</p>
           {!compact && <p className="mt-0.5 text-xs text-fg-subtle">{text}</p>}
         </div>
         <span className={cn('flex shrink-0 items-center gap-1 text-xs font-semibold', highlight ? 'text-primary' : 'text-fg-subtle group-hover:text-fg')}>
-          {cta} <ArrowRight className="size-3.5" aria-hidden />
+          {!compact && cta} <ArrowRight className="size-3.5" aria-hidden />
         </span>
       </div>
-      {compact && <p className="mt-2 text-xs text-fg-subtle">{text}</p>}
+      {compact && (
+        <p className="mt-2 text-xs text-fg-subtle">
+          {text} {highlight && <span className="font-semibold text-primary">{cta}</span>}
+        </p>
+      )}
     </Link>
   );
 }

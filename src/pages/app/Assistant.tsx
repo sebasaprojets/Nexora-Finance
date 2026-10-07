@@ -1,4 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
+import { usePlan } from '@/hooks/usePlan';
+import { FREE_LIMITS, addAiUsage, aiUsage } from '@/lib/plans';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ArrowUp, Bot, Check, Pencil, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
@@ -41,6 +43,8 @@ export default function Assistant() {
   const data = useFinanceData();
   const money = useMoney();
   const user = useAuth((s) => s.user);
+  const { pro } = usePlan();
+  const openUpgrade = useUI((s) => s.openUpgrade);
   const [messages, setMessages] = useState<Message[]>(chatCache);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
@@ -86,6 +90,12 @@ export default function Assistant() {
   const ask = (q: string) => {
     const text = q.trim().slice(0, 300);
     if (!text || thinking) return;
+    // Plano Grátis: cota mensal de perguntas.
+    if (!pro && user && aiUsage(user.id) >= FREE_LIMITS.ai) {
+      openUpgrade({ resource: 'ai' });
+      return;
+    }
+    if (!pro && user) addAiUsage(user.id);
     setMessages((m) => [...m, { id: uid('m'), role: 'user', text }]);
     setInput('');
     setThinking(true);
@@ -221,6 +231,12 @@ export default function Assistant() {
           <ArrowUp className="size-4" />
         </Button>
       </form>
+      {!pro && user && (
+        <p className="mt-2 text-center text-xs text-fg-subtle">
+          {t('{used} de {limit} perguntas grátis usadas este mês.', { used: Math.min(aiUsage(user.id), FREE_LIMITS.ai), limit: FREE_LIMITS.ai })}{' '}
+          <Link to="/app/plano" className="font-medium text-primary hover:underline">{t('Pro: sem limite')}</Link>
+        </p>
+      )}
     </div>
   );
 }

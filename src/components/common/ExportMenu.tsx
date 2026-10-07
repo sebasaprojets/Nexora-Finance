@@ -11,7 +11,7 @@ export function ExportMenu({ getTables, title, label, size = 'md' }: { getTables
   const [busy, setBusy] = useState(false);
   const { canUse } = usePlan();
   const run = async (f: ExportFormat) => {
-    if (f !== 'csv' && !canUse(t('A exportação em {formato}', { formato: f === 'pdf' ? 'PDF' : 'Excel' }))) return;
+    if (f !== 'csv' && !canUse('export')) return;
     setBusy(true);
     try {
       const tables = getTables();

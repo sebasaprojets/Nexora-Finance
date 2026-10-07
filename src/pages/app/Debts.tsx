@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { UsageBadge } from '@/components/billing/UsageBadge';
+import { usePlan } from '@/hooks/usePlan';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { HandCoins, MoreHorizontal, Pencil, Plus, Route, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -104,6 +106,8 @@ export default function Debts() {
   const payInstallment = useFinance((s) => s.payDebtInstallment);
   const money = useMoney();
   const [modal, setModal] = useState<{ open: boolean; debt?: Debt }>({ open: false });
+  const { canCreate } = usePlan();
+  const openNew = () => canCreate('debts') && setModal({ open: true });
   const [confirm, setConfirm] = useState<Debt | null>(null);
   const [pay, setPay] = useState<Debt | null>(null);
   const [payAccount, setPayAccount] = useState('');
@@ -117,7 +121,7 @@ export default function Debts() {
 
   return (
     <div>
-      <PageHeader title={t('Dívidas')} description={t('Controle saldos, juros, parcelas e monte um plano de quitação.')} actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>{t('Nova dívida')}</Button>} />
+      <PageHeader title={t('Dívidas')} description={t('Controle saldos, juros, parcelas e monte um plano de quitação.')} actions={<><UsageBadge resource="debts" /><Button leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Nova dívida')}</Button></>} />
 
       {debts.length === 0 ? (
         <Card><EmptyState icon={<HandCoins />} title={t('Nenhuma dívida registrada')} description={t('Ótimo! Se tiver empréstimos ou parcelamentos, registre aqui para planejar a quitação.')} action={<Button onClick={() => setModal({ open: true })}>{t('+ Adicionar dívida')}</Button>} /></Card>

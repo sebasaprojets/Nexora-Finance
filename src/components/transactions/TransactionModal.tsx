@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePlan } from '@/hooks/usePlan';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, Lightbulb, Paperclip, Repeat2, Sparkles, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { ChevronDown, Lightbulb, Paperclip, Repeat2, Sparkles, TrendingDown, TrendingUp, X, Lock } from 'lucide-react';
 import { suggestCategory } from '@/lib/categorize';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -68,6 +69,7 @@ export function TransactionModal() {
   const currency = useSettings((s) => s.currency);
   const [more, setMore] = useState(false);
   const [attachment, setAttachment] = useState<Attachment | undefined>();
+  const { pro, canUse } = usePlan();
   const [autoCategory, setAutoCategory] = useState(false);
   const categoryTouched = useRef(false);
   const editing = draft?.editing;
@@ -445,6 +447,10 @@ export function TransactionModal() {
                           <X className="size-4" />
                         </button>
                       </div>
+                    ) : !pro ? (
+                      <button type="button" onClick={() => canUse('attachments')} className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong px-3 py-4 text-sm text-fg-subtle hover:bg-surface-2">
+                        <Lock className="size-4" aria-hidden /> {t('Anexar comprovantes · Pro')}
+                      </button>
                     ) : (
                       <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong px-3 py-4 text-sm text-fg-subtle hover:bg-surface-2">
                         <Paperclip className="size-4" aria-hidden /> {t('Adicionar imagem ou PDF')}

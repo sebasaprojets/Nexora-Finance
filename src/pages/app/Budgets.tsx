@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { UsageBadge } from '@/components/billing/UsageBadge';
 import { usePlan } from '@/hooks/usePlan';
 import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Lightbulb, OctagonAlert, Pencil, Plus, Trash2, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -119,7 +120,7 @@ export default function Budgets() {
       <PageHeader
         title={t('Orçamentos')}
         description={t('Defina limites por categoria e acompanhe em tempo real.')}
-        actions={<><TourButton id={tourId} /><Button data-tour="budget-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Novo orçamento')}</Button></>}
+        actions={<><TourButton id={tourId} /><UsageBadge resource="budgets" /><Button data-tour="budget-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Novo orçamento')}</Button></>}
       />
 
       <div className="mb-6 flex items-center justify-between gap-3">

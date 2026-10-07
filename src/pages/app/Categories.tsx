@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { UsageBadge } from '@/components/billing/UsageBadge';
+import { usePlan } from '@/hooks/usePlan';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -145,6 +147,8 @@ export default function Categories() {
   const money = useMoney();
   const [tab, setTab] = useState<CategoryKind>('expense');
   const [modal, setModal] = useState<{ open: boolean; category?: Category }>({ open: false });
+  const { canCreate } = usePlan();
+  const openNew = () => canCreate('categories') && setModal({ open: true });
   const [confirm, setConfirm] = useState<Category | null>(null);
 
   const usage = useMemo(() => {
@@ -163,7 +167,7 @@ export default function Categories() {
 
   return (
     <div>
-      <PageHeader title={t('Categorias')} description={t('Personalize nome, ícone, cor, tipo e limite mensal.')} actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>{t('Nova categoria')}</Button>} />
+      <PageHeader title={t('Categorias')} description={t('Personalize nome, ícone, cor, tipo e limite mensal.')} actions={<><UsageBadge resource="categories" /><Button leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Nova categoria')}</Button></>} />
       <Tabs
         value={tab}
         onChange={setTab}

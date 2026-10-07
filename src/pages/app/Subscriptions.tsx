@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { UsageBadge } from '@/components/billing/UsageBadge';
+import { usePlan } from '@/hooks/usePlan';
 import { CalendarClock, MoreHorizontal, Pencil, Plus, Repeat, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/Button';
@@ -121,6 +123,8 @@ export default function Subscriptions() {
   const { subscriptions, cards, accounts, upsert, remove } = useFinance();
   const money = useMoney();
   const [modal, setModal] = useState<{ open: boolean; sub?: Subscription }>({ open: false });
+  const { canCreate } = usePlan();
+  const openNew = () => canCreate('subscriptions') && setModal({ open: true });
   const [confirm, setConfirm] = useState<Subscription | null>(null);
   const summary = useMemo(() => subscriptionsSummary(subscriptions), [subscriptions]);
   const payName = (s: Subscription) => (s.cardId ? cards.find((c) => c.id === s.cardId)?.name : accounts.find((a) => a.id === s.accountId)?.name) ?? '—';
@@ -128,7 +132,7 @@ export default function Subscriptions() {
 
   return (
     <div>
-      <PageHeader title={t('Assinaturas')} description={t('Serviços recorrentes, próximas cobranças e custo anual.')} actions={<Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>{t('Nova assinatura')}</Button>} />
+      <PageHeader title={t('Assinaturas')} description={t('Serviços recorrentes, próximas cobranças e custo anual.')} actions={<><UsageBadge resource="subscriptions" /><Button leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Nova assinatura')}</Button></>} />
 
       {subscriptions.length === 0 ? (
         <Card><EmptyState icon={<Repeat />} title={t('Nenhuma assinatura')} description={t('Registre Netflix, Spotify, academia e outros para saber quanto custam por mês e por ano.')} action={<Button onClick={() => setModal({ open: true })}>{t('+ Adicionar assinatura')}</Button>} /></Card>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, Crown, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { PRICES, billingEnabled, brl, founderOffer } from '@/lib/plans';
+import { PRICES, billingEnabled, brl, founderOffer, freeFeatures, proFeatures } from '@/lib/plans';
 import { useLandingText } from '@/i18n/landing';
 import { cloudEnabled } from '@/services/cloud';
 import { BUSINESS, whatsappLink } from '@/config/business';
@@ -27,7 +27,7 @@ export function Pricing() {
             <p className="mt-2 font-display text-4xl font-semibold">R$ 0</p>
             <p className="text-sm text-fg-subtle">{t.forever}</p>
             <ul className="mt-6 space-y-2.5 text-sm">
-              {t.freeFeatures.map((f) => <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-fg-subtle" aria-hidden /> {f}</li>)}
+              {freeFeatures().map((f) => <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-fg-subtle" aria-hidden /> {f}</li>)}
             </ul>
             <Link to="/cadastro" className="mt-7 block"><Button variant="secondary" size="lg" className="w-full">{t.freeCta}</Button></Link>
           </div>
@@ -39,7 +39,7 @@ export function Pricing() {
               <p className="mt-2 font-display text-4xl font-semibold">{brl(PRICES.monthly)}<span className="text-base font-normal text-fg-subtle">{t.perMonth}</span></p>
               <p className="text-sm text-fg-subtle">{t.yearlyNote(brl(PRICES.yearly), brl(PRICES.yearly / 12))}</p>
               <ul className="mt-6 space-y-2.5 text-sm">
-                {t.proFeatures.map((f) => <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden /> {f}</li>)}
+                {proFeatures().map((f) => <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden /> {f}</li>)}
               </ul>
               <Link to="/cadastro" className="mt-7 block">
                 <Button size="lg" className="w-full" rightIcon={<ArrowRight className="size-4" />}>{billingEnabled ? t.proCta : t.proBeta}</Button>

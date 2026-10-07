@@ -104,8 +104,34 @@ e ativa o Pro no perfil. Ninguém consegue “se dar” o Pro pelo navegador (o 
 Os inscritos do formulário da página inicial ficam em **Table Editor → waitlist**.
 
 ### Enquanto o pagamento não estiver pronto
-Deixe `VITE_BILLING` vazio: todo mundo usa tudo grátis (modo beta) e a página inicial
-mostra a oferta do **beta de fundadores**. É o ideal para os primeiros 10–30 usuários.
+Deixe `VITE_BILLING` vazio. Os **limites do plano Grátis já valem** e, quando o cliente
+chega num limite, ele pode ativar o **teste grátis do Pro por 14 dias** (uma vez por conta).
+Depois do teste, a página *Meu plano* mostra “pagamento online em breve” e o botão do
+seu WhatsApp para ativar o Pro manualmente.
+
+Quer liberar tudo para todo mundo durante o beta? Crie a variável `VITE_PLAN_LIMITS` = `off`.
+
+### Limites do plano Grátis
+Definidos em `src/lib/plans.ts` (`FREE_LIMITS`) — mude os números lá se quiser.
+
+| Recurso | Grátis | Pro |
+| --- | --- | --- |
+| Transações | Ilimitadas | Ilimitadas |
+| Contas bancárias | 2 | Ilimitadas |
+| Cartões de crédito | 1 | Ilimitados |
+| Metas | 2 | Ilimitadas |
+| Orçamentos | 3 | Ilimitados |
+| Investimentos (ativos) | 3 | Ilimitados |
+| Assinaturas acompanhadas | 5 | Ilimitadas |
+| Dívidas | 2 | Ilimitadas |
+| Categorias personalizadas | 3 | Ilimitadas |
+| Perguntas à Nexora AI | 20 por mês | Ilimitadas |
+| Relatórios PDF/Excel | — (CSV liberado) | ✓ |
+| Comparar períodos (Análises) | — | ✓ |
+| Comprovantes anexados | — | ✓ |
+
+Quem passar do limite não perde nada: os dados continuam lá, só não dá para criar novos itens.
+O teste grátis e a contagem da IA ficam salvos no aparelho da pessoa.
 
 ## Etapa 4 — Seus dados no site
 
@@ -186,7 +212,7 @@ e o botão de WhatsApp.
 
 | Plano | Preço |
 | --- | --- |
-| Grátis | R$ 0 — até 3 contas, 2 cartões, 3 metas, 5 orçamentos, CSV |
+| Grátis | R$ 0 — transações ilimitadas, 2 contas, 1 cartão, 2 metas, 3 orçamentos, IA 20/mês, CSV |
 | Pro mensal | R$ 14,90 |
 | Pro anual | R$ 119 (≈ R$ 9,92/mês) |
 | Fundador (beta) | R$ 9,90/mês para sempre |

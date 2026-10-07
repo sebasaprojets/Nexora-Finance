@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { UsageBadge } from '@/components/billing/UsageBadge';
 import { usePlan } from '@/hooks/usePlan';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -200,7 +201,7 @@ export default function Accounts() {
             <Button variant="secondary" leftIcon={<Repeat2 className="size-4" />} onClick={() => openTx({ type: 'transfer' })} disabled={active.length < 2}>
               {t('Transferir')}
             </Button>
-            <Button leftIcon={<Plus className="size-4" />} onClick={openNew}>
+            <UsageBadge resource="accounts" /><Button leftIcon={<Plus className="size-4" />} onClick={openNew}>
               {t('Nova conta')}
             </Button>
           </>

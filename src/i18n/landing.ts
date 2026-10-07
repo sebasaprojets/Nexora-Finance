@@ -1,4 +1,3 @@
-import { FREE_LIMITS } from '@/lib/plans';
 import { useLang, type Lang } from './lang';
 
 /** Textos da página inicial em português, inglês e espanhol. */
@@ -122,18 +121,7 @@ const pt = {
     yearlyNote: (y: string, m: string) => `ou ${y}/ano (equivale a ${m}/mês)`,
     freeCta: 'Criar conta grátis',
     proCta: 'Começar e assinar',
-    proBeta: 'Testar o Pro grátis no beta',
-    freeFeatures: [
-      `Até ${FREE_LIMITS.accounts} contas e ${FREE_LIMITS.cards} cartões`,
-      'Transações ilimitadas',
-      `Até ${FREE_LIMITS.goals} metas e ${FREE_LIMITS.budgets} orçamentos`,
-      'Dashboard, análises, DRE e calendário',
-      'Alertas de contas e gastos fora do padrão',
-      'Sincronização entre seus aparelhos',
-      'Nexora AI (perguntas e lançamentos por conversa)',
-      'Exportação CSV',
-    ],
-    proFeatures: ['Tudo do plano Grátis', 'Contas, cartões, metas e orçamentos ilimitados', 'Relatórios em PDF e Excel', 'Suporte prioritário pelo WhatsApp', 'Acesso antecipado às novidades'],
+    proBeta: 'Testar Pro grátis por 14 dias',
   },
   founder: {
     tag: 'Beta de fundadores · vagas limitadas',
@@ -275,18 +263,7 @@ const en: LandingDict = {
     yearlyNote: (y: string, m: string) => `or ${y}/year (about ${m}/month)`,
     freeCta: 'Create a free account',
     proCta: 'Get started and subscribe',
-    proBeta: 'Try Pro free during the beta',
-    freeFeatures: [
-      `Up to ${FREE_LIMITS.accounts} accounts and ${FREE_LIMITS.cards} cards`,
-      'Unlimited transactions',
-      `Up to ${FREE_LIMITS.goals} goals and ${FREE_LIMITS.budgets} budgets`,
-      'Dashboard, analytics, income statement and calendar',
-      'Bill and unusual-spending alerts',
-      'Sync across your devices',
-      'Nexora AI (questions and chat-based entries)',
-      'CSV export',
-    ],
-    proFeatures: ['Everything in Free', 'Unlimited accounts, cards, goals and budgets', 'PDF and Excel reports', 'Priority WhatsApp support', 'Early access to new features'],
+    proBeta: 'Try Pro free for 14 days',
   },
   founder: {
     tag: 'Founders beta · limited spots',
@@ -426,18 +403,7 @@ const es: LandingDict = {
     yearlyNote: (y: string, m: string) => `o ${y}/año (equivale a ${m}/mes)`,
     freeCta: 'Crear cuenta gratis',
     proCta: 'Empezar y suscribirme',
-    proBeta: 'Probar Pro gratis en la beta',
-    freeFeatures: [
-      `Hasta ${FREE_LIMITS.accounts} cuentas y ${FREE_LIMITS.cards} tarjetas`,
-      'Transacciones ilimitadas',
-      `Hasta ${FREE_LIMITS.goals} metas y ${FREE_LIMITS.budgets} presupuestos`,
-      'Panel, análisis, estado de resultados y calendario',
-      'Alertas de cuentas y gastos fuera de lo normal',
-      'Sincronización entre tus dispositivos',
-      'Nexora AI (preguntas y registros por chat)',
-      'Exportación CSV',
-    ],
-    proFeatures: ['Todo lo del plan Gratis', 'Cuentas, tarjetas, metas y presupuestos ilimitados', 'Informes en PDF y Excel', 'Soporte prioritario por WhatsApp', 'Acceso anticipado a novedades'],
+    proBeta: 'Probar Pro gratis por 14 días',
   },
   founder: {
     tag: 'Beta de fundadores · cupos limitados',

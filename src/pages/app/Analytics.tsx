@@ -1,4 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
+import { ProGate } from '@/components/billing/ProGate';
+import { usePlan } from '@/hooks/usePlan';
 import { BarChart3 } from 'lucide-react';
 import { TourButton, usePageTour } from '@/components/tour/Tour';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -25,6 +27,7 @@ export default function Analytics() {
   const setTab = (next: Tab) => setParams({ aba: next }, { replace: true });
   const { preset, setPreset, custom, setCustom, period, previous } = usePeriod('6m');
   usePageTour('analytics', data.transactions.length > 0);
+  const { pro } = usePlan();
   const showPeriod = tab === 'visao' || tab === 'gastos' || tab === 'receitas';
 
   return (
@@ -49,7 +52,7 @@ export default function Analytics() {
           { value: 'gastos', label: t('Gastos') },
           { value: 'receitas', label: t('Receitas') },
           { value: 'fluxo', label: t('Fluxo de caixa') },
-          { value: 'comparar', label: t('Comparar períodos') },
+          { value: 'comparar', label: pro ? t('Comparar períodos') : `${t('Comparar períodos')} · Pro` },
         ]}
       />
       </div>
@@ -63,7 +66,12 @@ export default function Analytics() {
           {tab === 'gastos' && <Spending data={data} period={period} />}
           {tab === 'receitas' && <Income data={data} period={period} previous={previous} />}
           {tab === 'fluxo' && <CashFlow data={data} />}
-          {tab === 'comparar' && <Compare data={data} />}
+          {tab === 'comparar' &&
+            (pro ? (
+              <Compare data={data} />
+            ) : (
+              <ProGate feature="compare" title={t('Compare meses e anos lado a lado')} text={t('Veja quanto suas receitas, despesas e economia mudaram entre dois períodos, categoria por categoria. Disponível no plano Pro.')} />
+            ))}
         </div>
       )}
     </div>

@@ -39,6 +39,7 @@ jobs:
           VITE_AUTH_GOOGLE: ${{ vars.VITE_AUTH_GOOGLE }}
           VITE_AUTH_APPLE: ${{ vars.VITE_AUTH_APPLE }}
           VITE_BILLING: ${{ vars.VITE_BILLING }}
+          VITE_PLAN_LIMITS: ${{ vars.VITE_PLAN_LIMITS }}
           VITE_FOUNDER_OFFER: ${{ vars.VITE_FOUNDER_OFFER }}
           VITE_PRICE_PRO_MONTHLY: ${{ vars.VITE_PRICE_PRO_MONTHLY }}
           VITE_PRICE_PRO_YEARLY: ${{ vars.VITE_PRICE_PRO_YEARLY }}

@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { UsageBadge } from '@/components/billing/UsageBadge';
+import { usePlan } from '@/hooks/usePlan';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Info, MoreHorizontal, Pencil, Plus, Trash2, TrendingUp } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -105,6 +107,8 @@ export default function Investments() {
   const remove = useFinance((s) => s.remove);
   const money = useMoney();
   const [modal, setModal] = useState<{ open: boolean; inv?: Investment }>({ open: false });
+  const { canCreate } = usePlan();
+  const openNew = () => canCreate('investments') && setModal({ open: true });
   const [confirm, setConfirm] = useState<Investment | null>(null);
   const [filter, setFilter] = useState<'all' | InvestmentType>('all');
   const [selectedType, setSelectedType] = useState<string | null>(null);
@@ -143,7 +147,7 @@ export default function Investments() {
                 },
               ]}
             />
-            <Button leftIcon={<Plus className="size-4" />} onClick={() => setModal({ open: true })}>{t('Novo ativo')}</Button>
+            <UsageBadge resource="investments" /><Button leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Novo ativo')}</Button>
           </>
         }
       />

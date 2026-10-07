@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { UsageBadge } from '@/components/billing/UsageBadge';
 import { usePlan } from '@/hooks/usePlan';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { CalendarDays, MoreHorizontal, Pencil, PiggyBank, Plus, Target, Trash2, TrendingUp } from 'lucide-react';
@@ -172,7 +173,7 @@ export default function Goals() {
 
   return (
     <div>
-      <PageHeader title={t('Metas Financeiras')} description={t('Acompanhe progresso, prazo e quanto guardar por mês.')} actions={<><TourButton id={tourId} /><Button data-tour="goal-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Nova meta')}</Button></>} />
+      <PageHeader title={t('Metas Financeiras')} description={t('Acompanhe progresso, prazo e quanto guardar por mês.')} actions={<><TourButton id={tourId} /><UsageBadge resource="goals" /><Button data-tour="goal-new" leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('Nova meta')}</Button></>} />
 
       {goals.length === 0 ? (
         <Card>

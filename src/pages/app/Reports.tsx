@@ -38,7 +38,7 @@ export default function Reports() {
   const { canUse } = usePlan();
   const run = async (f: ExportFormat) => {
     if (!selected.length) return toast.warning(t('Selecione ao menos um relatório'));
-    if (f !== 'csv' && !canUse(t('O relatório em {formato}', { formato: f === 'pdf' ? 'PDF' : 'Excel' }))) return;
+    if (f !== 'csv' && !canUse('export')) return;
     setBusy(f);
     try {
       const tables = selected.map((k) => buildReport(k, data, period));

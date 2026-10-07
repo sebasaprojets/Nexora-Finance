@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import type { Transaction, TransactionType } from '@/types';
 
+export interface UpgradeRequest {
+  resource?: import('@/lib/plans').LimitedResource;
+  feature?: import('@/lib/plans').ProFeature;
+}
+
 export interface TransactionDraft {
   type: TransactionType;
   /** Edição de uma transação existente. */
@@ -13,9 +18,9 @@ interface UIState {
   commandOpen: boolean;
   quickAddOpen: boolean;
   sidebarCollapsed: boolean;
-  /** Janela "Seja Pro" (motivo exibido no topo). */
-  upgrade: string | null;
-  openUpgrade: (reason: string) => void;
+  /** Janela "Seja Pro": recurso que atingiu o limite ou recurso exclusivo do Pro. */
+  upgrade: UpgradeRequest | null;
+  openUpgrade: (req: UpgradeRequest) => void;
   closeUpgrade: () => void;
   openTransaction: (draft: TransactionDraft) => void;
   closeTransaction: () => void;
