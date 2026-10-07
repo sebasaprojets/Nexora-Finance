@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Nexora Finance — Inteligência financeira em um só lugar</title>
+    <meta name="description" content="Controle seu dinheiro. Construa seu futuro. Uma plataforma inteligente para organizar, acompanhar e melhorar sua vida financeira em um único lugar." />
+    <meta name="theme-color" content="#07080c" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Nexora" />
+    <meta property="og:title" content="Nexora Finance" />
+    <meta property="og:description" content="Inteligência financeira em um só lugar." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <script>
+      // Aplica o tema antes da pintura para evitar flash.
+      try {
+        var s = JSON.parse(localStorage.getItem('nexora:settings') || '{}').state || {};
+        var t = s.theme || 'dark';
+        var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>A Nexora precisa de JavaScript habilitado.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

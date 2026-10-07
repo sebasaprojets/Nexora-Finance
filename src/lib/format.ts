@@ -1,0 +1,107 @@
+import type { CurrencyCode } from '@/types';
+
+const LOCALE_BY_CURRENCY: Record<CurrencyCode, string> = {
+  BRL: 'pt-BR',
+  USD: 'en-US',
+  EUR: 'de-DE',
+  GBP: 'en-GB',
+};
+
+export const CURRENCIES: { code: CurrencyCode; label: string; symbol: string }[] = [
+  { code: 'BRL', label: 'Real brasileiro', symbol: 'R$' },
+  { code: 'USD', label: 'Dólar americano', symbol: 'US$' },
+  { code: 'EUR', label: 'Euro', symbol: '€' },
+  { code: 'GBP', label: 'Libra esterlina', symbol: '£' },
+];
+
+const cache = new Map<string, Intl.NumberFormat>();
+function nf(key: string, make: () => Intl.NumberFormat) {
+  let f = cache.get(key);
+  if (!f) {
+    f = make();
+    cache.set(key, f);
+  }
+  return f;
+}
+
+export interface MoneyOptions {
+  currency?: CurrencyCode;
+  /** Exibe sinal + para positivos. */
+  signed?: boolean;
+  /** Sem casas decimais. */
+  compact?: boolean;
+  /** Abrevia (12,5 mil). */
+  abbreviate?: boolean;
+}
+
+/** `R$ 1.250,50` — padrão BRL. */
+export function formatMoney(value: number, opts: MoneyOptions = {}): string {
+  const currency = opts.currency ?? 'BRL';
+  const locale = LOCALE_BY_CURRENCY[currency];
+  const v = Object.is(value, -0) ? 0 : value;
+  let out: string;
+  if (opts.abbreviate && Math.abs(v) >= 10_000) {
+    out = nf(`${currency}-abbr`, () =>
+      new Intl.NumberFormat(locale, { style: 'currency', currency, notation: 'compact', maximumFractionDigits: 1 }),
+    ).format(v);
+  } else {
+    const digits = opts.compact ? 0 : 2;
+    out = nf(`${currency}-${digits}`, () =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+      }),
+    ).format(v);
+  }
+  out = out.replace(/ /g, ' ');
+  if (opts.signed && v > 0) out = `+${out}`;
+  return out;
+}
+
+/** `37,9%` */
+export function formatPercent(value: number, digits = 1, signed = false): string {
+  if (!Number.isFinite(value)) return '—';
+  const s = nf(`pct-${digits}`, () =>
+    new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }),
+  ).format(value);
+  return `${signed && value > 0 ? '+' : ''}${s}%`;
+}
+
+export function formatNumber(value: number, digits = 0): string {
+  return nf(`num-${digits}`, () =>
+    new Intl.NumberFormat('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits }),
+  ).format(value);
+}
+
+/** Variação percentual entre dois valores; `null` quando a base é zero. */
+export function pctChange(current: number, previous: number): number | null {
+  if (!previous) return current ? null : 0;
+  return ((current - previous) / Math.abs(previous)) * 100;
+}
+
+export function round2(n: number): number {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+/**
+ * Converte texto digitado ("1.250,50", "35,9", "R$ 10") em número.
+ * Aceita vírgula ou ponto como separador decimal.
+ */
+export function parseMoneyInput(raw: string): number {
+  const s = raw.replace(/[^\d,.-]/g, '');
+  if (!s) return NaN;
+  let normalized: string;
+  if (s.includes(',')) {
+    normalized = s.replace(/\./g, '').replace(/,(?=[^,]*,)/g, '').replace(',', '.');
+  } else if (s.includes('.')) {
+    const groups = s.split('.').slice(1);
+    normalized = groups.every((g) => g.length === 3)
+      ? s.replace(/\./g, '')
+      : s.replace(/\.(?=[^.]*\.)/g, '');
+  } else normalized = s;
+  return round2(Number(normalized));
+}
+
+export const MASK = '••••••';

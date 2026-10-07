@@ -1,0 +1,366 @@
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import {
+  ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarClock, CreditCard, Landmark, PiggyBank, Plus, Repeat2, Scale, Sparkles, TrendingDown, TrendingUp, Wallet,
+} from 'lucide-react';
+import { Card, CardBody, CardHeader } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Progress } from '@/components/ui/Progress';
+import { Segmented } from '@/components/ui/Segmented';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { StatCard } from '@/components/common/StatCard';
+import { PeriodFilter } from '@/components/common/PeriodFilter';
+import { InsightList } from '@/components/common/InsightList';
+import { CategoryIcon } from '@/components/common/CategoryIcon';
+import { FlowChart } from '@/components/charts/FlowChart';
+import { Legend } from '@/components/charts/ChartTooltip';
+import { Donut } from '@/components/charts/Donut';
+import { TransactionRow } from '@/components/transactions/TransactionRow';
+import { useFinanceData } from '@/hooks/useFinanceData';
+import { useMoney } from '@/hooks/useMoney';
+import { usePeriod } from '@/hooks/usePeriod';
+import { useLookups } from '@/hooks/useLookups';
+import { useAuth } from '@/store/auth';
+import { useUI } from '@/store/ui';
+import {
+  accountBalances, autoGranularity, balanceHistory, budgetUsage, cardSummary, goalProgress, netWorth, portfolioSummary, subscriptionsSummary, summarize, timeSeries, totalsByCategory, type Granularity,
+} from '@/lib/finance';
+import { generateInsights } from '@/lib/insights';
+import { addDays, diffDays, formatDate, formatDayMonth, today } from '@/lib/dates';
+import { pctChange } from '@/lib/format';
+import { cn } from '@/lib/cn';
+
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+}
+
+export default function Dashboard() {
+  const data = useFinanceData();
+  const user = useAuth((s) => s.user);
+  const openTx = useUI((s) => s.openTransaction);
+  const money = useMoney();
+  const lookups = useLookups();
+  const { preset, setPreset, custom, setCustom, period, previous } = usePeriod('30d');
+  const [gran, setGran] = useState<Granularity | 'auto'>('auto');
+
+  const m = useMemo(() => {
+    const cur = summarize(data.transactions, period);
+    const prev = summarize(data.transactions, previous);
+    const nw = netWorth(data);
+    const history = balanceHistory(data.accounts, data.transactions, period);
+    const prevBalance = history[0]?.balance ?? 0;
+    const portfolio = portfolioSummary(data.investments);
+    const series = timeSeries(data.transactions, period, gran === 'auto' ? autoGranularity(period) : gran);
+    const cats = totalsByCategory(data.transactions, data.categories, period, 'expense');
+    return { cur, prev, nw, history, prevBalance, portfolio, series, cats };
+  }, [data, period, previous, gran]);
+
+  const insights = useMemo(() => generateInsights(data, period, previous, (v) => money(v)), [data, period, previous, money]);
+  const budgets = useMemo(() => budgetUsage(data.budgets, data.categories, data.transactions), [data]);
+  const goals = useMemo(() => data.goals.map((g) => goalProgress(g)), [data.goals]);
+  const recent = useMemo(() => [...data.transactions].filter((t) => t.date <= today()).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0, 7), [data.transactions]);
+
+  const upcoming = useMemo(() => {
+    const ref = today();
+    const limit = addDays(ref, 30);
+    const items: { id: string; label: string; date: string; amount: number; kind: string; href: string }[] = [];
+    for (const c of data.cards) {
+      const s = cardSummary(c, data.transactions);
+      for (const inv of [s.pending, s.current].filter(Boolean)) {
+        if (inv && inv.total - inv.paid > 0 && inv.dueDate <= limit) items.push({ id: inv.id, label: `Fatura ${c.name}`, date: inv.dueDate, amount: inv.total - inv.paid, kind: inv.status === 'overdue' ? 'Atrasada' : inv.status === 'open' ? 'Aberta' : 'Fechada', href: '/app/cartoes' });
+      }
+    }
+    for (const u of subscriptionsSummary(data.subscriptions).upcoming) if (u.date <= limit) items.push({ id: u.sub.id, label: u.sub.name, date: u.date, amount: u.sub.amount, kind: 'Assinatura', href: '/app/assinaturas' });
+    return items.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 6);
+  }, [data]);
+
+  const firstName = user?.name.split(' ')[0] ?? '';
+  const hasData = data.transactions.length > 0;
+  const balanceSpark = m.history.filter((_, i, arr) => i % Math.max(1, Math.floor(arr.length / 30)) === 0 || i === arr.length - 1).map((h) => h.balance);
+  const nwDelta = pctChange(m.nw.total, m.nw.total - (m.history.at(-1)?.balance ?? 0) + m.prevBalance);
+  const savingsPrev = m.prev.net;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-sm text-fg-subtle">
+            {greeting()} · {formatDate(today())}
+          </p>
+          <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-[28px]">Olá, {firstName} 👋</h1>
+        </div>
+        <PeriodFilter preset={preset} onPreset={setPreset} custom={custom} onCustom={setCustom} />
+      </div>
+
+      {!hasData ? (
+        <Card>
+          <EmptyState
+            icon={<Wallet />}
+            title="Você ainda não possui transações."
+            description="Comece registrando uma receita ou despesa. Em segundos seu painel ganha vida com gráficos e insights."
+            action={
+              <Button leftIcon={<Plus className="size-4" />} onClick={() => openTx({ type: 'expense' })}>
+                Adicionar primeira transação
+              </Button>
+            }
+          />
+        </Card>
+      ) : (
+        <>
+          {/* 1–2. Saldo, entradas/saídas e KPIs */}
+          <section aria-label="Resumo financeiro" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+            <StatCard
+              emphasis
+              className="col-span-2 lg:col-span-1"
+              label="Saldo total"
+              icon={<Wallet />}
+              value={m.nw.cash}
+              format={(v) => money(v)}
+              delta={pctChange(m.nw.cash, m.prevBalance)}
+              comparison={`vs. ${money(m.prevBalance, { compact: true })} em ${formatDayMonth(period.from)}`}
+              spark={balanceSpark}
+              info="Soma dos saldos de todas as contas (exceto investimentos), considerando transações até hoje."
+            />
+            <StatCard label="Entradas" icon={<ArrowDownLeft />} value={m.cur.income} format={(v) => money(v)} delta={pctChange(m.cur.income, m.prev.income)} comparison={`ant. ${money(m.prev.income, { compact: true })}`} spark={m.series.map((s) => s.income)} sparkColor="var(--series-income)" info="Total de receitas no período selecionado, comparado ao período anterior de mesma duração." />
+            <StatCard label="Saídas" icon={<ArrowUpRight />} value={m.cur.expense} format={(v) => money(v)} inverse delta={pctChange(m.cur.expense, m.prev.expense)} comparison={`ant. ${money(m.prev.expense, { compact: true })}`} spark={m.series.map((s) => s.expense)} sparkColor="var(--series-expense)" info="Total de despesas (inclui compras no cartão pela data da compra). Transferências não contam." />
+            <StatCard label="Economia" icon={<PiggyBank />} value={m.cur.net} format={(v) => money(v)} delta={pctChange(m.cur.net, savingsPrev)} comparison={`${m.cur.savingsRate.toFixed(0)}% da renda`} spark={m.series.map((s) => s.net)} sparkColor="var(--series-net)" info="Entradas − saídas no período. A porcentagem indica quanto da renda foi poupado." />
+            <StatCard label="Investimentos" icon={<TrendingUp />} value={m.portfolio.current} format={(v) => money(v)} delta={m.portfolio.returnPct} comparison="rentab. total" spark={m.portfolio.history.map((h) => h.value)} sparkColor="var(--series-7)" info="Valor de mercado atual da carteira. A variação é a rentabilidade acumulada sobre o valor aplicado." />
+            <StatCard label="Patrimônio líquido" icon={<Scale />} value={m.nw.total} format={(v) => money(v)} delta={nwDelta} comparison={`${money(m.nw.debts + m.nw.cardDebt, { compact: true })} em dívidas`} info="Saldo em contas + investimentos − dívidas − faturas de cartão em aberto." />
+          </section>
+
+          {/* 3. Fluxo financeiro + categorias */}
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card className="lg:col-span-2">
+              <CardHeader
+                title="Fluxo financeiro"
+                description="Receitas, despesas e resultado no período"
+                action={
+                  <Segmented
+                    size="sm"
+                    label="Agrupamento"
+                    value={gran}
+                    onChange={setGran}
+                    options={[
+                      { value: 'auto', label: 'Auto' },
+                      { value: 'day', label: 'Dia' },
+                      { value: 'week', label: 'Semana' },
+                      { value: 'month', label: 'Mês' },
+                    ]}
+                    className="hidden sm:inline-flex"
+                  />
+                }
+              />
+              <CardBody className="pt-4">
+                <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                  <Legend
+                    items={[
+                      { label: 'Receitas', color: 'var(--series-income)' },
+                      { label: 'Despesas', color: 'var(--series-expense)' },
+                      { label: 'Resultado', color: 'var(--series-net)', dashed: true },
+                    ]}
+                  />
+                  <p className="text-xs text-fg-subtle">
+                    Resultado: <span className={cn('tabular font-semibold', m.cur.net >= 0 ? 'text-success' : 'text-danger')}>{money(m.cur.net, { signed: true })}</span>
+                  </p>
+                </div>
+                <FlowChart data={m.series} height={280} />
+              </CardBody>
+            </Card>
+            <Card>
+              <CardHeader title="Para onde vai meu dinheiro?" description="Despesas por categoria" action={<Link to="/app/analises" className="text-xs font-medium text-primary hover:underline">Detalhes</Link>} />
+              <CardBody>
+                {m.cats.length ? (
+                  <>
+                    <Donut
+                      size={190}
+                      total={m.cur.expense}
+                      data={m.cats.slice(0, 6).map((c) => ({ id: c.category.id, label: c.category.name, value: c.total, color: c.category.color, pct: c.pct }))}
+                    />
+                    <ul className="mt-4 space-y-2">
+                      {m.cats.slice(0, 4).map((c) => (
+                        <li key={c.category.id} className="flex items-center gap-2 text-sm">
+                          <span className="size-2.5 rounded-full" style={{ background: c.category.color }} aria-hidden />
+                          <span className="flex-1 truncate text-fg-muted">{c.category.name}</span>
+                          <span className="tabular text-xs text-fg-subtle">{c.pct.toFixed(0)}%</span>
+                          <span className="tabular w-24 text-right font-medium">{money(c.total)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="py-10 text-center text-sm text-fg-subtle">Sem despesas no período.</p>
+                )}
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* 4. Ações rápidas */}
+          <section aria-label="Ações rápidas" className="grid grid-cols-4 gap-2 sm:gap-3">
+            {[
+              { label: 'Receita', icon: TrendingUp, color: 'var(--series-income)', onClick: () => openTx({ type: 'income' }) },
+              { label: 'Despesa', icon: TrendingDown, color: 'var(--series-expense)', onClick: () => openTx({ type: 'expense' }) },
+              { label: 'Transferir', icon: Repeat2, color: 'var(--series-net)', onClick: () => openTx({ type: 'transfer' }) },
+              { label: 'Faturas', icon: CreditCard, color: 'var(--series-7)', to: '/app/cartoes' },
+            ].map((a) => {
+              const inner = (
+                <>
+                  <span className="grid size-10 place-items-center rounded-xl transition-transform group-hover:scale-110" style={{ background: `color-mix(in oklab, ${a.color} 16%, transparent)`, color: a.color }}>
+                    <a.icon className="size-5" aria-hidden />
+                  </span>
+                  <span className="text-xs font-medium sm:text-sm">{a.label}</span>
+                </>
+              );
+              const cls = 'card group flex flex-col items-center gap-2 py-4 transition-colors hover:border-border-strong sm:flex-row sm:justify-center sm:gap-3';
+              return a.to ? (
+                <Link key={a.label} to={a.to} className={cls}>
+                  {inner}
+                </Link>
+              ) : (
+                <motion.button key={a.label} whileTap={{ scale: 0.97 }} onClick={a.onClick} className={cls}>
+                  {inner}
+                </motion.button>
+              );
+            })}
+          </section>
+
+          {/* 5. Transações + próximos vencimentos */}
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card className="lg:col-span-2">
+              <CardHeader title="Transações recentes" action={<Link to="/app/transacoes" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">Ver todas <ArrowRight className="size-3" /></Link>} />
+              <CardBody className="px-3 pt-3">
+                {recent.map((t) => (
+                  <TransactionRow
+                    key={t.id}
+                    tx={t}
+                    category={t.categoryId ? lookups.category.get(t.categoryId) : undefined}
+                    account={t.accountId ? lookups.account.get(t.accountId) : undefined}
+                    toAccount={t.toAccountId ? lookups.account.get(t.toAccountId) : undefined}
+                    card={t.cardId ? lookups.card.get(t.cardId) : undefined}
+                    onClick={() => openTx({ type: t.type, editing: t })}
+                  />
+                ))}
+              </CardBody>
+            </Card>
+            <Card>
+              <CardHeader title="Contas a pagar" description="Próximos 30 dias" icon={<CalendarClock />} />
+              <CardBody className="pt-3">
+                {upcoming.length ? (
+                  <ul className="divide-y divide-border">
+                    {upcoming.map((u) => {
+                      const days = diffDays(today(), u.date);
+                      return (
+                        <li key={u.id}>
+                          <Link to={u.href} className="flex items-center gap-3 py-2.5">
+                            <div className="grid w-11 shrink-0 place-items-center rounded-lg border border-border py-1 text-center">
+                              <span className="text-[10px] text-fg-subtle uppercase">{formatDayMonth(u.date).slice(3)}</span>
+                              <span className="font-display text-sm font-semibold">{u.date.slice(8)}</span>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium">{u.label}</p>
+                              <p className={cn('text-xs', days < 0 ? 'text-danger' : days <= 3 ? 'text-warning' : 'text-fg-subtle')}>
+                                {u.kind} · {days < 0 ? `venceu há ${-days} dias` : days === 0 ? 'vence hoje' : `em ${days} dias`}
+                              </p>
+                            </div>
+                            <span className="tabular text-sm font-semibold">{money(u.amount)}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="py-8 text-center text-sm text-fg-subtle">Nenhum vencimento nos próximos 30 dias.</p>
+                )}
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* 6–8. Metas, orçamentos e insights */}
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card>
+              <CardHeader title="Metas" action={<Link to="/app/metas" className="text-xs font-medium text-primary hover:underline">Ver metas</Link>} />
+              <CardBody className="space-y-4">
+                {goals.length ? (
+                  goals.slice(0, 3).map((g) => (
+                    <div key={g.goal.id}>
+                      <div className="mb-1.5 flex items-center gap-2">
+                        <CategoryIcon icon={g.goal.icon} color={g.goal.color} size="sm" />
+                        <span className="flex-1 truncate text-sm font-medium">{g.goal.name}</span>
+                        <span className="tabular text-xs font-semibold">{g.pct.toFixed(0)}%</span>
+                      </div>
+                      <Progress value={g.pct} color={g.goal.color} label={`Progresso da meta ${g.goal.name}`} />
+                      <p className="mt-1 text-xs text-fg-subtle">
+                        {money(g.current, { compact: true })} de {money(g.goal.target, { compact: true })}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-fg-subtle">Crie uma meta para acompanhar seu progresso.</p>
+                )}
+              </CardBody>
+            </Card>
+            <Card>
+              <CardHeader title="Orçamentos do mês" action={<Link to="/app/orcamentos" className="text-xs font-medium text-primary hover:underline">Gerenciar</Link>} />
+              <CardBody className="space-y-4">
+                {budgets.length ? (
+                  budgets.slice(0, 4).map((b) => (
+                    <div key={b.budget.id}>
+                      <div className="mb-1.5 flex items-center justify-between text-sm">
+                        <span className="font-medium">{b.category?.name}</span>
+                        <span className="tabular text-xs text-fg-subtle">
+                          {money(b.spent, { compact: true })} / {money(b.budget.amount, { compact: true })}
+                        </span>
+                      </div>
+                      <Progress value={b.pct} color={b.level === 'exceeded' ? 'var(--danger)' : b.level === 'alert' ? 'var(--series-2)' : b.level === 'attention' ? 'var(--warning)' : 'var(--success)'} label={`Orçamento ${b.category?.name}`} />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-fg-subtle">Defina limites por categoria para receber alertas.</p>
+                )}
+              </CardBody>
+            </Card>
+            <Card>
+              <CardHeader title="Nexora Insights" icon={<Sparkles />} />
+              <CardBody className="px-3 pt-3">
+                <InsightList insights={insights} limit={4} />
+              </CardBody>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader title="Contas" description="Saldo atual por conta" icon={<Landmark />} action={<Link to="/app/contas" className="text-xs font-medium text-primary hover:underline">Ver contas</Link>} />
+            <CardBody className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <AccountsMini />
+            </CardBody>
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}
+
+function AccountsMini() {
+  const { accounts, transactions } = useFinanceData();
+  const money = useMoney();
+  const balances = useMemo(() => accountBalances(accounts, transactions), [accounts, transactions]);
+  return (
+    <>
+      {accounts
+        .filter((a) => !a.archived)
+        .map((a) => {
+          const balance = balances.get(a.id) ?? 0;
+          return (
+            <div key={a.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
+              <span className="size-9 shrink-0 rounded-xl" style={{ background: `linear-gradient(135deg, ${a.color}, color-mix(in oklab, ${a.color} 40%, black))` }} aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{a.name}</p>
+                <p className="truncate text-xs text-fg-subtle">{a.institution}</p>
+              </div>
+              <span className={cn('tabular text-sm font-semibold', balance < 0 && 'text-danger')}>{money(balance)}</span>
+            </div>
+          );
+        })}
+    </>
+  );
+}

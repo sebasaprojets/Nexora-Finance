@@ -1,0 +1,237 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/sora';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   NEXORA DESIGN TOKENS
+   Fonte única de verdade para cores, tipografia, raio, sombras e movimento.
+   Os nomes espelham os estilos/variáveis planejados para o Figma.
+   ========================================================================== */
+:root {
+  color-scheme: light;
+  /* Superfícies */
+  --bg: #f5f6fa;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f0f2f7;
+  --surface-3: #e6e9f1;
+  --overlay: rgb(10 12 20 / 0.45);
+  --glass: rgb(255 255 255 / 0.72);
+  /* Bordas */
+  --border: rgb(15 20 40 / 0.08);
+  --border-strong: rgb(15 20 40 / 0.16);
+  /* Texto */
+  --fg: #0c0f1a;
+  --fg-muted: #4b5168;
+  --fg-subtle: #737a92;
+  /* Marca */
+  --primary: #5b4cf0;
+  --primary-hover: #4c3de0;
+  --primary-fg: #ffffff;
+  --primary-soft: rgb(91 76 240 / 0.1);
+  --accent: #0891b2;
+  /* Estado (sempre com ícone + rótulo) */
+  --success: #087a3a;
+  --success-soft: rgb(12 163 12 / 0.12);
+  --warning: #9a6200;
+  --warning-soft: rgb(250 178 25 / 0.18);
+  --danger: #c52f2f;
+  --danger-soft: rgb(208 59 59 / 0.12);
+  /* Séries de gráficos (paleta validada para daltonismo) */
+  --series-income: #1baf7a;
+  --series-expense: #eb6834;
+  --series-net: #2a78d6;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+  --series-8: #e34948;
+  --chart-grid: #e1e0d9;
+  --chart-axis: #898781;
+  /* Heatmap sequencial (azul) */
+  --heat-0: var(--surface-2);
+  --heat-1: #b7d3f6;
+  --heat-2: #6da7ec;
+  --heat-3: #2a78d6;
+  --heat-4: #184f95;
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgb(15 20 40 / 0.06);
+  --shadow-md: 0 4px 16px -4px rgb(15 20 40 / 0.1), 0 1px 3px rgb(15 20 40 / 0.06);
+  --shadow-lg: 0 24px 48px -16px rgb(15 20 40 / 0.22);
+  --ring: 0 0 0 3px rgb(91 76 240 / 0.35);
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: #07080c;
+  --bg-elevated: #0d0f16;
+  --surface: #11131c;
+  --surface-2: #171a25;
+  --surface-3: #1f2330;
+  --overlay: rgb(0 0 0 / 0.6);
+  --glass: rgb(17 19 28 / 0.66);
+  --border: rgb(255 255 255 / 0.07);
+  --border-strong: rgb(255 255 255 / 0.14);
+  --fg: #eef0f7;
+  --fg-muted: #a3a9bd;
+  --fg-subtle: #767d93;
+  --primary: #7b6dff;
+  --primary-hover: #8f83ff;
+  --primary-fg: #ffffff;
+  --primary-soft: rgb(123 109 255 / 0.14);
+  --accent: #22d3ee;
+  --success: #34c759;
+  --success-soft: rgb(12 163 12 / 0.16);
+  --warning: #fab219;
+  --warning-soft: rgb(250 178 25 / 0.14);
+  --danger: #f06262;
+  --danger-soft: rgb(208 59 59 / 0.18);
+  --series-income: #199e70;
+  --series-expense: #d95926;
+  --series-net: #3987e5;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --chart-grid: #232631;
+  --chart-axis: #7d8195;
+  --heat-1: #104281;
+  --heat-2: #1c5cab;
+  --heat-3: #3987e5;
+  --heat-4: #86b6ef;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 8px 24px -8px rgb(0 0 0 / 0.6), 0 1px 0 rgb(255 255 255 / 0.03) inset;
+  --shadow-lg: 0 32px 64px -24px rgb(0 0 0 / 0.8);
+  --ring: 0 0 0 3px rgb(123 109 255 / 0.45);
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Sora Variable', 'Inter Variable', system-ui, sans-serif;
+
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-glass: var(--glass);
+  --color-overlay: var(--overlay);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-income: var(--series-income);
+  --color-expense: var(--series-expense);
+  --color-net: var(--series-net);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-bg text-fg font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    min-height: 100dvh;
+  }
+  html.theme-transition,
+  html.theme-transition * {
+    transition: background-color 280ms ease, border-color 280ms ease, color 200ms ease !important;
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--primary-soft);
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-border bg-surface shadow-sm;
+  }
+  .glass {
+    @apply border border-border bg-glass backdrop-blur-xl;
+  }
+  .hairline-top {
+    background-image: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+  }
+  .holo {
+    background:
+      radial-gradient(600px circle at var(--mx, 50%) var(--my, 0%), rgb(123 109 255 / 0.1), transparent 40%),
+      var(--surface);
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .card {
+    border: 1px solid CanvasText;
+  }
+}
