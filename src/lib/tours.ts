@@ -58,7 +58,7 @@ const RAW_TOURS: Record<string, Tour> = {
       {
         target: 'nav',
         title: 'Navegue pela plataforma',
-        body: 'Aqui ficam Transações, Análises, Cartões, Metas, Orçamentos e o seu Perfil. Tudo se atualiza automaticamente com o que você registrar.',
+        body: 'Aqui ficam as telas principais. Orçamentos, investimentos, relatórios e o resto estão em “Mais”; perfil e configurações, no seu avatar.',
       },
       {
         target: 'help',
@@ -109,7 +109,7 @@ const RAW_TOURS: Record<string, Tour> = {
     title: 'Dashboard',
     steps: [
       { title: 'Seu painel está pronto 🎉', body: 'Com seus lançamentos, o dashboard mostra em segundos quanto você tem, quanto entrou, quanto saiu e quanto está economizando. Vamos conhecer cada parte.' },
-      { target: 'kpis', title: 'Seus números principais', body: 'Saldo, entradas, saídas, economia, investimentos e patrimônio. Cada card compara com o período anterior e tem um mini gráfico. Toque ou passe o mouse no “i” para entender o cálculo.' },
+      { target: 'kpis', title: 'Seus números principais', body: 'Saldo, entradas, saídas e economia. Cada card compara com o período anterior e tem um mini gráfico. Toque ou passe o mouse no “i” para entender o cálculo.' },
       { target: 'period', title: 'Escolha o período', body: 'Troque entre 7 dias, 30 dias, 3 meses, 6 meses, 1 ano ou datas personalizadas. Todos os números e gráficos se atualizam.' },
       { target: 'flow-chart', title: 'Fluxo financeiro', body: 'Receitas (verde) e despesas (laranja) ao longo do tempo. A linha tracejada é o resultado — o que sobrou. Toque no gráfico para ver os valores de cada dia ou semana.' },
       { target: 'quick-actions', title: 'Ações rápidas', body: 'Atalhos para lançar receitas, despesas, transferências e pagar faturas.' },

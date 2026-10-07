@@ -1,13 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { t } from '@/i18n';
-import { Bell, Check, Eye, EyeOff, LogOut, Plus, Search, Settings, ShieldCheck, User } from 'lucide-react';
+import { Bell, Check, Crown, Eye, EyeOff, LifeBuoy, LogOut, Moon, Plus, Search, Settings, Sun, User } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/landing/LanguageSwitcher';
 import { LANGS, useLang } from '@/i18n/lang';
 import { Button } from '@/components/ui/Button';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Avatar } from '@/components/common/Avatar';
 import { Logo } from '@/components/common/Logo';
-import { ThemeToggle } from './ThemeToggle';
+import { useResolvedTheme } from '@/hooks/useTheme';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { SyncIndicator } from './SyncIndicator';
 import { useUI } from '@/store/ui';
 import { useAuth } from '@/store/auth';
@@ -15,6 +16,9 @@ import { useSettings } from '@/store/settings';
 import { useFinance } from '@/store/finance';
 
 export function Topbar() {
+  const theme = useResolvedTheme();
+  const setSettings = useSettings((s) => s.set);
+  const wide = useMediaQuery('(min-width: 640px)');
   const setCommandOpen = useUI((s) => s.setCommandOpen);
   const openTx = useUI((s) => s.openTransaction);
   const user = useAuth((s) => s.user);
@@ -51,7 +55,6 @@ export function Topbar() {
             {hide ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
           </Button>
           <SyncIndicator />
-          <ThemeToggle />
           <LanguageSwitcher className="hidden sm:inline-flex" />
           <Link
             to="/app/notificacoes"
@@ -73,9 +76,16 @@ export function Topbar() {
             )}
             items={[
               { label: t('Perfil'), icon: <User />, onSelect: () => navigate('/app/perfil') },
+              { label: t('Meu plano'), icon: <Crown />, onSelect: () => navigate('/app/plano') },
               { label: t('Configurações'), icon: <Settings />, onSelect: () => navigate('/app/configuracoes') },
-              { label: t('Segurança'), icon: <ShieldCheck />, onSelect: () => navigate('/app/seguranca') },
-              ...LANGS.map((l) => ({
+              { label: t('Ajuda e suporte'), icon: <LifeBuoy />, onSelect: () => navigate('/app/ajuda') },
+              {
+                label: theme === 'dark' ? t('Tema claro') : t('Tema escuro'),
+                icon: theme === 'dark' ? <Sun /> : <Moon />,
+                onSelect: () => setSettings({ theme: theme === 'dark' ? 'light' : 'dark' }),
+              },
+              // No celular o seletor de idioma não cabe na barra: fica aqui no menu.
+              ...(wide ? [] : LANGS).map((l) => ({
                 label: `${l.flag}  ${l.label}`,
                 icon: l.code === lang ? <Check className="text-primary" /> : <span className="inline-block size-4" />,
                 onSelect: () => setLang(l.code),

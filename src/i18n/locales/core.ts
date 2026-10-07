@@ -13,6 +13,7 @@ export default {
     Confirmar: 'Confirm',
     Idioma: 'Language',
     'Navegação principal': 'Main navigation',
+    Mais: 'More',
     'Inteligência financeira em um só lugar.': 'Financial intelligence in one place.',
   },
   es: {
@@ -26,6 +27,7 @@ export default {
     Confirmar: 'Confirmar',
     Idioma: 'Idioma',
     'Navegação principal': 'Navegación principal',
+    Mais: 'Más',
     'Inteligência financeira em um só lugar.': 'Inteligencia financiera en un solo lugar.',
   },
 } satisfies LocaleModule;

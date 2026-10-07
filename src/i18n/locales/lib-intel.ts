@@ -227,8 +227,8 @@ export default {
     'Este é o botão que você vai usar no dia a dia: toque nele para registrar uma receita, despesa ou transferência. No computador, os atalhos N, R e D também funcionam.':
       "This is the button you'll use every day: tap it to record income, an expense or a transfer. On a computer, the N, R and D shortcuts work too.",
     'Navegue pela plataforma': 'Find your way around',
-    'Aqui ficam Transações, Análises, Cartões, Metas, Orçamentos e o seu Perfil. Tudo se atualiza automaticamente com o que você registrar.':
-      'Here you’ll find Transactions, Analytics, Cards, Goals, Budgets and your Profile. Everything updates automatically with what you record.',
+    'Aqui ficam as telas principais. Orçamentos, investimentos, relatórios e o resto estão em “Mais”; perfil e configurações, no seu avatar.':
+      'Your main screens live here. Budgets, investments, reports and the rest are under “More”; profile and settings are in your avatar.',
     'Ajuda quando precisar': 'Help when you need it',
     'Toque em “Como usar” (o ícone de chapéu) em qualquer tela para ver o tutorial dela de novo. Pronto — comece pelo item 1 da lista!':
       'Tap “How to use” (the cap icon) on any screen to see its tutorial again. That’s it — start with item 1 on the list!',
@@ -262,8 +262,8 @@ export default {
     'Com seus lançamentos, o dashboard mostra em segundos quanto você tem, quanto entrou, quanto saiu e quanto está economizando. Vamos conhecer cada parte.':
       "With your transactions, the dashboard shows in seconds how much you have, how much came in, how much went out and how much you're saving. Let's go through each part.",
     'Seus números principais': 'Your key numbers',
-    'Saldo, entradas, saídas, economia, investimentos e patrimônio. Cada card compara com o período anterior e tem um mini gráfico. Toque ou passe o mouse no “i” para entender o cálculo.':
-      'Balance, money in, money out, savings, investments and net worth. Each card compares with the previous period and has a mini chart. Tap or hover over the “i” to understand the calculation.',
+    'Saldo, entradas, saídas e economia. Cada card compara com o período anterior e tem um mini gráfico. Toque ou passe o mouse no “i” para entender o cálculo.':
+      'Balance, money in, money out and savings. Each card compares with the previous period and has a mini chart. Tap or hover over the “i” to understand the calculation.',
     'Escolha o período': 'Choose the period',
     'Troque entre 7 dias, 30 dias, 3 meses, 6 meses, 1 ano ou datas personalizadas. Todos os números e gráficos se atualizam.':
       'Switch between 7 days, 30 days, 3 months, 6 months, 1 year or custom dates. All numbers and charts update.',
@@ -557,8 +557,8 @@ export default {
     'Este é o botão que você vai usar no dia a dia: toque nele para registrar uma receita, despesa ou transferência. No computador, os atalhos N, R e D também funcionam.':
       'Este es el botón que usarás a diario: tócalo para registrar un ingreso, gasto o transferencia. En la computadora, los atajos N, R y D también funcionan.',
     'Navegue pela plataforma': 'Recorre la plataforma',
-    'Aqui ficam Transações, Análises, Cartões, Metas, Orçamentos e o seu Perfil. Tudo se atualiza automaticamente com o que você registrar.':
-      'Aquí están Transacciones, Análisis, Tarjetas, Metas, Presupuestos y tu Perfil. Todo se actualiza automáticamente con lo que registres.',
+    'Aqui ficam as telas principais. Orçamentos, investimentos, relatórios e o resto estão em “Mais”; perfil e configurações, no seu avatar.':
+      'Aquí están las pantallas principales. Presupuestos, inversiones, informes y el resto están en “Más”; perfil y configuración, en tu avatar.',
     'Ajuda quando precisar': 'Ayuda cuando la necesites',
     'Toque em “Como usar” (o ícone de chapéu) em qualquer tela para ver o tutorial dela de novo. Pronto — comece pelo item 1 da lista!':
       'Toca “Cómo usar” (el ícono de birrete) en cualquier pantalla para ver su tutorial otra vez. ¡Listo — empieza por el ítem 1 de la lista!',
@@ -593,8 +593,8 @@ export default {
     'Com seus lançamentos, o dashboard mostra em segundos quanto você tem, quanto entrou, quanto saiu e quanto está economizando. Vamos conhecer cada parte.':
       'Con tus transacciones, el panel muestra en segundos cuánto tienes, cuánto entró, cuánto salió y cuánto estás ahorrando. Conozcamos cada parte.',
     'Seus números principais': 'Tus números principales',
-    'Saldo, entradas, saídas, economia, investimentos e patrimônio. Cada card compara com o período anterior e tem um mini gráfico. Toque ou passe o mouse no “i” para entender o cálculo.':
-      'Saldo, entradas, salidas, ahorro, inversiones y patrimonio. Cada tarjeta compara con el período anterior y tiene un minigráfico. Toca o pasa el mouse sobre la “i” para entender el cálculo.',
+    'Saldo, entradas, saídas e economia. Cada card compara com o período anterior e tem um mini gráfico. Toque ou passe o mouse no “i” para entender o cálculo.':
+      'Saldo, entradas, salidas y ahorro. Cada tarjeta compara con el período anterior y tiene un minigráfico. Toca o pasa el mouse sobre la “i” para entender el cálculo.',
     'Escolha o período': 'Elige el período',
     'Troque entre 7 dias, 30 dias, 3 meses, 6 meses, 1 ano ou datas personalizadas. Todos os números e gráficos se atualizam.':
       'Cambia entre 7 días, 30 días, 3 meses, 6 meses, 1 año o fechas personalizadas. Todos los números y gráficos se actualizan.',

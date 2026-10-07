@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react';
-import { BankLogo } from '@/components/common/BankLogo';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarClock, CreditCard, Landmark, PiggyBank, Repeat2, Scale, Sparkles, TrendingDown, TrendingUp, Wallet,
+  ArrowDownLeft, ArrowRight, ArrowUpRight, CalendarClock, CreditCard, PiggyBank, Repeat2, Sparkles, TrendingDown, TrendingUp, Wallet,
 } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Progress } from '@/components/ui/Progress';
@@ -27,7 +26,7 @@ import { Deferred } from '@/components/common/Deferred';
 import { useSettings } from '@/store/settings';
 import { useUI } from '@/store/ui';
 import {
-  accountBalances, autoGranularity, balanceHistory, budgetUsage, cardSummary, goalProgress, netWorth, portfolioSummary, subscriptionsSummary, summarize, timeSeries, totalsByCategory, type Granularity,
+  autoGranularity, balanceHistory, cardSummary, goalProgress, netWorth, portfolioSummary, subscriptionsSummary, summarize, timeSeries, totalsByCategory, type Granularity,
 } from '@/lib/finance';
 import { generateInsights } from '@/lib/insights';
 import { addDays, diffDays, formatDate, formatDayMonth, monthName, today } from '@/lib/dates';
@@ -62,7 +61,6 @@ export default function Dashboard() {
   }, [data, period, previous, gran]);
 
   const insights = useMemo(() => generateInsights(data, period, previous, (v) => money(v)), [data, period, previous, money]);
-  const budgets = useMemo(() => budgetUsage(data.budgets, data.categories, data.transactions), [data]);
   const goals = useMemo(() => data.goals.map((g) => goalProgress(g)), [data.goals]);
   const recent = useMemo(() => [...data.transactions].filter((x) => x.date <= today()).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)).slice(0, 7), [data.transactions]);
 
@@ -88,7 +86,6 @@ export default function Dashboard() {
   const checklist = useGettingStarted();
   const checklistHidden = useSettings((s) => s.tutorials.checklistHidden);
   const balanceSpark = m.history.filter((_, i, arr) => i % Math.max(1, Math.floor(arr.length / 30)) === 0 || i === arr.length - 1).map((h) => h.balance);
-  const nwDelta = pctChange(m.nw.total, m.nw.total - (m.history.at(-1)?.balance ?? 0) + m.prevBalance);
   const savingsPrev = m.prev.net;
 
   return (
@@ -115,7 +112,7 @@ export default function Dashboard() {
         <>
           {!checklist.complete && !checklistHidden && <GettingStarted variant="compact" />}
           {/* 1–2. Saldo, entradas/saídas e KPIs */}
-          <section data-tour="kpis" aria-label={t('Resumo financeiro')} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+          <section data-tour="kpis" aria-label={t('Resumo financeiro')} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             <StatCard
               emphasis
               className="col-span-2 lg:col-span-1"
@@ -131,8 +128,6 @@ export default function Dashboard() {
             <StatCard label={t('Entradas')} icon={<ArrowDownLeft />} value={m.cur.income} format={(v) => money(v)} delta={pctChange(m.cur.income, m.prev.income)} comparison={t('ant. {value}', { value: money(m.prev.income, { compact: true }) })} spark={m.series.map((s) => s.income)} sparkColor="var(--series-income)" info={t('Total de receitas no período selecionado, comparado ao período anterior de mesma duração.')} />
             <StatCard label={t('Saídas')} icon={<ArrowUpRight />} value={m.cur.expense} format={(v) => money(v)} inverse delta={pctChange(m.cur.expense, m.prev.expense)} comparison={t('ant. {value}', { value: money(m.prev.expense, { compact: true }) })} spark={m.series.map((s) => s.expense)} sparkColor="var(--series-expense)" info={t('Total de despesas (inclui compras no cartão pela data da compra). Transferências não contam.')} />
             <StatCard label={t('Economia')} icon={<PiggyBank />} value={m.cur.net} format={(v) => money(v)} delta={pctChange(m.cur.net, savingsPrev)} comparison={t('{pct}% da renda', { pct: m.cur.savingsRate.toFixed(0) })} spark={m.series.map((s) => s.net)} sparkColor="var(--series-net)" info={t('Entradas − saídas no período. A porcentagem indica quanto da renda foi poupado.')} />
-            <StatCard label={t('Investimentos')} icon={<TrendingUp />} value={m.portfolio.current} format={(v) => money(v)} delta={m.portfolio.returnPct} comparison={t('rentab. total')} spark={m.portfolio.history.map((h) => h.value)} sparkColor="var(--series-7)" info={t('Valor de mercado atual da carteira. A variação é a rentabilidade acumulada sobre o valor aplicado.')} />
-            <StatCard className="col-span-2 lg:col-span-1" label={t('Patrimônio líquido')} icon={<Scale />} value={m.nw.total} format={(v) => money(v)} delta={nwDelta} comparison={t('{value} em dívidas', { value: money(m.nw.debts + m.nw.cardDebt, { compact: true }) })} info={t('Saldo em contas + investimentos − dívidas − faturas de cartão em aberto.')} />
           </section>
 
           {/* 3. Fluxo financeiro + categorias */}
@@ -283,8 +278,8 @@ export default function Dashboard() {
           </div>
           </Deferred>
 
-          {/* 6–8. Metas, orçamentos e insights */}
-          <div className="grid gap-4 lg:grid-cols-3">
+          {/* 6–7. Metas e insights */}
+          <div className="grid gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader title={t('Metas')} action={<Link to="/app/metas" className="text-xs font-medium text-primary hover:underline">{t('Ver metas')}</Link>} />
               <CardBody className="space-y-4">
@@ -307,26 +302,6 @@ export default function Dashboard() {
                 )}
               </CardBody>
             </Card>
-            <Card>
-              <CardHeader title={t('Orçamentos do mês')} action={<Link to="/app/orcamentos" className="text-xs font-medium text-primary hover:underline">{t('Gerenciar')}</Link>} />
-              <CardBody className="space-y-4">
-                {budgets.length ? (
-                  budgets.slice(0, 4).map((b) => (
-                    <div key={b.budget.id}>
-                      <div className="mb-1.5 flex items-center justify-between text-sm">
-                        <span className="font-medium">{b.category && t(b.category.name)}</span>
-                        <span className="tabular text-xs text-fg-subtle">
-                          {money(b.spent, { compact: true })} / {money(b.budget.amount, { compact: true })}
-                        </span>
-                      </div>
-                      <Progress value={b.pct} color={b.level === 'exceeded' ? 'var(--danger)' : b.level === 'alert' ? 'var(--series-2)' : b.level === 'attention' ? 'var(--warning)' : 'var(--success)'} label={t('Orçamento {name}', { name: b.category ? t(b.category.name) : '' })} />
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-fg-subtle">{t('Defina limites por categoria para receber alertas.')}</p>
-                )}
-              </CardBody>
-            </Card>
             <Card data-tour="insights">
               <CardHeader title="Nexora Insights" icon={<Sparkles />} />
               <CardBody className="px-3 pt-3">
@@ -335,41 +310,8 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          <Deferred minHeight={160}>
-          <Card>
-            <CardHeader title={t('Contas')} description={t('Saldo atual por conta')} icon={<Landmark />} action={<Link to="/app/contas" className="text-xs font-medium text-primary hover:underline">{t('Ver contas')}</Link>} />
-            <CardBody className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <AccountsMini />
-            </CardBody>
-          </Card>
-          </Deferred>
         </>
       )}
     </div>
-  );
-}
-
-function AccountsMini() {
-  const { accounts, transactions } = useFinanceData();
-  const money = useMoney();
-  const balances = useMemo(() => accountBalances(accounts, transactions), [accounts, transactions]);
-  return (
-    <>
-      {accounts
-        .filter((a) => !a.archived)
-        .map((a) => {
-          const balance = balances.get(a.id) ?? 0;
-          return (
-            <div key={a.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
-              <BankLogo slug={a.bank} texts={[a.institution, a.name]} className="size-9" fallback={<span className="size-9 shrink-0 rounded-xl" style={{ background: `linear-gradient(135deg, ${a.color}, color-mix(in oklab, ${a.color} 40%, black))` }} aria-hidden />} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{a.name}</p>
-                <p className="truncate text-xs text-fg-subtle">{a.institution}</p>
-              </div>
-              <span className={cn('tabular text-sm font-semibold', balance < 0 && 'text-danger')}>{money(balance)}</span>
-            </div>
-          );
-        })}
-    </>
   );
 }

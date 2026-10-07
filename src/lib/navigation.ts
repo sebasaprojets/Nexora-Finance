@@ -55,3 +55,11 @@ export const ACCOUNT_NAV: NavItem[] = [
 ];
 
 export const ALL_NAV = [...NAV_GROUPS.flatMap((g) => g.items), ...ACCOUNT_NAV];
+
+const byPath = (to: string) => ALL_NAV.find((n) => n.to === to)!;
+
+/** Menu lateral enxuto: o essencial sempre visível… */
+export const PRIMARY_NAV: NavItem[] = ['/app', '/app/transacoes', '/app/contas', '/app/cartoes', '/app/metas', '/app/analises', '/app/assistente'].map(byPath);
+
+/** …e o restante agrupado em "Mais" (fechado por padrão). */
+export const MORE_NAV: NavItem[] = ['/app/orcamentos', '/app/investimentos', '/app/dividas', '/app/assinaturas', '/app/calendario', '/app/relatorios', '/app/categorias', '/app/saude'].map(byPath);
